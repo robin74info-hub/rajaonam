@@ -61,9 +61,9 @@ const CHAPTERS = [
     icon: Store,
     title: "Onam Chandha: The Traditional Bazaar",
     body: "A charming Onam Chandha is set up, recreating the vintage vibes of Kerala's traditional marketplaces. Wander through quaint stalls offering Onam-inspired clothing, bangles and traditional trinkets — each piece steeped in nostalgia, bringing a slice of old-world Kerala charm to the celebrations.",
-    img: "/assets/onam-hero.png",
-    position: "30% 70%",
-    alt: "The traditional Onam bazaar stalls",
+    img: "/assets/chapter7.jpg",
+    position: "50% 50%",
+    alt: "Live paid counters at the Onam Chandha — beer and wine, tea shop, banana chips, peanut candy, cotton candy, popsicles, achappam and unniyappam",
   },
   {
     num: "08",
