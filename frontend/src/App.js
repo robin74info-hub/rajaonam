@@ -1,54 +1,52 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect, useState } from "react";
+import Lenis from "lenis";
 import axios from "axios";
-import { HOME } from "@/constants/testIds";
+import "@/App.css";
+import BookingPanel from "@/components/BookingPanel";
+import Hero from "@/components/Hero";
+import Manifesto from "@/components/Manifesto";
+import Marquee from "@/components/Marquee";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
+function App() {
+  const [event, setEvent] = useState(null);
+
+  const fetchEvent = () =>
+    axios.get(`${API}/event`).then((r) => setEvent(r.data)).catch(console.error);
 
   useEffect(() => {
-    helloWorldApi();
+    const lenis = new Lenis({ lerp: 0.09, smoothWheel: true });
+    let frame;
+    const raf = (time) => {
+      lenis.raf(time);
+      frame = requestAnimationFrame(raf);
+    };
+    frame = requestAnimationFrame(raf);
+    fetchEvent();
+    return () => {
+      cancelAnimationFrame(frame);
+      lenis.destroy();
+    };
   }, []);
 
   return (
-    <div>
-      <header className="App-header">
-        <a
-          data-testid={HOME.emergentLink}
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
-
-function App() {
-  return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+    <div className="App" data-testid="app-root">
+      <div className="grain-overlay" aria-hidden="true" />
+      <div className="flex flex-col lg:flex-row">
+        <BookingPanel event={event} onBooked={fetchEvent} />
+        <main className="w-full lg:w-[65%] lg:ml-[35%]" data-testid="event-content">
+          <Hero event={event} />
+          <Marquee />
+          <Manifesto />
+          <footer className="border-t border-white/10 px-8 sm:px-14 py-10 flex flex-col sm:flex-row justify-between gap-4">
+            <p className="font-serif text-2xl text-bone">Ember <span className="text-flame">&</span> Oak</p>
+            <p className="text-xs tracking-[0.2em] uppercase text-ash" data-testid="footer-note">
+              14 – 16 August 2026 · Riverside District
+            </p>
+          </footer>
+        </main>
+      </div>
     </div>
   );
 }
