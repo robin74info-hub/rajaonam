@@ -64,15 +64,15 @@ export default function BookingPanel({ event, onBooked }) {
       data-testid="booking-panel"
       className="w-full lg:sticky lg:top-8 rounded-2xl border border-[#D8C7A5] bg-[#F1E3C6]/90 backdrop-blur-xl shadow-[0_25px_60px_rgba(138,106,42,0.28)] overflow-hidden"
     >
-      <div className="flex items-center gap-3 px-7 pt-7 pb-5 border-b border-[#D8C7A5] bg-[#E7D3AC]/70">
-        <span className="w-10 h-10 rounded-full bg-leaf/10 border border-leaf/25 flex items-center justify-center">
-          <Flower2 className="w-5 h-5 text-leaf animate-bloom" />
+      <div className="flex items-center gap-3 px-7 pt-7 pb-5 border-b border-[#D8C7A5] bg-[#1b5812]">
+        <span className="w-10 h-10 rounded-full bg-[#fabd8f]/15 border border-[#fabd8f]/40 flex items-center justify-center">
+          <Flower2 className="w-5 h-5 text-[#fabd8f] animate-bloom" />
         </span>
         <div>
-          <p className="font-serif text-xl leading-none text-ink" data-testid="panel-event-name">
+          <p className="font-serif text-xl leading-none text-[#fabd8f]" data-testid="panel-event-name">
             {event?.name || "RajaoNam"}
           </p>
-          <p className="text-[10px] tracking-[0.25em] uppercase text-maroon mt-1">{event?.edition || "Grand Onam Celebration"}</p>
+          <p className="text-[10px] tracking-[0.25em] uppercase text-[#fabd8f]/75 mt-1">{event?.edition || "Grand Onam Celebration"}</p>
         </div>
       </div>
 
