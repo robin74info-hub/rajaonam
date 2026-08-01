@@ -24,7 +24,7 @@ api_router = APIRouter(prefix="/api")
 
 EVENT = {
     "id": "rajaonam-2026",
-    "name": "RajyOnam 2026",
+    "name": "Raja Onam - Oru Kottara Sadhya 2026",
     "tagline": "Oru Kottara Sadhya 2026",
     "edition": "Grand Onam Celebration",
     "date": "26 August 2026",
@@ -43,9 +43,12 @@ class BookingCreate(BaseModel):
     name: str = Field(min_length=2, max_length=80)
     phone: str = Field(min_length=7, max_length=20)
     email: EmailStr
-    adults: int = Field(ge=1, le=30)
+    adults: int = Field(ge=0, le=30)
     kids_5_12: int = Field(ge=0, le=30, default=0)
     kids_below_5: int = Field(ge=0, le=30, default=0)
+    veg_adults: int = Field(ge=0, le=30, default=0)
+    veg_kids_5_12: int = Field(ge=0, le=30, default=0)
+    veg_kids_below_5: int = Field(ge=0, le=30, default=0)
     contests: List[str] = []
     games: List[str] = []
     boating: bool = False
@@ -71,8 +74,14 @@ async def create_booking(input: BookingCreate):
         if input.boating_persons < 1:
             raise HTTPException(status_code=400, detail="Boating needs at least 1 person")
 
-    total_participants = input.adults + input.kids_5_12 + input.kids_below_5
-    total = input.adults * EVENT["price_adult"] + input.kids_5_12 * EVENT["price_kid"]
+    if input.adults + input.veg_adults < 1:
+        raise HTTPException(status_code=400, detail="At least 1 adult required")
+
+    total_participants = (
+        input.adults + input.kids_5_12 + input.kids_below_5
+        + input.veg_adults + input.veg_kids_5_12 + input.veg_kids_below_5
+    )
+    total = (input.adults + input.veg_adults) * EVENT["price_adult"] + (input.kids_5_12 + input.veg_kids_5_12) * EVENT["price_kid"]
     reference = "EO-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
     doc = {
         "id": str(uuid.uuid4()),
@@ -83,6 +92,9 @@ async def create_booking(input: BookingCreate):
         "adults": input.adults,
         "kids_5_12": input.kids_5_12,
         "kids_below_5": input.kids_below_5,
+        "veg_adults": input.veg_adults,
+        "veg_kids_5_12": input.veg_kids_5_12,
+        "veg_kids_below_5": input.veg_kids_below_5,
         "total_participants": total_participants,
         "contests": input.contests,
         "games": input.games,

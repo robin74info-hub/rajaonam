@@ -67,6 +67,14 @@
 - Real event details applied: RajyOnam 2026 · Bolgatty Palace, Kochi · 26 August 2026 · 11:00 AM – 5:00 PM (hero, footer, organiser, copy)
 - Bug fixed: leftover slot_id reference broke payment ("slotId is not defined") — removed; re-verified EO-QC6GCR (2A+1K, boating 3:30–4:30, ₹3,747)
 
+## Updates v6 (2026-08-01)
+- Section 02 split into two columns: Sea Food Sadhya + Veg Onam Sadhya, each with Adults/Kids 5–12/Kids below 5 steppers (backend veg_* fields added; total = (sea+veg adults)×1499 + (sea+veg kids)×749; ≥1 adult across both required)
+- Form title changed to "Raja Onam - Oru Kottara Sadhya 2026" (EVENT.name)
+- Games icon (Gamepad2) added to section 04 question
+- Chapter 02 image → sadhya.png (user upload), Chapter 03 → "House Boat" with houseboat.png (user upload) + boating text
+- Page title: "Happy Onam - Oru Kottara Sadhya"; marquee: Onam Sadhya · Contest · Games · Boating
+- Verified: EO-PXXY45 (2 sea adults + 1 veg adult + 1 veg infant, ₹4,497)
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

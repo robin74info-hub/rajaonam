@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { Minus, Plus, Flower2, Check, Loader2, RotateCcw, Sailboat, Trophy, Users } from "lucide-react";
+import { Minus, Plus, Flower2, Check, Loader2, RotateCcw, Sailboat, Trophy, Users, Fish, Salad, Gamepad2 } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -88,6 +88,9 @@ export default function BookingPanel({ event, onBooked }) {
   const [adults, setAdults] = useState(2);
   const [kids512, setKids512] = useState(0);
   const [kidsU5, setKidsU5] = useState(0);
+  const [vegAdults, setVegAdults] = useState(0);
+  const [vegKids512, setVegKids512] = useState(0);
+  const [vegKidsU5, setVegKidsU5] = useState(0);
   const [joinContests, setJoinContests] = useState(null);
   const [contests, setContests] = useState([]);
   const [joinGames, setJoinGames] = useState(null);
@@ -102,8 +105,8 @@ export default function BookingPanel({ event, onBooked }) {
   const sym = event?.currency_symbol || "₹";
   const priceAdult = event?.price_adult ?? 1499;
   const priceKid = event?.price_kid ?? 749;
-  const totalParticipants = adults + kids512 + kidsU5;
-  const total = adults * priceAdult + kids512 * priceKid;
+  const totalParticipants = adults + kids512 + kidsU5 + vegAdults + vegKids512 + vegKidsU5;
+  const total = (adults + vegAdults) * priceAdult + (kids512 + vegKids512) * priceKid;
 
   const toggle = (list, setList) => (item) =>
     setList(list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
@@ -113,7 +116,7 @@ export default function BookingPanel({ event, onBooked }) {
     if (form.name.trim().length < 2) e.name = "Enter your full name";
     if (!/^[+\d][\d\s-]{6,14}$/.test(form.phone.trim())) e.phone = "Enter a valid WhatsApp number";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = "Enter a valid email";
-    if (adults < 1) e.adults = "At least 1 adult required";
+    if (adults + vegAdults < 1) e.adults = "At least 1 adult required";
     if (boating === true && !boatSlot) e.boating = "Choose a boating time slot";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -130,6 +133,9 @@ export default function BookingPanel({ event, onBooked }) {
         adults,
         kids_5_12: kids512,
         kids_below_5: kidsU5,
+        veg_adults: vegAdults,
+        veg_kids_5_12: vegKids512,
+        veg_kids_below_5: vegKidsU5,
         contests: joinContests ? contests : [],
         games: joinGames ? games : [],
         boating: boating === true,
@@ -157,6 +163,9 @@ export default function BookingPanel({ event, onBooked }) {
     setAdults(2);
     setKids512(0);
     setKidsU5(0);
+    setVegAdults(0);
+    setVegKids512(0);
+    setVegKidsU5(0);
     setJoinContests(null);
     setContests([]);
     setJoinGames(null);
@@ -183,7 +192,7 @@ export default function BookingPanel({ event, onBooked }) {
         </span>
         <div>
           <p className="font-serif text-xl leading-none text-[#fabd8f]" data-testid="panel-event-name">
-            {event?.name || "RajaoNam"}
+            {event?.name || "Raja Onam - Oru Kottara Sadhya 2026"}
           </p>
           <p className="text-[10px] tracking-[0.25em] uppercase text-[#fabd8f]/75 mt-1">{event?.edition || "Grand Onam Celebration"}</p>
         </div>
@@ -210,7 +219,8 @@ export default function BookingPanel({ event, onBooked }) {
               <div className="w-full border border-[#D8C7A5] rounded-xl p-5 space-y-3 bg-[#FFFBF2]/80">
                 <Row label="Booking ID" value={booking.reference} testid="confirmation-reference" mono />
                 <Row label="Name" value={booking.name} testid="confirmation-name" />
-                <Row label="Participants" value={`${booking.adults} Adults · ${booking.kids_5_12} Kids (5–12) · ${booking.kids_below_5} Kids (below 5)`} testid="confirmation-participants" />
+                <Row label="Sea Food" value={`${booking.adults} Adults · ${booking.kids_5_12} Kids (5–12) · ${booking.kids_below_5} Below 5`} testid="confirmation-seafood" />
+                <Row label="Veg" value={`${booking.veg_adults} Adults · ${booking.veg_kids_5_12} Kids (5–12) · ${booking.veg_kids_below_5} Below 5`} testid="confirmation-veg" />
                 {booking.contests?.length > 0 && <Row label="Contests" value={booking.contests.join(", ")} testid="confirmation-contests" />}
                 {booking.games?.length > 0 && <Row label="Games" value={booking.games.join(", ")} testid="confirmation-games" />}
                 {booking.boating && <Row label="Boating" value={`${booking.boating_slot} · ${booking.boating_persons} persons`} testid="confirmation-boating" />}
@@ -253,11 +263,28 @@ export default function BookingPanel({ event, onBooked }) {
               </section>
 
               <section>
-                <SectionTitle n="02" label="Sea Food Sadhya — Participants" />
-                <div className="space-y-2.5">
-                  <Stepper label={`Adults · ${fmt(priceAdult, sym)}`} value={adults} onChange={setAdults} min={1} id="adults" />
-                  <Stepper label={`Kids (5–12 Years) · ${fmt(priceKid, sym)}`} value={kids512} onChange={setKids512} id="kids-5-12" />
-                  <Stepper label="Kids (Below 5 Years) · Free" value={kidsU5} onChange={setKidsU5} id="kids-below-5" />
+                <SectionTitle n="02" label="Sadhya — Participants" />
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <div className="border border-[#D8C7A5] rounded-xl p-4 bg-[#FFFBF2]/50">
+                    <p className="text-sm font-bold text-ink mb-3 flex items-center gap-2" data-testid="seafood-title">
+                      <Fish className="w-4 h-4 text-leaf" /> Sea Food Sadhya
+                    </p>
+                    <div className="space-y-2.5">
+                      <Stepper label={`Adults · ${fmt(priceAdult, sym)}`} value={adults} onChange={setAdults} id="adults" />
+                      <Stepper label={`Kids (5–12) · ${fmt(priceKid, sym)}`} value={kids512} onChange={setKids512} id="kids-5-12" />
+                      <Stepper label="Kids (Below 5) · Free" value={kidsU5} onChange={setKidsU5} id="kids-below-5" />
+                    </div>
+                  </div>
+                  <div className="border border-[#D8C7A5] rounded-xl p-4 bg-[#FFFBF2]/50">
+                    <p className="text-sm font-bold text-ink mb-3 flex items-center gap-2" data-testid="veg-title">
+                      <Salad className="w-4 h-4 text-leaf" /> Veg Onam Sadhya
+                    </p>
+                    <div className="space-y-2.5">
+                      <Stepper label={`Adults · ${fmt(priceAdult, sym)}`} value={vegAdults} onChange={setVegAdults} id="veg-adults" />
+                      <Stepper label={`Kids (5–12) · ${fmt(priceKid, sym)}`} value={vegKids512} onChange={setVegKids512} id="veg-kids-5-12" />
+                      <Stepper label="Kids (Below 5) · Free" value={vegKidsU5} onChange={setVegKidsU5} id="veg-kids-below-5" />
+                    </div>
+                  </div>
                 </div>
                 {errors.adults && <p className="text-xs text-maroon mt-2" data-testid="adults-error">{errors.adults}</p>}
                 <p className="text-xs text-ash mt-3 flex items-center gap-2">
@@ -275,7 +302,7 @@ export default function BookingPanel({ event, onBooked }) {
 
               <section>
                 <SectionTitle n="04" label="Traditional Games" />
-                <p className="text-sm text-ash mb-3">Would you like to participate in the traditional games?</p>
+                <p className="text-sm text-ash mb-3 flex items-center gap-2"><Gamepad2 className="w-4 h-4 text-leaf" /> Would you like to participate in the traditional games?</p>
                 <YesNo value={joinGames} onChange={(v) => { setJoinGames(v); if (!v) setGames([]); }} id="games" />
                 {joinGames && <PillSelect options={event?.games || []} selected={games} onToggle={toggle(games, setGames)} id="game" />}
               </section>
@@ -311,9 +338,8 @@ export default function BookingPanel({ event, onBooked }) {
 
               <section className="border border-[#D8C7A5] rounded-xl p-5 bg-[#FFFBF2]/80 space-y-2.5" data-testid="booking-summary">
                 <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon mb-3">Booking Summary</p>
-                <Row label="Adults" value={`${adults} × ${fmt(priceAdult, sym)}`} testid="summary-adults" />
-                <Row label="Kids (5–12)" value={`${kids512} × ${fmt(priceKid, sym)}`} testid="summary-kids" />
-                <Row label="Kids (Below 5)" value={`${kidsU5} · Free`} testid="summary-kids-u5" />
+                <Row label="Sea Food Sadhya" value={`${adults}A · ${kids512}K · ${kidsU5} below 5`} testid="summary-seafood" />
+                <Row label="Veg Onam Sadhya" value={`${vegAdults}A · ${vegKids512}K · ${vegKidsU5} below 5`} testid="summary-veg" />
                 <Row label="Total Participants" value={String(totalParticipants)} testid="summary-total-participants" />
                 <Row label="Contests" value={joinContests && contests.length ? contests.join(", ") : "—"} testid="summary-contests" />
                 <Row label="Games" value={joinGames && games.length ? games.join(", ") : "—"} testid="summary-games" />
