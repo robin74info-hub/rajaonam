@@ -62,9 +62,9 @@ export default function BookingPanel({ event, onBooked }) {
   return (
     <aside
       data-testid="booking-panel"
-      className="w-full lg:sticky lg:top-8 rounded-2xl border border-[#E4D6BC] bg-white/85 backdrop-blur-xl shadow-[0_25px_60px_rgba(201,162,39,0.18)] overflow-hidden"
+      className="w-full lg:sticky lg:top-8 rounded-2xl border border-[#D8C7A5] bg-[#F1E3C6]/90 backdrop-blur-xl shadow-[0_25px_60px_rgba(138,106,42,0.28)] overflow-hidden"
     >
-      <div className="flex items-center gap-3 px-7 pt-7 pb-5 border-b border-[#E4D6BC] bg-[#F5EBD8]/60">
+      <div className="flex items-center gap-3 px-7 pt-7 pb-5 border-b border-[#D8C7A5] bg-[#E7D3AC]/70">
         <span className="w-10 h-10 rounded-full bg-leaf/10 border border-leaf/25 flex items-center justify-center">
           <Flower2 className="w-5 h-5 text-leaf animate-bloom" />
         </span>
@@ -94,7 +94,7 @@ export default function BookingPanel({ event, onBooked }) {
                 <p className="text-xs tracking-[0.25em] uppercase text-maroon mb-2">Payment Successful</p>
                 <h3 className="font-serif text-3xl text-ink leading-tight">Your banana leaf is reserved.</h3>
               </div>
-              <div className="w-full border border-[#E4D6BC] rounded-xl p-5 space-y-3 bg-[#FFFBF2]">
+              <div className="w-full border border-[#D8C7A5] rounded-xl p-5 space-y-3 bg-[#FFFBF2]/80">
                 <Row label="Booking Ref" value={booking.reference} testid="confirmation-reference" mono />
                 <Row label="Name" value={booking.name} testid="confirmation-name" />
                 <Row label="Slot" value={`${booking.slot_label} · ${booking.slot_time}`} testid="confirmation-slot" />
@@ -135,7 +135,7 @@ export default function BookingPanel({ event, onBooked }) {
                       className={`w-full flex items-center justify-between border rounded-full px-5 py-3.5 transition-colors cursor-pointer ${
                         slotId === s.id
                           ? "bg-leaf border-leaf text-cream"
-                          : "border-[#D8C7A5] text-ink hover:border-leaf bg-white"
+                          : "border-[#D8C7A5] text-ink hover:border-leaf bg-[#FFFBF2]/70"
                       }`}
                     >
                       <span className="text-sm font-semibold">{s.label}</span>
@@ -148,7 +148,7 @@ export default function BookingPanel({ event, onBooked }) {
 
               <div>
                 <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon mb-3">Number of People</p>
-                <div className="flex items-center justify-between border border-[#D8C7A5] rounded-full px-2 py-2 bg-white">
+                <div className="flex items-center justify-between border border-[#D8C7A5] rounded-full px-2 py-2 bg-[#FFFBF2]/70">
                   <button
                     type="button"
                     data-testid="guest-decrement-btn"

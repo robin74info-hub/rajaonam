@@ -30,8 +30,8 @@ export default function Hero({ event, onBooked }) {
           className="w-full h-[115%] object-cover"
           style={{ objectPosition: "center top" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#FFFBF2]/85 via-[#FFFBF2]/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#FFFBF2] via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#FFFBF2]/55 via-[#FFFBF2]/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#FFFBF2]/90 via-transparent to-transparent" />
       </motion.div>
 
       <div className="relative z-10 px-6 sm:px-12 xl:px-20 py-14 grid gap-12 lg:grid-cols-[1fr_400px] items-center min-h-[95vh]">
