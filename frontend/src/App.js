@@ -6,6 +6,7 @@ import BookingPanel from "@/components/BookingPanel";
 import Hero from "@/components/Hero";
 import Manifesto from "@/components/Manifesto";
 import Marquee from "@/components/Marquee";
+import Organiser from "@/components/Organiser";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -32,21 +33,19 @@ function App() {
 
   return (
     <div className="App" data-testid="app-root">
-      <div className="grain-overlay" aria-hidden="true" />
-      <div className="flex flex-col lg:flex-row">
+      <Hero event={event} />
+      <Marquee />
+      <main className="px-6 sm:px-12 xl:px-20 py-16 sm:py-24 grid gap-14 lg:grid-cols-[1fr_400px] items-start" data-testid="event-content">
+        <Manifesto />
         <BookingPanel event={event} onBooked={fetchEvent} />
-        <main className="w-full lg:w-[65%] lg:ml-[35%]" data-testid="event-content">
-          <Hero event={event} />
-          <Marquee />
-          <Manifesto />
-          <footer className="border-t border-white/10 px-8 sm:px-14 py-10 flex flex-col sm:flex-row justify-between gap-4">
-            <p className="font-serif text-2xl text-bone">Ember <span className="text-flame">&</span> Oak</p>
-            <p className="text-xs tracking-[0.2em] uppercase text-ash" data-testid="footer-note">
-              14 – 16 August 2026 · Riverside District
-            </p>
-          </footer>
-        </main>
-      </div>
+      </main>
+      <Organiser />
+      <footer className="border-t border-[#E4D6BC] px-8 sm:px-14 py-10 flex flex-col sm:flex-row justify-between gap-4 bg-[#F5EBD8]/60">
+        <p className="font-serif text-2xl text-ink">Rajao<span className="text-leaf">Nam</span></p>
+        <p className="text-xs tracking-[0.2em] uppercase text-ash" data-testid="footer-note">
+          26 August 2026 · Kottara Tharavadu Lawns, Kochi
+        </p>
+      </footer>
     </div>
   );
 }

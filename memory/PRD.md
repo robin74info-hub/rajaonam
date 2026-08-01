@@ -33,6 +33,15 @@
 - Slot capacity enforcement (409 when over capacity), seat counts decrement on booking
 - Mobile responsive stacked layout
 
+## Redesign v2 (2026-08-01) — RajaoNam / Oru Kottara Sadhya 2026
+- Rebranded to Onam theme per user: LIGHT floral theme (cream #FFFBF2, pookalam SVG pattern bg, leaf-green/gold/maroon palette)
+- User-provided assets in /app/frontend/public/assets/: onam-hero.png (hero banner), logo.webp (transparent logo, organiser section)
+- New layout: full-width hero banner → marquee → grid (event details left, booking unit RIGHT, sticky) → organiser section with logo → footer
+- Slots changed to: Onam Sadhya Slot 1 (12:00–1:00 PM), Onam Sadhya Slot 2 (1:30–2:30 PM); seat counts removed from UI
+- Event details: The Invitation + 3 chapters (Legend of Mahabali, Grand Sadhya, Festivities) using crops of hero image + sadhya seatings card
+- Organiser: Kottara Cultural Collective (placeholder contact: +91 98470 00000, hello@rajaonam.in) with logo
+- Booking flow re-verified end-to-end (ref EO-HESFCZ, 3 guests, ₹4,497)
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

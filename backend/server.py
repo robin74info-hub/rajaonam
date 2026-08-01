@@ -22,18 +22,17 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 EVENT = {
-    "id": "ember-oak-2026",
-    "name": "Ember & Oak",
-    "tagline": "A Fire-Lit Food & Culture Festival",
-    "edition": "3rd Edition",
-    "date": "14 – 16 August 2026",
-    "venue": "The Old Ironworks Grounds, Riverside District",
+    "id": "rajaonam-2026",
+    "name": "RajaoNam",
+    "tagline": "Oru Kottara Sadhya 2026",
+    "edition": "Grand Onam Celebration",
+    "date": "Wednesday, 26 August 2026",
+    "venue": "The Kottara Tharavadu Lawns, Kochi, Kerala",
     "price_per_person": 1499,
     "currency_symbol": "₹",
     "slots": [
-        {"id": "golden-hour", "label": "Golden Hour Feast", "time": "5:00 PM – 7:00 PM", "capacity": 120},
-        {"id": "ember-service", "label": "The Ember Service", "time": "7:30 PM – 9:30 PM", "capacity": 150},
-        {"id": "midnight-tasting", "label": "Midnight Tasting", "time": "10:00 PM – 12:00 AM", "capacity": 80},
+        {"id": "sadhya-slot-1", "label": "Onam Sadhya Slot 1", "time": "12:00 PM – 1:00 PM", "capacity": 250},
+        {"id": "sadhya-slot-2", "label": "Onam Sadhya Slot 2", "time": "1:30 PM – 2:30 PM", "capacity": 250},
     ],
 }
 
@@ -48,7 +47,7 @@ class BookingCreate(BaseModel):
 
 @api_router.get("/")
 async def root():
-    return {"message": "Ember & Oak API"}
+    return {"message": "RajaoNam API"}
 
 
 @api_router.get("/event")

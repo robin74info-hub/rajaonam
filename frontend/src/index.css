@@ -6,52 +6,54 @@
 
 @layer base {
     :root {
-        --background: 0 0% 4%;
-        --foreground: 40 30% 97%;
-        --card: 0 0% 7%;
-        --card-foreground: 40 30% 97%;
-        --popover: 0 0% 7%;
-        --popover-foreground: 40 30% 97%;
-        --primary: 22 100% 50%;
-        --primary-foreground: 0 0% 100%;
-        --secondary: 0 0% 10%;
-        --secondary-foreground: 40 30% 97%;
-        --muted: 0 0% 12%;
-        --muted-foreground: 30 6% 62%;
-        --accent: 41 100% 56%;
-        --accent-foreground: 0 0% 4%;
-        --destructive: 0 84.2% 60.2%;
+        --background: 42 100% 97%;
+        --foreground: 30 30% 13%;
+        --card: 0 0% 100%;
+        --card-foreground: 30 30% 13%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 30 30% 13%;
+        --primary: 155 56% 27%;
+        --primary-foreground: 42 100% 97%;
+        --secondary: 42 60% 92%;
+        --secondary-foreground: 30 30% 13%;
+        --muted: 42 40% 90%;
+        --muted-foreground: 32 15% 42%;
+        --accent: 45 55% 48%;
+        --accent-foreground: 42 100% 97%;
+        --destructive: 8 68% 33%;
         --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 100% / 0.1;
-        --input: 0 0% 100% / 0.2;
-        --ring: 22 100% 50%;
-        --radius: 0.5rem;
+        --border: 35 30% 80%;
+        --input: 35 30% 75%;
+        --ring: 155 56% 27%;
+        --radius: 0.75rem;
     }
 }
 
 @layer base {
     * {
-        @apply border-white/10;
+        @apply border-[#E4D6BC];
     }
     html {
-        background-color: #0a0a0a;
+        background-color: #fffbf2;
     }
     body {
-        @apply bg-[#0A0A0A] text-[#FDFBF7] font-sans antialiased;
+        @apply text-[#2B2118] font-sans antialiased;
+        background-color: #fffbf2;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='none' stroke='%23C9A227' stroke-opacity='0.14' stroke-width='1.2'%3E%3Ccircle cx='90' cy='90' r='7'/%3E%3Cellipse cx='90' cy='58' rx='11' ry='24'/%3E%3Cellipse cx='90' cy='122' rx='11' ry='24'/%3E%3Cellipse cx='58' cy='90' rx='24' ry='11'/%3E%3Cellipse cx='122' cy='90' rx='24' ry='11'/%3E%3Cellipse cx='68' cy='68' rx='9' ry='18' transform='rotate(-45 68 68)'/%3E%3Cellipse cx='112' cy='112' rx='9' ry='18' transform='rotate(-45 112 112)'/%3E%3Cellipse cx='112' cy='68' rx='9' ry='18' transform='rotate(45 112 68)'/%3E%3Cellipse cx='68' cy='112' rx='9' ry='18' transform='rotate(45 68 112)'/%3E%3C/g%3E%3Ccircle cx='90' cy='90' r='3' fill='%238A2A1B' fill-opacity='0.12'/%3E%3C/svg%3E");
         -moz-osx-font-smoothing: grayscale;
     }
     ::selection {
-        background: #ff5a00;
-        color: #fff;
+        background: #1e6b4a;
+        color: #fffbf2;
     }
     ::-webkit-scrollbar {
         width: 10px;
     }
     ::-webkit-scrollbar-track {
-        background: #0a0a0a;
+        background: #fffbf2;
     }
     ::-webkit-scrollbar-thumb {
-        background: #2a2a2a;
+        background: #d9c9a8;
         border-radius: 8px;
     }
 }
@@ -78,15 +80,6 @@
     }
 }
 
-.grain-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 60;
-    pointer-events: none;
-    opacity: 0.055;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
 @keyframes marquee-drift {
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
@@ -95,14 +88,14 @@
     animation: marquee-drift 46s linear infinite;
 }
 
-@keyframes ember-pulse {
-    0%, 100% { opacity: 0.5; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.15); }
+@keyframes bloom-pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.12); }
 }
-.animate-ember {
-    animation: ember-pulse 2.4s ease-in-out infinite;
+.animate-bloom {
+    animation: bloom-pulse 2.6s ease-in-out infinite;
 }
 
 .underline-input {
-    @apply w-full bg-transparent border-0 border-b border-white/20 rounded-none px-0 py-3 text-[#FDFBF7] placeholder:text-white/25 focus:outline-none focus:border-[#FF5A00] transition-colors;
+    @apply w-full bg-transparent border-0 border-b border-[#D8C7A5] rounded-none px-0 py-3 text-[#2B2118] placeholder:text-[#2B2118]/30 focus:outline-none focus:border-[#1E6B4A] transition-colors;
 }
