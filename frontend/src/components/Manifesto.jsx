@@ -43,9 +43,9 @@ const CHAPTERS = [
     icon: Gamepad2,
     title: "Traditional Onam Games",
     body: "No Onam celebration is complete without its beloved traditional games. Relive childhood joy with the bun eating race, Sundarikku Pottu Thodal, the sack race, lemon & spoon race, a spirited Vadam Vali (tug of war), Uriyadi — the traditional pot-breaking game — and a lot more, making for moments of joy, nostalgia and playful rivalry throughout the evening.",
-    img: "/assets/onam-hero.png",
-    position: "50% 90%",
-    alt: "Traditional Onam games in the palace grounds",
+    img: "/assets/chapter5.jpg",
+    position: "50% 45%",
+    alt: "Guests playing the ring throw game on the palace lawns",
   },
   {
     num: "06",
