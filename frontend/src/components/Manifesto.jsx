@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Leaf, Utensils, Flower2 } from "lucide-react";
+import { Utensils, Flower2, Sailboat } from "lucide-react";
 
 const CHAPTERS = [
   {
@@ -15,16 +15,18 @@ const CHAPTERS = [
     icon: Utensils,
     title: "The Grand Sadhya",
     body: "Over twenty-six dishes served on fresh banana leaf — avial, olan, thoran, erissery, pachadi, inji puli, and not one but three payasams. Eaten seated together, with the hand, in the old way. Every recipe from the Kottara family kitchen.",
-    position: "50% 92%",
-    alt: "A vibrant pookalam floral carpet",
+    img: "/assets/sadhya.png",
+    position: "50% 45%",
+    alt: "King Mahabali serving the grand Onam sadhya on banana leaves",
   },
   {
     num: "03",
-    icon: Leaf,
-    title: "The Festivities",
-    body: "Pookalam competitions at dawn, thiruvathirakali in the courtyard, pulikali through the streets and the snake boats thundering on the backwaters. The sadhya is the heart of it — the feast everything else gathers around.",
-    position: "12% 35%",
-    alt: "The traditional Kottara tharavadu homestead",
+    icon: Sailboat,
+    title: "House Boat",
+    body: "Step aboard a garland-draped kettuvallam and glide across the Bolgatty backwaters just as King Mahabali does — umbrella in hand, blessing the shores. Four sailings drift through the afternoon; reserve your seats in the booking form above.",
+    img: "/assets/houseboat.png",
+    position: "50% 40%",
+    alt: "King Mahabali seated on a decorated houseboat on the Kerala backwaters",
   },
 ];
 
@@ -69,7 +71,7 @@ export default function Manifesto() {
               className={`overflow-hidden rounded-xl border border-[#E4D6BC] shadow-[0_20px_50px_rgba(201,162,39,0.15)] ${idx % 2 === 1 ? "lg:order-1" : ""}`}
             >
               <img
-                src="/assets/onam-hero.png"
+                src={c.img || "/assets/onam-hero.png"}
                 alt={c.alt}
                 loading="lazy"
                 className="w-full h-[260px] sm:h-[320px] object-cover hover:scale-105 transition-transform duration-700"
