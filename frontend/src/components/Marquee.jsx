@@ -1,4 +1,4 @@
-const ITEMS = ["Onam Sadhya", "Pookalam", "Vallam Kali", "Pulikali", "Thiruvathirakali", "Mahabali's Feast"];
+const ITEMS = ["Onam Sadhya", "Contest", "Games", "Boating"];
 
 export default function Marquee() {
   const row = [...ITEMS, ...ITEMS];
