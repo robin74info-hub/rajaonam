@@ -14,10 +14,10 @@ export default function Organiser() {
         <div>
           <p className="text-xs tracking-[0.3em] uppercase font-bold text-maroon mb-4">Presented By</p>
           <h2 className="font-serif text-4xl sm:text-5xl text-ink leading-tight tracking-tight mb-4">
-            Kottara Cultural Collective
+            Prime Time Events
           </h2>
           <p className="text-base text-ash leading-relaxed mb-8 max-w-md">
-            A family-led collective keeping the tharavadu traditions of central Kerala alive — one pookalam, one boat song and one grand sadhya at a time. RajyOnam is their flagship Onam gathering at Bolgatty Palace, now in its fourth year.
+            The Kochi-based event house behind RajaOnam 2026 — crafting large-scale cultural celebrations that bring Kerala's traditions alive, from the royal welcome to the grand sadhya at Bolgatty Palace.
           </p>
           <ul className="space-y-3">
             <li className="flex items-center gap-3 text-sm text-ink" data-testid="organiser-phone">

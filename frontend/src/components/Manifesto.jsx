@@ -1,32 +1,96 @@
 import { motion } from "framer-motion";
-import { Utensils, Flower2, Sailboat } from "lucide-react";
+import { Crown, Sparkles, Camera, Sailboat, Gamepad2, Trophy, Store, Coffee, Music, UtensilsCrossed } from "lucide-react";
 
 const CHAPTERS = [
   {
     num: "01",
-    icon: Flower2,
-    title: "The Legend of Mahabali",
-    body: "Onam celebrates the homecoming of King Mahabali, the beloved ruler whose reign was Kerala's golden age. For one day each year, he returns to find his people joyful, equal and well-fed — and we make sure he does.",
+    icon: Crown,
+    title: "The Legend: Mahabali",
+    body: "Every Onam, Kerala welcomes home its most beloved ruler — King Mahabali, whose reign is remembered as a golden age of peace, equality and plenty. Tradition says he returns each year to see how his people are faring. This year, we will make sure he visits Bolgatty Palace.",
+    img: "/assets/onam-hero.png",
     position: "78% 25%",
     alt: "King Mahabali with his ceremonial umbrella",
   },
   {
     num: "02",
-    icon: Utensils,
-    title: "The Grand Sadhya",
-    body: "Over twenty-six dishes served on fresh banana leaf — avial, olan, thoran, erissery, pachadi, inji puli, and not one but three payasams. Eaten seated together, with the hand, in the old way. Every recipe from the Kottara family kitchen.",
-    img: "/assets/sadhya.png",
-    position: "50% 45%",
-    alt: "King Mahabali serving the grand Onam sadhya on banana leaves",
+    icon: Sparkles,
+    title: "The Royal Welcome",
+    body: "Guests are received the way a king himself would be welcomed — by Thalapolli girls, thunderous Chenda Melam beats and vibrant Pulikali dancers. A Mahabali welcome follows, complete with red tilak and a royal paper crown, with Badanmaar, attentive bouncers and a charismatic female MC setting the tone for the evening.",
+    img: "/assets/onam-hero.png",
+    position: "50% 60%",
+    alt: "A royal Onam welcome at Bolgatty Palace",
   },
   {
     num: "03",
+    icon: Camera,
+    title: "Capture the Royalty",
+    body: "Elegant photo booths, dressed in Onam's royal splendour, are set up within the palace and along its scenic outdoor grounds. For a regal touch, an AI-powered photo booth lets guests transform themselves into a Thamburan or Thamburatti, reimagined in full royal grandeur.",
+    img: "/assets/onam-hero.png",
+    position: "20% 30%",
+    alt: "Royal Onam photo booths at the palace",
+  },
+  {
+    num: "04",
     icon: Sailboat,
-    title: "House Boat",
-    body: "Step aboard a garland-draped kettuvallam and glide across the Bolgatty backwaters just as King Mahabali does — umbrella in hand, blessing the shores. Four sailings drift through the afternoon; reserve your seats in the booking form above.",
+    title: "Activities & Leisure",
+    body: "The festivities extend beyond the feast — guests can enjoy the classic ring throw, balloon shooting and playful face painting, set sail on a serene boating excursion along the tranquil waters surrounding Bolgatty Palace, and a lot more surprise elements.",
     img: "/assets/houseboat.png",
     position: "50% 40%",
-    alt: "King Mahabali seated on a decorated houseboat on the Kerala backwaters",
+    alt: "Houseboat on the Bolgatty backwaters",
+  },
+  {
+    num: "05",
+    icon: Gamepad2,
+    title: "Traditional Onam Games",
+    body: "No Onam celebration is complete without its beloved traditional games. Relive childhood joy with the bun eating race, Sundarikku Pottu Thodal, the sack race, lemon & spoon race, a spirited Vadam Vali (tug of war), Uriyadi — the traditional pot-breaking game — and a lot more, making for moments of joy, nostalgia and playful rivalry throughout the evening.",
+    img: "/assets/onam-hero.png",
+    position: "50% 90%",
+    alt: "Traditional Onam games in the palace grounds",
+  },
+  {
+    num: "06",
+    icon: Trophy,
+    title: "Onam Contests",
+    body: "The celebrations take on a regal flair with a lineup of traditional contests befitting the grandeur of Onam. Malayali Manga and Malayali Sreeman crown Kerala's quintessential son and daughter, while Best Couple Dress and Best Kids Dress honour the finest traditional finery on display.",
+    img: "/assets/onam-hero.png",
+    position: "80% 60%",
+    alt: "Onam contest winners in traditional attire",
+  },
+  {
+    num: "07",
+    icon: Store,
+    title: "Onam Chandha: The Traditional Bazaar",
+    body: "A charming Onam Chandha is set up, recreating the vintage vibes of Kerala's traditional marketplaces. Wander through quaint stalls offering Onam-inspired clothing, bangles and traditional trinkets — each piece steeped in nostalgia, bringing a slice of old-world Kerala charm to the celebrations.",
+    img: "/assets/onam-hero.png",
+    position: "30% 70%",
+    alt: "The traditional Onam bazaar stalls",
+  },
+  {
+    num: "08",
+    icon: Coffee,
+    title: "Live Counters & Vintage Delights",
+    body: "Enjoy live counters featuring beer and wine, freshly made banana chips, live achappam making, and a vintage-style tea shop serving piping hot tea with old-world Kerala charm.",
+    img: "/assets/sadhya.png",
+    position: "50% 80%",
+    alt: "Live food counters and vintage tea shop",
+  },
+  {
+    num: "09",
+    icon: Music,
+    title: "Nadan Vibes with Unarth",
+    body: "The evening comes alive with soulful performances by Unarth, a folk band that brings the raw, rustic charm of Nadan Paattu to the celebrations — filling the air with rhythms rooted deep in Kerala's rural traditions.",
+    img: "/assets/onam-hero.png",
+    position: "60% 40%",
+    alt: "Folk band Unarth performing Nadan Paattu",
+  },
+  {
+    num: "10",
+    icon: UtensilsCrossed,
+    title: "The Grand Sadhya",
+    body: "A royal Kerala Sadhya served on the traditional banana leaf. Choose between an indulgent Seafood Sadhya or a classic Sadhya — each a celebration of authentic flavours and time-honoured recipes passed down through generations.",
+    img: "/assets/sadhya.png",
+    position: "50% 45%",
+    alt: "King Mahabali serving the grand Onam sadhya on banana leaves",
   },
 ];
 
@@ -43,10 +107,10 @@ export default function Manifesto() {
       <motion.div {...reveal}>
         <p className="text-xs tracking-[0.3em] uppercase font-bold text-maroon mb-4">The Invitation</p>
         <h2 className="font-serif text-4xl sm:text-5xl text-ink leading-tight tracking-tight max-w-xl">
-          One leaf. Twenty-six dishes. A king's welcome.
+          One leaf. Twenty-six dishes. A royal welcome.
         </h2>
         <p className="text-base sm:text-lg text-ash leading-relaxed max-w-xl mt-5">
-          RajyOnam 2026's Oru Kottara Sadhya is a single grand seating of Kerala's greatest feast, served in the historic riverside lawns of Bolgatty Palace. Choose your experiences below — the leaf, the feast and the festivities await.
+          RajaOnam 2026 Oru Kottara Sadhya — an exclusive one-time seating celebrating Kerala's grandest feast, set against the timeless charm of Bolgatty Palace riverside lawns. Explore the experiences below and celebrate the grandeur of RajaOnam.
         </p>
       </motion.div>
 
@@ -55,7 +119,7 @@ export default function Manifesto() {
           <span aria-hidden="true" className="absolute -top-14 -left-2 font-serif text-[8rem] sm:text-[11rem] leading-none text-gold/10 select-none pointer-events-none">
             {c.num}
           </span>
-          <div className={`relative grid gap-8 lg:gap-12 items-center lg:grid-cols-2`}>
+          <div className="relative grid gap-8 lg:gap-12 items-center lg:grid-cols-2">
             <div className={idx % 2 === 1 ? "lg:order-2" : ""}>
               <p className="text-xs tracking-[0.3em] uppercase font-bold text-leaf mb-3 flex items-center gap-2">
                 <c.icon className="w-4 h-4" /> Chapter {c.num}
@@ -71,7 +135,7 @@ export default function Manifesto() {
               className={`overflow-hidden rounded-xl border border-[#E4D6BC] shadow-[0_20px_50px_rgba(201,162,39,0.15)] ${idx % 2 === 1 ? "lg:order-1" : ""}`}
             >
               <img
-                src={c.img || "/assets/onam-hero.png"}
+                src={c.img}
                 alt={c.alt}
                 loading="lazy"
                 className="w-full h-[260px] sm:h-[320px] object-cover hover:scale-105 transition-transform duration-700"

@@ -80,6 +80,13 @@
 - Backend fields: sea_price_adult/sea_price_kid/veg_price_adult/veg_price_kid
 - Verified: EO-0A0X26 (2 sea A + 1 sea K + 1 veg A + 1 veg K = ₹10,995)
 
+## Chapters v8 (2026-08-01) — per "RAJA ONAM -2026.pdf"
+- 10 chapters below The Invitation, same numbered format: 01 The Legend: Mahabali, 02 The Royal Welcome, 03 Capture the Royalty, 04 Activities & Leisure, 05 Traditional Onam Games, 06 Onam Contests, 07 Onam Chandha, 08 Live Counters & Vintage Delights, 09 Nadan Vibes with Unarth, 10 The Grand Sadhya
+- Invitation text updated to PDF copy ("One leaf. Twenty-six dishes. A royal welcome.")
+- Organiser renamed to Prime Time Events (from PDF); contact details still placeholders
+- Chapter images are PLACEHOLDERS (existing assets) — user will supply real images later
+- Brochure floating button: "Raja Onam Events Brochure" → downloads /assets/raja-onam-brochure.pdf
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking
