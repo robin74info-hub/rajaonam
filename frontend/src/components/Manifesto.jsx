@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Clock, Leaf, Utensils, Flower2 } from "lucide-react";
+import { Leaf, Utensils, Flower2 } from "lucide-react";
 
 const CHAPTERS = [
   {
@@ -44,7 +44,7 @@ export default function Manifesto() {
           One leaf. Twenty-six dishes. A king's welcome.
         </h2>
         <p className="text-base sm:text-lg text-ash leading-relaxed max-w-xl mt-5">
-          RajaoNam's Oru Kottara Sadhya is a single grand seating of Kerala's greatest feast, served in the courtyard of a two-hundred-year-old tharavadu. Choose your hour below — the leaf, the feast and the festivities await.
+          RajyOnam 2026's Oru Kottara Sadhya is a single grand seating of Kerala's greatest feast, served in the historic riverside lawns of Bolgatty Palace. Choose your experiences below — the leaf, the feast and the festivities await.
         </p>
       </motion.div>
 
@@ -79,22 +79,6 @@ export default function Manifesto() {
           </div>
         </motion.article>
       ))}
-
-      <motion.div {...reveal} className="rounded-xl border border-[#E4D6BC] bg-white/70 backdrop-blur p-7" data-testid="chapter-slots">
-        <p className="text-xs tracking-[0.3em] uppercase font-bold text-maroon mb-5 flex items-center gap-2">
-          <Clock className="w-4 h-4" /> Sadhya Seatings
-        </p>
-        <ul className="space-y-3">
-          <li className="flex items-center justify-between border-b border-[#E4D6BC] pb-3">
-            <span className="text-ink text-sm font-semibold">Onam Sadhya Slot 1</span>
-            <span className="text-ash text-sm">12:00 PM – 1:00 PM</span>
-          </li>
-          <li className="flex items-center justify-between">
-            <span className="text-ink text-sm font-semibold">Onam Sadhya Slot 2</span>
-            <span className="text-ash text-sm">1:30 PM – 2:30 PM</span>
-          </li>
-        </ul>
-      </motion.div>
     </div>
   );
 }

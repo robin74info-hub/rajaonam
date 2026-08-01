@@ -78,7 +78,7 @@ export default function Hero({ event }) {
 
         <Line delay={0.6}>
           <span className="block max-w-md text-base sm:text-lg text-ink font-medium leading-relaxed mt-6">
-            King Mahabali returns to Kerala — and the Kottara tharavadu lays out its grandest sea food sadhya. Two seatings. One unforgettable afternoon.
+            King Mahabali returns to Kerala — and Bolgatty Palace lays out its grandest sea food sadhya. One unforgettable afternoon.
           </span>
         </Line>
 
@@ -89,10 +89,10 @@ export default function Hero({ event }) {
           className="flex flex-wrap items-center gap-x-8 gap-y-4 mt-8"
         >
           <span className="flex items-center gap-2.5 text-sm font-semibold text-ink" data-testid="hero-date">
-            <CalendarDays className="w-4 h-4 text-leaf" /> {event?.date || "Wednesday, 26 August 2026"}
+            <CalendarDays className="w-4 h-4 text-leaf" /> {event?.date || "26 August 2026"} · {event?.time || "11:00 AM – 5:00 PM"}
           </span>
           <span className="flex items-center gap-2.5 text-sm font-semibold text-ink" data-testid="hero-venue">
-            <MapPin className="w-4 h-4 text-leaf" /> {event?.venue || "The Kottara Tharavadu Lawns, Kochi"}
+            <MapPin className="w-4 h-4 text-leaf" /> {event?.venue || "Bolgatty Palace, Kochi"}
           </span>
           <button
             data-testid="hero-booking-details-btn"

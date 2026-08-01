@@ -17,7 +17,7 @@ export default function Organiser() {
             Kottara Cultural Collective
           </h2>
           <p className="text-base text-ash leading-relaxed mb-8 max-w-md">
-            A family-led collective keeping the tharavadu traditions of central Kerala alive — one pookalam, one boat song and one grand sadhya at a time. RajaoNam is their flagship Onam gathering, now in its fourth year.
+            A family-led collective keeping the tharavadu traditions of central Kerala alive — one pookalam, one boat song and one grand sadhya at a time. RajyOnam is their flagship Onam gathering at Bolgatty Palace, now in its fourth year.
           </p>
           <ul className="space-y-3">
             <li className="flex items-center gap-3 text-sm text-ink" data-testid="organiser-phone">
@@ -27,7 +27,7 @@ export default function Organiser() {
               <Mail className="w-4 h-4 text-leaf shrink-0" /> hello@rajaonam.in
             </li>
             <li className="flex items-center gap-3 text-sm text-ink" data-testid="organiser-venue">
-              <MapPin className="w-4 h-4 text-leaf shrink-0" /> The Kottara Tharavadu Lawns, Kochi, Kerala
+              <MapPin className="w-4 h-4 text-leaf shrink-0" /> Bolgatty Palace, Kochi, Kerala
             </li>
           </ul>
         </div>

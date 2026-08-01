@@ -61,6 +61,12 @@
 - Verified: EO-PU27TY (2A+1K+1U5, Best Couple, Uriyadi, boating 2:30–3:30, ₹3,747)
 - NOT built yet (docx phase 2): QR code per ticket, PDF ticket download, email/WhatsApp confirmations, venue QR scanning, real payment gateway (UPI/cards/netbanking/wallets)
 
+## Updates v5 (2026-08-01)
+- Sadhya Slot 1/2 REMOVED per user (backend slots, form pills, manifesto seatings card, capacity logic all gone)
+- Form made full-width on desktop (was max-w-2xl)
+- Real event details applied: RajyOnam 2026 · Bolgatty Palace, Kochi · 26 August 2026 · 11:00 AM – 5:00 PM (hero, footer, organiser, copy)
+- Bug fixed: leftover slot_id reference broke payment ("slotId is not defined") — removed; re-verified EO-QC6GCR (2A+1K, boating 3:30–4:30, ₹3,747)
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

@@ -24,18 +24,15 @@ api_router = APIRouter(prefix="/api")
 
 EVENT = {
     "id": "rajaonam-2026",
-    "name": "RajaoNam",
+    "name": "RajyOnam 2026",
     "tagline": "Oru Kottara Sadhya 2026",
     "edition": "Grand Onam Celebration",
-    "date": "Wednesday, 26 August 2026",
-    "venue": "The Kottara Tharavadu Lawns, Kochi, Kerala",
+    "date": "26 August 2026",
+    "time": "11:00 AM – 5:00 PM",
+    "venue": "Bolgatty Palace, Kochi",
     "price_adult": 1499,
     "price_kid": 749,
     "currency_symbol": "₹",
-    "slots": [
-        {"id": "sadhya-slot-1", "label": "Onam Sadhya Slot 1", "time": "12:00 PM – 1:00 PM", "capacity": 250},
-        {"id": "sadhya-slot-2", "label": "Onam Sadhya Slot 2", "time": "1:30 PM – 2:30 PM", "capacity": 250},
-    ],
     "contests": ["Malayali Manka", "Sreeman", "Kids Contest", "Best Couple"],
     "games": ["Uriyadi", "Vadamvali (Tug of War)", "Sack Race", "Bun Eating Competition", "Sundarikku Pottu Thodal", "Lemon & Spoon Race"],
     "boating_slots": ["12:00 PM – 1:00 PM", "2:30 PM – 3:30 PM", "3:30 PM – 4:30 PM", "4:30 PM – 5:30 PM"],
@@ -46,7 +43,6 @@ class BookingCreate(BaseModel):
     name: str = Field(min_length=2, max_length=80)
     phone: str = Field(min_length=7, max_length=20)
     email: EmailStr
-    slot_id: str
     adults: int = Field(ge=1, le=30)
     kids_5_12: int = Field(ge=0, le=30, default=0)
     kids_below_5: int = Field(ge=0, le=30, default=0)
@@ -64,19 +60,11 @@ async def root():
 
 @api_router.get("/event")
 async def get_event():
-    slots = []
-    for s in EVENT["slots"]:
-        booked = await db.bookings.count_documents({"slot_id": s["id"], "status": "confirmed"})
-        slots.append({**s, "remaining": max(0, s["capacity"] - booked)})
-    return {**EVENT, "slots": slots}
+    return EVENT
 
 
 @api_router.post("/bookings")
 async def create_booking(input: BookingCreate):
-    slot = next((s for s in EVENT["slots"] if s["id"] == input.slot_id), None)
-    if not slot:
-        raise HTTPException(status_code=404, detail="Sadhya slot not found")
-
     if input.boating:
         if not input.boating_slot or input.boating_slot not in EVENT["boating_slots"]:
             raise HTTPException(status_code=400, detail="Choose a valid boating time slot")
@@ -84,11 +72,6 @@ async def create_booking(input: BookingCreate):
             raise HTTPException(status_code=400, detail="Boating needs at least 1 person")
 
     total_participants = input.adults + input.kids_5_12 + input.kids_below_5
-    booked = await db.bookings.count_documents({"slot_id": slot["id"], "status": "confirmed"})
-    remaining = slot["capacity"] - booked
-    if total_participants > remaining:
-        raise HTTPException(status_code=409, detail=f"Only {max(0, remaining)} seats left in this slot")
-
     total = input.adults * EVENT["price_adult"] + input.kids_5_12 * EVENT["price_kid"]
     reference = "EO-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
     doc = {
@@ -97,9 +80,6 @@ async def create_booking(input: BookingCreate):
         "name": input.name,
         "phone": input.phone,
         "email": input.email,
-        "slot_id": slot["id"],
-        "slot_label": slot["label"],
-        "slot_time": slot["time"],
         "adults": input.adults,
         "kids_5_12": input.kids_5_12,
         "kids_below_5": input.kids_below_5,

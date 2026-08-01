@@ -34,8 +34,8 @@ function App() {
   return (
     <div className="App" data-testid="app-root">
       <Hero event={event} />
-      <section id="booking-section" className="px-4 sm:px-12 py-16 sm:py-24" data-testid="booking-section">
-        <div className="max-w-2xl mx-auto">
+      <section id="booking-section" className="px-4 sm:px-12 xl:px-20 py-16 sm:py-24" data-testid="booking-section">
+        <div className="w-full">
           <BookingPanel event={event} onBooked={fetchEvent} />
         </div>
       </section>
@@ -45,9 +45,9 @@ function App() {
       </main>
       <Organiser />
       <footer className="border-t border-[#E4D6BC] px-8 sm:px-14 py-10 flex flex-col sm:flex-row justify-between gap-4 bg-[#F5EBD8]/60">
-        <p className="font-serif text-2xl text-ink">Rajao<span className="text-leaf">Nam</span></p>
+        <p className="font-serif text-2xl text-ink">Rajy<span className="text-leaf">Onam</span></p>
         <p className="text-xs tracking-[0.2em] uppercase text-ash" data-testid="footer-note">
-          26 August 2026 · Kottara Tharavadu Lawns, Kochi
+          26 August 2026 · 11 AM – 5 PM · Bolgatty Palace, Kochi
         </p>
       </footer>
     </div>

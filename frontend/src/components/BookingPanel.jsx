@@ -85,7 +85,6 @@ const PillSelect = ({ options, selected, onToggle, id }) => (
 
 export default function BookingPanel({ event, onBooked }) {
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
-  const [slotId, setSlotId] = useState(null);
   const [adults, setAdults] = useState(2);
   const [kids512, setKids512] = useState(0);
   const [kidsU5, setKidsU5] = useState(0);
@@ -114,7 +113,6 @@ export default function BookingPanel({ event, onBooked }) {
     if (form.name.trim().length < 2) e.name = "Enter your full name";
     if (!/^[+\d][\d\s-]{6,14}$/.test(form.phone.trim())) e.phone = "Enter a valid WhatsApp number";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = "Enter a valid email";
-    if (!slotId) e.slot = "Choose a sadhya slot";
     if (adults < 1) e.adults = "At least 1 adult required";
     if (boating === true && !boatSlot) e.boating = "Choose a boating time slot";
     setErrors(e);
@@ -129,7 +127,6 @@ export default function BookingPanel({ event, onBooked }) {
         name: form.name.trim(),
         phone: form.phone.trim(),
         email: form.email.trim(),
-        slot_id: slotId,
         adults,
         kids_5_12: kids512,
         kids_below_5: kidsU5,
@@ -148,7 +145,8 @@ export default function BookingPanel({ event, onBooked }) {
       onBooked?.();
     } catch (err) {
       setPhase("idle");
-      setErrors({ slot: err.response?.data?.detail || "Payment failed — try again" });
+      const detail = err.response?.data?.detail;
+      setErrors({ form: typeof detail === "string" ? detail : "Payment failed — try again" });
     }
   };
 
@@ -156,7 +154,6 @@ export default function BookingPanel({ event, onBooked }) {
     setBooking(null);
     setPhase("idle");
     setForm({ name: "", phone: "", email: "" });
-    setSlotId(null);
     setAdults(2);
     setKids512(0);
     setKidsU5(0);
@@ -213,7 +210,6 @@ export default function BookingPanel({ event, onBooked }) {
               <div className="w-full border border-[#D8C7A5] rounded-xl p-5 space-y-3 bg-[#FFFBF2]/80">
                 <Row label="Booking ID" value={booking.reference} testid="confirmation-reference" mono />
                 <Row label="Name" value={booking.name} testid="confirmation-name" />
-                <Row label="Sadhya Slot" value={`${booking.slot_label} · ${booking.slot_time}`} testid="confirmation-slot" />
                 <Row label="Participants" value={`${booking.adults} Adults · ${booking.kids_5_12} Kids (5–12) · ${booking.kids_below_5} Kids (below 5)`} testid="confirmation-participants" />
                 {booking.contests?.length > 0 && <Row label="Contests" value={booking.contests.join(", ")} testid="confirmation-contests" />}
                 {booking.games?.length > 0 && <Row label="Games" value={booking.games.join(", ")} testid="confirmation-games" />}
@@ -257,28 +253,7 @@ export default function BookingPanel({ event, onBooked }) {
               </section>
 
               <section>
-                <SectionTitle n="02" label="Sea Food Sadhya — Slot & Participants" />
-                <div className="space-y-2.5 mb-5" role="radiogroup" aria-label="Sadhya slots" data-testid="slot-group">
-                  {event?.slots?.map((s) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      role="radio"
-                      aria-selected={slotId === s.id}
-                      data-testid={`slot-pill-${s.id}`}
-                      onClick={() => { setSlotId(s.id); setErrors({ ...errors, slot: undefined }); }}
-                      className={`w-full flex items-center justify-between border rounded-full px-5 py-3.5 transition-colors cursor-pointer ${
-                        slotId === s.id
-                          ? "bg-leaf border-leaf text-cream"
-                          : "border-[#D8C7A5] text-ink hover:border-leaf bg-[#FFFBF2]/70"
-                      }`}
-                    >
-                      <span className="text-sm font-semibold">{s.label}</span>
-                      <span className={`text-xs ${slotId === s.id ? "text-cream/80" : "text-ash"}`}>{s.time}</span>
-                    </button>
-                  ))}
-                </div>
-                {errors.slot && <p className="text-xs text-maroon mb-4" data-testid="slot-error">{errors.slot}</p>}
+                <SectionTitle n="02" label="Sea Food Sadhya — Participants" />
                 <div className="space-y-2.5">
                   <Stepper label={`Adults · ${fmt(priceAdult, sym)}`} value={adults} onChange={setAdults} min={1} id="adults" />
                   <Stepper label={`Kids (5–12 Years) · ${fmt(priceKid, sym)}`} value={kids512} onChange={setKids512} id="kids-5-12" />
@@ -364,6 +339,7 @@ export default function BookingPanel({ event, onBooked }) {
                 )}
               </button>
               <p className="text-[10px] text-ash text-center tracking-wider">Demo checkout — UPI, cards, net banking & wallets coming soon</p>
+              {errors.form && <p className="text-xs text-maroon text-center" data-testid="form-error">{errors.form}</p>}
             </motion.div>
           )}
         </AnimatePresence>
