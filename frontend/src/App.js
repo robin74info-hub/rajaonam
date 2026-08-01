@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import Lenis from "lenis";
 import axios from "axios";
 import "@/App.css";
-import BookingPanel from "@/components/BookingPanel";
 import Hero from "@/components/Hero";
 import Manifesto from "@/components/Manifesto";
 import Marquee from "@/components/Marquee";
@@ -33,11 +32,10 @@ function App() {
 
   return (
     <div className="App" data-testid="app-root">
-      <Hero event={event} />
+      <Hero event={event} onBooked={fetchEvent} />
       <Marquee />
-      <main className="px-6 sm:px-12 xl:px-20 py-16 sm:py-24 grid gap-14 lg:grid-cols-[1fr_400px] items-start" data-testid="event-content">
+      <main className="px-6 sm:px-12 xl:px-20 py-16 sm:py-24 max-w-6xl mx-auto" data-testid="event-content">
         <Manifesto />
-        <BookingPanel event={event} onBooked={fetchEvent} />
       </main>
       <Organiser />
       <footer className="border-t border-[#E4D6BC] px-8 sm:px-14 py-10 flex flex-col sm:flex-row justify-between gap-4 bg-[#F5EBD8]/60">

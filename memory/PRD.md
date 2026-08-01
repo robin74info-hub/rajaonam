@@ -42,6 +42,12 @@
 - Organiser: Kottara Cultural Collective (placeholder contact: +91 98470 00000, hello@rajaonam.in) with logo
 - Booking flow re-verified end-to-end (ref EO-HESFCZ, 3 guests, ₹4,497)
 
+## Layout v3 (2026-08-01)
+- Hero banner now uses the RajaoNam logo image (replaces text title) on the left
+- Hero image repositioned (object-top) so the "Happy Onam" text in the image is fully visible lower on the banner
+- Booking unit moved INTO the hero banner, right side (grid 1fr/400px); event details + organiser below
+- Re-verified: booking ref EO-92P6S0 (Slot 1, 2 guests, ₹2,998); mobile stacks logo → details → booking
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking
