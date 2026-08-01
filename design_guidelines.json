@@ -1,0 +1,113 @@
+{
+  "theme": "dark",
+  "design_vibe": "Warm & festive combined with Dark & premium. Ember-lit food festival aesthetic with charcoal/ink backgrounds and warm saffron, amber, and flame-orange accents.",
+  "typography": {
+    "pairing_strategy": "Editorial Serif for Display + Clean Grotesk for UI/Body. Do not use generic fonts for headings.",
+    "fonts": {
+      "headings": "'Cormorant Garamond', serif",
+      "body": "'Manrope', sans-serif",
+      "numbers": "'Playfair Display', serif"
+    },
+    "hierarchy": {
+      "h1": "text-5xl sm:text-7xl lg:text-[6rem] leading-[0.9] tracking-tighter font-light",
+      "h2": "text-4xl sm:text-5xl lg:text-6xl leading-none tracking-tight",
+      "h3": "text-2xl sm:text-3xl tracking-tight",
+      "body": "text-base sm:text-lg text-[#A19D98] leading-relaxed",
+      "labels": "text-xs tracking-[0.2em] uppercase font-bold text-[#FFB01D]"
+    }
+  },
+  "colors": {
+    "background": {
+      "base": "#0A0A0A",
+      "panel": "rgba(10, 10, 10, 0.75)",
+      "surface": "#111111"
+    },
+    "text": {
+      "primary": "#FDFBF7",
+      "muted": "#A19D98",
+      "accent": "#FFB01D"
+    },
+    "accent": {
+      "flame": "#FF5A00",
+      "saffron": "#FFB01D",
+      "ember": "#D94200"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-3xl bg-[#0A0A0A]/75 border-r border-white/5",
+    "grain": "Subtle noise overlay on the background to remove digital flatness. Use an SVG filter or background-image with noise.",
+    "shadows": "Ambient glows using accent colors instead of hard drop shadows. e.g. shadow-[0_0_40px_rgba(255,90,0,0.15)]",
+    "borders": "Ultra-delicate. Use 1px solid white/10 for separators."
+  },
+  "layouts": {
+    "core_structure": "Asymmetrical Split View (Desktop). Left side: 35% width sticky booking panel. Right side: 65% width scrolling content. Mobile: Stacked, booking panel at bottom or top.",
+    "booking_panel": "Sticky rail on left (h-screen sticky top-0). Elevate using crystal glassmorphism over the dark theme. Must contain the booking form, time slots, and total price.",
+    "main_content": "Right side. Contains Kinetic Hero, Manifesto Chapters, Marquee, Image Galleries.",
+    "spacing": "Generous spacing. py-24 or py-32 for sections. gap-12 or gap-20 for bento grids."
+  },
+  "component_strategy": {
+    "booking_form": {
+      "inputs": "Floating labels or clean underline inputs (border-b border-white/20, bg-transparent, rounded-none, px-0 py-3). Focus state: border-white text-white.",
+      "time_slots": "Minimalist pills. border border-white/20 rounded-full px-6 py-2 hover:border-[#FF5A00] transition-colors aria-selected:bg-[#FF5A00] aria-selected:border-[#FF5A00] aria-selected:text-white cursor-pointer.",
+      "price_display": "Large editorial serif numbers (e.g. text-5xl font-serif text-[#FFB01D]). Dynamic update.",
+      "payment_button": "Multi-state button. Idle: Solid #FF5A00. Loading: Spinner replacing text. Success: Green/Checkmark with 'Booking Confirmed'. Full width, py-4, text-sm tracking-widest uppercase."
+    },
+    "manifesto_chapters": {
+      "structure": "Numbered sections (01, 02, 03). Huge semi-transparent serif numbers positioned absolutely behind the content.",
+      "text": "Staggered reveal on scroll. High contrast text."
+    },
+    "marquee": {
+      "library": "react-fast-marquee",
+      "style": "Slow editorial ribbon. font-serif text-3xl or 4xl. Low contrast (text-[#FFB01D]/30). Huge gaps (gap-32) between items. Text e.g., 'FIRE & SMOKE • EXCLUSIVE TASTING • CULTURAL RENAISSANCE •'"
+    }
+  },
+  "motion": {
+    "scrolling": "MUST use Lenis (@studio-freight/react-lenis) for premium momentum scrolling.",
+    "kinetic_hero": "Framer Motion line-by-line reveal. Wrap each line of h1 in an overflow-hidden div, animate the inner span from y: '100%', opacity: 0 to y: 0, opacity: 1. Stagger children by 0.1s. Easing: [0.76, 0, 0.24, 1].",
+    "parallax": "Use Framer Motion useScroll and useTransform to move hero images at a different speed than the document scroll.",
+    "scroll_reveals": "Fade up and slight Y-translate (e.g. y: 40, opacity: 0 -> y: 0, opacity: 1) on all manifesto sections as they enter viewport. duration 0.8s, ease out."
+  },
+  "image_urls": [
+    {
+      "url": "https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHwxfHxkYXJrJTIwbW9vZHklMjBjaGVmJTIwY29va2luZyUyMGZpcmV8ZW58MHx8fHwxNzg1NTYyMTIyfDA&ixlib=rb-4.1.0&q=85",
+      "category": "Hero Background / Parallax",
+      "description": "Chef cooking with fire, dark moody. Use in right-side kinetic hero behind text."
+    },
+    {
+      "url": "https://images.pexels.com/photos/17326174/pexels-photo-17326174.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "category": "Manifesto Image 1",
+      "description": "Masterful flame handling. Use in chapter 01 (The Craft)."
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1535898331935-2d274aff0fbc?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwxfHxuaWdodCUyMGZvb2QlMjBmZXN0aXZhbCUyMGxpZ2h0c3xlbnwwfHx8fDE3ODU1NjIxMjJ8MA&ixlib=rb-4.1.0&q=85",
+      "category": "Manifesto Image 2",
+      "description": "Night food festival scene. Use in chapter 02 (The Atmosphere)."
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1640607760189-dbca1b6b3291?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzV8MHwxfHNlYXJjaHwyfHxlbWJlciUyMHNwYXJrcyUyMGRhcmslMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc4NTU2MjEyMnww&ixlib=rb-4.1.0&q=85",
+      "category": "Texture / Decorative",
+      "description": "Ember sparks in the dark. Can be used as a blending background or absolute positioned accent image."
+    }
+  ],
+  "accessibility": {
+    "focus_states": "All form inputs must have high-contrast focus rings or border color changes.",
+    "aria_labels": "Ensure all decorative numbers have aria-hidden='true'. Time slot pills must use aria-selected to denote state.",
+    "color_contrast": "Ensure white text and saffron accents against #0A0A0A meet APCA guidelines (they will).",
+    "motion": "Respect prefers-reduced-motion for all Framer Motion animations."
+  },
+  "instructions_to_main_agent": {
+    "dependencies": "Install 'framer-motion', '@studio-freight/react-lenis', 'react-fast-marquee', 'lucide-react', 'clsx', 'tailwind-merge'.",
+    "fonts": "Import 'Cormorant Garamond', 'Playfair Display' and 'Manrope' via Google Fonts in index.html.",
+    "execution_order": "1. Setup layout skeleton (Left Fixed 35%, Right Scroll 65%). 2. Implement Lenis for smooth scroll. 3. Build Booking Panel with state (mock payment flow). 4. Build right side content (Hero, Chapters, Marquee). 5. Add Framer Motion reveals."
+  },
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Do not converge toward generic outputs. Use the distinct Split Screen asymmetrical layout exactly as requested.",
+    "Create depth using grain overlays and the dark glassmorphism panel on the left.",
+    "DO NOT use Inter or Roboto for headings. Use the specified editorial serif fonts.",
+    "Include 'data-testid' attributes on all interactive elements (buttons, inputs, time slots, payment button).",
+    "Never use purely transparent backgrounds on elements where content scrolls beneath (the left panel must have blur + 75% opacity dark background).",
+    "Do not apply global CSS transitions (e.g., transition: all). Only target specific properties (transition-colors, transition-opacity).",
+    "Do not center align the whole app. The right content should be beautifully left-aligned to establish typographic tension.",
+    "The payment button must cycle through states: Idle -> Loading (spinner) -> Success (Checkmark) upon clicking."
+  ]
+}
