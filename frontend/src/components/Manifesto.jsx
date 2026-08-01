@@ -16,9 +16,9 @@ const CHAPTERS = [
     icon: Sparkles,
     title: "The Royal Welcome",
     body: "Guests are received the way a king himself would be welcomed — by Thalapolli girls, thunderous Chenda Melam beats and vibrant Pulikali dancers. A Mahabali welcome follows, complete with red tilak and a royal paper crown, with Badanmaar, attentive bouncers and a charismatic female MC setting the tone for the evening.",
-    img: "/assets/onam-hero.png",
-    position: "50% 60%",
-    alt: "A royal Onam welcome at Bolgatty Palace",
+    img: "/assets/chapter2.webp",
+    position: "50% 45%",
+    alt: "Thalapolli girls and royal guards welcoming guests",
   },
   {
     num: "03",
