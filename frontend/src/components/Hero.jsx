@@ -34,13 +34,23 @@ export default function Hero({ event, onBooked }) {
         <div className="absolute inset-0 bg-gradient-to-t from-[#FFFBF2]/90 via-transparent to-transparent" />
       </motion.div>
 
-      <div className="lg:hidden">
+      <div className="lg:hidden relative">
         <img
           src="/assets/onam-hero.png"
           alt="Family making a pookalam during Onam with King Mahabali"
           className="w-full h-auto block"
           data-testid="hero-image-mobile"
         />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#2B2118]/50 to-transparent" />
+        <div className="absolute inset-x-0 bottom-4 flex justify-center">
+          <button
+            data-testid="mobile-book-slot-btn"
+            onClick={() => document.querySelector('[data-testid="booking-panel"]')?.scrollIntoView({ behavior: "smooth" })}
+            className="px-8 py-3.5 rounded-full bg-[#1b5812] text-[#fabd8f] text-xs font-bold tracking-[0.2em] uppercase shadow-[0_10px_30px_rgba(27,88,18,0.45)]"
+          >
+            Book Your Slot
+          </button>
+        </div>
       </div>
 
       <div className="relative z-10 px-6 sm:px-12 xl:px-20 pt-8 lg:pt-20 pb-14 grid gap-12 lg:grid-cols-[1fr_400px] items-start lg:min-h-[95vh]">
