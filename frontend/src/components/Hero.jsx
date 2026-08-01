@@ -34,7 +34,7 @@ export default function Hero({ event, onBooked }) {
         <div className="absolute inset-0 bg-gradient-to-t from-[#FFFBF2]/90 via-transparent to-transparent" />
       </motion.div>
 
-      <div className="relative z-10 px-6 sm:px-12 xl:px-20 py-14 grid gap-12 lg:grid-cols-[1fr_400px] items-center min-h-[95vh]">
+      <div className="relative z-10 px-6 sm:px-12 xl:px-20 pt-16 sm:pt-20 pb-14 grid gap-12 lg:grid-cols-[1fr_400px] items-start min-h-[95vh]">
         <div>
           <Line delay={0.15}>
             <span className="text-xs tracking-[0.35em] uppercase font-bold text-maroon" data-testid="hero-tagline">
@@ -57,7 +57,7 @@ export default function Hero({ event, onBooked }) {
           </motion.div>
 
           <Line delay={0.6}>
-            <span className="block max-w-md text-base sm:text-lg text-ink/70 leading-relaxed mt-6">
+            <span className="block max-w-md text-base sm:text-lg text-ink font-medium leading-relaxed mt-6">
               King Mahabali returns to Kerala — and the Kottara tharavadu lays out its grandest banana-leaf sadhya. Two seatings. One unforgettable afternoon.
             </span>
           </Line>
