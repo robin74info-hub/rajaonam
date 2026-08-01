@@ -7,6 +7,7 @@ import BookingPanel from "@/components/BookingPanel";
 import Manifesto from "@/components/Manifesto";
 import Marquee from "@/components/Marquee";
 import Organiser from "@/components/Organiser";
+import BrochureButton from "@/components/BrochureButton";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -33,6 +34,7 @@ function App() {
 
   return (
     <div className="App" data-testid="app-root">
+      <BrochureButton />
       <Hero event={event} />
       <section id="booking-section" className="px-4 sm:px-12 xl:px-20 py-16 sm:py-24" data-testid="booking-section">
         <div className="w-full">
