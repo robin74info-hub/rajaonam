@@ -13,6 +13,12 @@ export default function Organiser() {
       >
         <div>
           <p className="text-xs tracking-[0.3em] uppercase font-bold text-maroon mb-4">Presented By</p>
+          <img
+            src="/assets/prime-logo.jpg"
+            alt="Prime Time Events logo"
+            className="h-14 sm:h-16 w-auto mb-5 mix-blend-multiply"
+            data-testid="prime-logo"
+          />
           <h2 className="font-serif text-4xl sm:text-5xl text-ink leading-tight tracking-tight mb-4">
             Prime Time Events
           </h2>
