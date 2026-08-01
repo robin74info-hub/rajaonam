@@ -25,9 +25,9 @@ const CHAPTERS = [
     icon: Camera,
     title: "Capture the Royalty",
     body: "Elegant photo booths, dressed in Onam's royal splendour, are set up within the palace and along its scenic outdoor grounds. For a regal touch, an AI-powered photo booth lets guests transform themselves into a Thamburan or Thamburatti, reimagined in full royal grandeur.",
-    img: "/assets/onam-hero.png",
-    position: "20% 30%",
-    alt: "Royal Onam photo booths at the palace",
+    img: "/assets/chapter3.webp",
+    position: "50% 45%",
+    alt: "Royal AI photo booth with a Thamburan portrait",
   },
   {
     num: "04",
