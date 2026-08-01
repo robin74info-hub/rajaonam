@@ -23,7 +23,7 @@ export default function Hero({ event, onBooked }) {
 
   return (
     <section ref={ref} className="relative overflow-hidden" data-testid="hero-section">
-      <motion.div style={{ y: imgY }} className="absolute inset-0">
+      <motion.div style={{ y: imgY }} className="absolute inset-0 hidden lg:block">
         <img
           src="/assets/onam-hero.png"
           alt="Family making a pookalam during Onam with King Mahabali"
@@ -34,7 +34,16 @@ export default function Hero({ event, onBooked }) {
         <div className="absolute inset-0 bg-gradient-to-t from-[#FFFBF2]/90 via-transparent to-transparent" />
       </motion.div>
 
-      <div className="relative z-10 px-6 sm:px-12 xl:px-20 pt-16 sm:pt-20 pb-14 grid gap-12 lg:grid-cols-[1fr_400px] items-start min-h-[95vh]">
+      <div className="lg:hidden">
+        <img
+          src="/assets/onam-hero.png"
+          alt="Family making a pookalam during Onam with King Mahabali"
+          className="w-full h-auto block"
+          data-testid="hero-image-mobile"
+        />
+      </div>
+
+      <div className="relative z-10 px-6 sm:px-12 xl:px-20 pt-8 lg:pt-20 pb-14 grid gap-12 lg:grid-cols-[1fr_400px] items-start lg:min-h-[95vh]">
         <div>
           <Line delay={0.15}>
             <span className="text-xs tracking-[0.35em] uppercase font-bold text-maroon" data-testid="hero-tagline">
