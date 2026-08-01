@@ -75,6 +75,11 @@
 - Page title: "Happy Onam - Oru Kottara Sadhya"; marquee: Onam Sadhya · Contest · Games · Boating
 - Verified: EO-PXXY45 (2 sea adults + 1 veg adult + 1 veg infant, ₹4,497)
 
+## Pricing v7 (2026-08-01) — REAL prices from user
+- Sea Food Sadhya: Adult ₹2,899, Kid (5–12) ₹1,399 · Veg Onam Sadhya: Adult ₹2,599, Kid (5–12) ₹1,199 · Below 5 free
+- Backend fields: sea_price_adult/sea_price_kid/veg_price_adult/veg_price_kid
+- Verified: EO-0A0X26 (2 sea A + 1 sea K + 1 veg A + 1 veg K = ₹10,995)
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

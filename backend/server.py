@@ -30,8 +30,10 @@ EVENT = {
     "date": "26 August 2026",
     "time": "11:00 AM – 5:00 PM",
     "venue": "Bolgatty Palace, Kochi",
-    "price_adult": 1499,
-    "price_kid": 749,
+    "sea_price_adult": 2899,
+    "sea_price_kid": 1399,
+    "veg_price_adult": 2599,
+    "veg_price_kid": 1199,
     "currency_symbol": "₹",
     "contests": ["Malayali Manka", "Sreeman", "Kids Contest", "Best Couple"],
     "games": ["Uriyadi", "Vadamvali (Tug of War)", "Sack Race", "Bun Eating Competition", "Sundarikku Pottu Thodal", "Lemon & Spoon Race"],
@@ -81,7 +83,12 @@ async def create_booking(input: BookingCreate):
         input.adults + input.kids_5_12 + input.kids_below_5
         + input.veg_adults + input.veg_kids_5_12 + input.veg_kids_below_5
     )
-    total = (input.adults + input.veg_adults) * EVENT["price_adult"] + (input.kids_5_12 + input.veg_kids_5_12) * EVENT["price_kid"]
+    total = (
+        input.adults * EVENT["sea_price_adult"]
+        + input.kids_5_12 * EVENT["sea_price_kid"]
+        + input.veg_adults * EVENT["veg_price_adult"]
+        + input.veg_kids_5_12 * EVENT["veg_price_kid"]
+    )
     reference = "EO-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
     doc = {
         "id": str(uuid.uuid4()),
@@ -101,8 +108,10 @@ async def create_booking(input: BookingCreate):
         "boating": input.boating,
         "boating_slot": input.boating_slot if input.boating else None,
         "boating_persons": input.boating_persons if input.boating else 0,
-        "price_adult": EVENT["price_adult"],
-        "price_kid": EVENT["price_kid"],
+        "sea_price_adult": EVENT["sea_price_adult"],
+        "sea_price_kid": EVENT["sea_price_kid"],
+        "veg_price_adult": EVENT["veg_price_adult"],
+        "veg_price_kid": EVENT["veg_price_kid"],
         "total": total,
         "currency_symbol": EVENT["currency_symbol"],
         "status": "confirmed",

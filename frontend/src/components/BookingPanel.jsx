@@ -103,10 +103,12 @@ export default function BookingPanel({ event, onBooked }) {
   const [booking, setBooking] = useState(null);
 
   const sym = event?.currency_symbol || "₹";
-  const priceAdult = event?.price_adult ?? 1499;
-  const priceKid = event?.price_kid ?? 749;
+  const seaA = event?.sea_price_adult ?? 2899;
+  const seaK = event?.sea_price_kid ?? 1399;
+  const vegA = event?.veg_price_adult ?? 2599;
+  const vegK = event?.veg_price_kid ?? 1199;
   const totalParticipants = adults + kids512 + kidsU5 + vegAdults + vegKids512 + vegKidsU5;
-  const total = (adults + vegAdults) * priceAdult + (kids512 + vegKids512) * priceKid;
+  const total = adults * seaA + kids512 * seaK + vegAdults * vegA + vegKids512 * vegK;
 
   const toggle = (list, setList) => (item) =>
     setList(list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
@@ -270,8 +272,8 @@ export default function BookingPanel({ event, onBooked }) {
                       <Fish className="w-4 h-4 text-leaf" /> Sea Food Sadhya
                     </p>
                     <div className="space-y-2.5">
-                      <Stepper label={`Adults · ${fmt(priceAdult, sym)}`} value={adults} onChange={setAdults} id="adults" />
-                      <Stepper label={`Kids (5–12) · ${fmt(priceKid, sym)}`} value={kids512} onChange={setKids512} id="kids-5-12" />
+                      <Stepper label={`Adults · ${fmt(seaA, sym)}`} value={adults} onChange={setAdults} id="adults" />
+                      <Stepper label={`Kids (5–12) · ${fmt(seaK, sym)}`} value={kids512} onChange={setKids512} id="kids-5-12" />
                       <Stepper label="Kids (Below 5) · Free" value={kidsU5} onChange={setKidsU5} id="kids-below-5" />
                     </div>
                   </div>
@@ -280,8 +282,8 @@ export default function BookingPanel({ event, onBooked }) {
                       <Salad className="w-4 h-4 text-leaf" /> Veg Onam Sadhya
                     </p>
                     <div className="space-y-2.5">
-                      <Stepper label={`Adults · ${fmt(priceAdult, sym)}`} value={vegAdults} onChange={setVegAdults} id="veg-adults" />
-                      <Stepper label={`Kids (5–12) · ${fmt(priceKid, sym)}`} value={vegKids512} onChange={setVegKids512} id="veg-kids-5-12" />
+                      <Stepper label={`Adults · ${fmt(vegA, sym)}`} value={vegAdults} onChange={setVegAdults} id="veg-adults" />
+                      <Stepper label={`Kids (5–12) · ${fmt(vegK, sym)}`} value={vegKids512} onChange={setVegKids512} id="veg-kids-5-12" />
                       <Stepper label="Kids (Below 5) · Free" value={vegKidsU5} onChange={setVegKidsU5} id="veg-kids-below-5" />
                     </div>
                   </div>
