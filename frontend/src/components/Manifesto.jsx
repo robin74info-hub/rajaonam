@@ -79,9 +79,9 @@ const CHAPTERS = [
     icon: Music,
     title: "Nadan Vibes with Unarth",
     body: "The evening comes alive with soulful performances by Unarth, a folk band that brings the raw, rustic charm of Nadan Paattu to the celebrations — filling the air with rhythms rooted deep in Kerala's rural traditions.",
-    img: "/assets/onam-hero.png",
-    position: "60% 40%",
-    alt: "Folk band Unarth performing Nadan Paattu",
+    img: "/assets/chapter9.png",
+    position: "50% 45%",
+    alt: "Unarth folk performers with traditional drums in the palace courtyard",
   },
   {
     num: "10",
