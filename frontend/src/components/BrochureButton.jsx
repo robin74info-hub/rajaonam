@@ -18,7 +18,7 @@ export default function BrochureButton() {
         className="text-[11px] font-bold tracking-[0.25em] uppercase"
         style={{ writingMode: "vertical-rl" }}
       >
-        Raja Onam Event Download
+        Raja Onam Events Brochure
       </span>
     </motion.a>
   );
