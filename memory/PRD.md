@@ -48,6 +48,19 @@
 - Booking unit moved INTO the hero banner, right side (grid 1fr/400px); event details + organiser below
 - Re-verified: booking ref EO-92P6S0 (Slot 1, 2 guests, ₹2,998); mobile stacks logo → details → booking
 
+## Registration Form v4 (2026-08-01) — per "Rajyonam 2026 program requirement website.docx"
+- Form REMOVED from hero banner; banner now has "Booking Details" button (desktop) + "Book Your Slot" (mobile, on banner image footer) scrolling to form below
+- Form sits directly after banner (max-w-2xl), sections per docx:
+  01 Your Details (name, WhatsApp number, email)
+  02 Sea Food Sadhya slot (2 slots kept) + participants: Adults ₹1,499 / Kids 5–12 ₹749 / Kids below 5 Free (PRICES ASSUMED — docx has none), auto total participants
+  03 Contests Yes/No → multi-select: Malayali Manka, Sreeman, Kids Contest, Best Couple
+  04 Traditional Games Yes/No → multi-select: Uriyadi, Vadamvali, Sack Race, Bun Eating, Sundarikku Pottu Thodal, Lemon & Spoon
+  05 Boating Yes/No → single slot (12–1, 2:30–3:30, 3:30–4:30, 4:30–5:30) + persons stepper
+  Booking Summary box + mock pay
+- Backend BookingCreate rewritten for new fields; total = adults×1499 + kids512×749; boating slot validated
+- Verified: EO-PU27TY (2A+1K+1U5, Best Couple, Uriyadi, boating 2:30–3:30, ₹3,747)
+- NOT built yet (docx phase 2): QR code per ticket, PDF ticket download, email/WhatsApp confirmations, venue QR scanning, real payment gateway (UPI/cards/netbanking/wallets)
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

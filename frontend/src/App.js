@@ -3,6 +3,7 @@ import Lenis from "lenis";
 import axios from "axios";
 import "@/App.css";
 import Hero from "@/components/Hero";
+import BookingPanel from "@/components/BookingPanel";
 import Manifesto from "@/components/Manifesto";
 import Marquee from "@/components/Marquee";
 import Organiser from "@/components/Organiser";
@@ -32,7 +33,12 @@ function App() {
 
   return (
     <div className="App" data-testid="app-root">
-      <Hero event={event} onBooked={fetchEvent} />
+      <Hero event={event} />
+      <section id="booking-section" className="px-4 sm:px-12 py-16 sm:py-24" data-testid="booking-section">
+        <div className="max-w-2xl mx-auto">
+          <BookingPanel event={event} onBooked={fetchEvent} />
+        </div>
+      </section>
       <Marquee />
       <main className="px-6 sm:px-12 xl:px-20 py-16 sm:py-24 max-w-6xl mx-auto" data-testid="event-content">
         <Manifesto />
