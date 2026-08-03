@@ -87,6 +87,14 @@
 - Chapter images are PLACEHOLDERS (existing assets) — user will supply real images later
 - Brochure floating button: "Raja Onam Events Brochure" → downloads /assets/raja-onam-brochure.pdf
 
+## Admin Dashboard v9 (2026-08-03)
+- /admin route: passcode-protected dashboard (JWT auth, bcrypt, seeded admin from env)
+- Login: admin@rajaonam.com / RajaOnam@2026 (in backend/.env, test_credentials.md)
+- Dashboard: stats (bookings, guests, revenue, boating) + full bookings table
+- "Export to Excel" button → GET /api/admin/bookings/export → rajaonam-bookings.csv (UTF-8 BOM, Excel-compatible)
+- Endpoints: POST /api/auth/login, GET /api/auth/me, GET /api/admin/bookings, GET /api/admin/bookings/export (all Bearer-protected)
+- Verified: wrong password rejected, no-token 401, CSV downloads with all 16 rows
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

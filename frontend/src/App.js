@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Lenis from "lenis";
 import axios from "axios";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "@/App.css";
 import Hero from "@/components/Hero";
 import BookingPanel from "@/components/BookingPanel";
@@ -8,10 +9,11 @@ import Manifesto from "@/components/Manifesto";
 import Marquee from "@/components/Marquee";
 import Organiser from "@/components/Organiser";
 import BrochureButton from "@/components/BrochureButton";
+import Admin from "@/components/Admin";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-function App() {
+function Home() {
   const [event, setEvent] = useState(null);
 
   const fetchEvent = () =>
@@ -33,7 +35,7 @@ function App() {
   }, []);
 
   return (
-    <div className="App" data-testid="app-root">
+    <>
       <BrochureButton />
       <Hero event={event} />
       <section id="booking-section" className="px-4 sm:px-12 xl:px-20 py-16 sm:py-24" data-testid="booking-section">
@@ -52,6 +54,19 @@ function App() {
           26 August 2026 · 11 AM – 5 PM · Bolgatty Palace, Kochi
         </p>
       </footer>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <div className="App" data-testid="app-root">
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/admin" element={<Admin />} />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }
