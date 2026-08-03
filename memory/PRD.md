@@ -75,10 +75,11 @@
 - Page title: "Happy Onam - Oru Kottara Sadhya"; marquee: Onam Sadhya · Contest · Games · Boating
 - Verified: EO-PXXY45 (2 sea adults + 1 veg adult + 1 veg infant, ₹4,497)
 
-## Pricing v7 (2026-08-01) — REAL prices from user
-- Sea Food Sadhya: Adult ₹2,899, Kid (5–12) ₹1,399 · Veg Onam Sadhya: Adult ₹2,599, Kid (5–12) ₹1,199 · Below 5 free
+## Pricing v7 (2026-08-01, updated 2026-08-03) — REAL prices from user
+- Sea Food Sadhya: Adult ₹2,999, Kid (5–12) ₹1,399 · Veg Onam Sadhya: Adult ₹2,699, Kid (5–12) ₹1,199 · Below 5 free
 - Backend fields: sea_price_adult/sea_price_kid/veg_price_adult/veg_price_kid
-- Verified: EO-0A0X26 (2 sea A + 1 sea K + 1 veg A + 1 veg K = ₹10,995)
+- Admin dashboard stats: Bookings, Total Guests, Sea Food Sadhya count, Veg Onam Sadhya count, Kids count, Revenue, Boating
+- Verified: EO-GJI6OI (1 sea A + 1 veg A = ₹5,698)
 
 ## Chapters v8 (2026-08-01) — per "RAJA ONAM -2026.pdf"
 - 10 chapters below The Invitation, same numbered format: 01 The Legend: Mahabali, 02 The Royal Welcome, 03 Capture the Royalty, 04 Activities & Leisure, 05 Traditional Onam Games, 06 Onam Contests, 07 Onam Chandha, 08 Live Counters & Vintage Delights, 09 Nadan Vibes with Unarth, 10 The Grand Sadhya

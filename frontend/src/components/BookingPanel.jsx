@@ -103,9 +103,9 @@ export default function BookingPanel({ event, onBooked }) {
   const [booking, setBooking] = useState(null);
 
   const sym = event?.currency_symbol || "₹";
-  const seaA = event?.sea_price_adult ?? 2899;
+  const seaA = event?.sea_price_adult ?? 2999;
   const seaK = event?.sea_price_kid ?? 1399;
-  const vegA = event?.veg_price_adult ?? 2599;
+  const vegA = event?.veg_price_adult ?? 2699;
   const vegK = event?.veg_price_kid ?? 1199;
   const totalParticipants = adults + kids512 + kidsU5 + vegAdults + vegKids512 + vegKidsU5;
   const total = adults * seaA + kids512 * seaK + vegAdults * vegA + vegKids512 * vegK;

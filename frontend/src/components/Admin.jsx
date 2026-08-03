@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Flower2, Loader2, Download, LogOut, Users, IndianRupee, Sailboat } from "lucide-react";
+import { Flower2, Loader2, Download, LogOut, Users, IndianRupee, Sailboat, Fish, Salad, Baby } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -114,6 +114,9 @@ export default function Admin() {
   const totalRevenue = (bookings || []).reduce((s, b) => s + (b.total || 0), 0);
   const totalGuests = (bookings || []).reduce((s, b) => s + (b.total_participants || 0), 0);
   const totalBoating = (bookings || []).filter((b) => b.boating).length;
+  const seaCount = (bookings || []).reduce((s, b) => s + (b.adults || 0) + (b.kids_5_12 || 0) + (b.kids_below_5 || 0), 0);
+  const vegCount = (bookings || []).reduce((s, b) => s + (b.veg_adults || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0), 0);
+  const kidsCount = (bookings || []).reduce((s, b) => s + (b.kids_5_12 || 0) + (b.kids_below_5 || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0), 0);
 
   return (
     <div className="min-h-screen px-4 sm:px-10 py-8" data-testid="admin-dashboard">
@@ -145,6 +148,9 @@ export default function Admin() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Stat icon={Users} label="Bookings" value={bookings?.length ?? "…"} testid="stat-bookings" />
         <Stat icon={Users} label="Total Guests" value={bookings ? totalGuests : "…"} testid="stat-guests" />
+        <Stat icon={Fish} label="Sea Food Sadhya" value={bookings ? seaCount : "…"} testid="stat-seafood" />
+        <Stat icon={Salad} label="Veg Onam Sadhya" value={bookings ? vegCount : "…"} testid="stat-veg" />
+        <Stat icon={Baby} label="Kids" value={bookings ? kidsCount : "…"} testid="stat-kids" />
         <Stat icon={IndianRupee} label="Revenue" value={bookings ? fmt(totalRevenue) : "…"} testid="stat-revenue" />
         <Stat icon={Sailboat} label="Boating" value={bookings ? totalBoating : "…"} testid="stat-boating" />
       </div>
