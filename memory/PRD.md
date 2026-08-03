@@ -96,6 +96,11 @@
 - Endpoints: POST /api/auth/login, GET /api/auth/me, GET /api/admin/bookings, GET /api/admin/bookings/export (all Bearer-protected)
 - Verified: wrong password rejected, no-token 401, CSV downloads with all 16 rows
 
+## Admin Dashboard v10 (2026-08-03)
+- Sea Food / Veg stat cards show Adults · Kids breakdown and are CLICKABLE filters (toggle) for the bookings table, with a "Showing: X (N) ✕" chip to clear
+- Export to Excel now generates CSV client-side from the CURRENTLY FILTERED data (rajaonam-bookings.csv / -sea.csv / -veg.csv)
+- Verified: sea filter 10 rows, veg filter 5 rows, exports download per filter, clear restores all
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

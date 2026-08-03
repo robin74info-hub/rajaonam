@@ -14,6 +14,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(false);
   const [bookings, setBookings] = useState(null);
   const [exporting, setExporting] = useState(false);
+  const [filter, setFilter] = useState("all");
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -49,19 +50,29 @@ export default function Admin() {
     setBookings(null);
   };
 
-  const exportExcel = async () => {
+  const exportExcel = () => {
     setExporting(true);
-    try {
-      const res = await axios.get(`${API}/admin/bookings/export`, { headers, responseType: "blob" });
-      const url = URL.createObjectURL(new Blob([res.data], { type: "text/csv" }));
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "rajaonam-bookings.csv";
-      a.click();
-      URL.revokeObjectURL(url);
-    } finally {
-      setExporting(false);
-    }
+    const header = ["Booking ID","Booked On","Name","Phone","Email","Sea Adults","Sea Kids 5-12","Sea Kids Below 5","Veg Adults","Veg Kids 5-12","Veg Kids Below 5","Total Participants","Contests","Games","Boating","Boating Slot","Boating Persons","Total Amount (INR)","Status"];
+    const lines = filtered.map((b) => [
+      b.reference, (b.created_at || "").slice(0, 16).replace("T", " "),
+      b.name, b.phone, b.email,
+      b.adults || 0, b.kids_5_12 || 0, b.kids_below_5 || 0,
+      b.veg_adults || 0, b.veg_kids_5_12 || 0, b.veg_kids_below_5 || 0,
+      b.total_participants || 0,
+      (b.contests || []).join("; "), (b.games || []).join("; "),
+      b.boating ? "Yes" : "No", b.boating_slot || "-", b.boating_persons || 0,
+      b.total || 0, b.status || "",
+    ]);
+    const csv = "\ufeff" + [header, ...lines]
+      .map((cols) => cols.map((c) => `"${String(c ?? "").replaceAll('"', '""')}"`).join(","))
+      .join("\r\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filter === "all" ? "rajaonam-bookings.csv" : `rajaonam-bookings-${filter}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setExporting(false);
   };
 
   if (!token) {
@@ -114,9 +125,14 @@ export default function Admin() {
   const totalRevenue = (bookings || []).reduce((s, b) => s + (b.total || 0), 0);
   const totalGuests = (bookings || []).reduce((s, b) => s + (b.total_participants || 0), 0);
   const totalBoating = (bookings || []).filter((b) => b.boating).length;
-  const seaCount = (bookings || []).reduce((s, b) => s + (b.adults || 0) + (b.kids_5_12 || 0) + (b.kids_below_5 || 0), 0);
-  const vegCount = (bookings || []).reduce((s, b) => s + (b.veg_adults || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0), 0);
-  const kidsCount = (bookings || []).reduce((s, b) => s + (b.kids_5_12 || 0) + (b.kids_below_5 || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0), 0);
+  const seaAdults = (bookings || []).reduce((s, b) => s + (b.adults || 0), 0);
+  const seaKids = (bookings || []).reduce((s, b) => s + (b.kids_5_12 || 0) + (b.kids_below_5 || 0), 0);
+  const vegAdults = (bookings || []).reduce((s, b) => s + (b.veg_adults || 0), 0);
+  const vegKids = (bookings || []).reduce((s, b) => s + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0), 0);
+  const kidsCount = seaKids + vegKids;
+  const hasSea = (b) => (b.adults || 0) + (b.kids_5_12 || 0) + (b.kids_below_5 || 0) > 0;
+  const hasVeg = (b) => (b.veg_adults || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0) > 0;
+  const filtered = (bookings || []).filter((b) => (filter === "sea" ? hasSea(b) : filter === "veg" ? hasVeg(b) : true));
 
   return (
     <div className="min-h-screen px-4 sm:px-10 py-8" data-testid="admin-dashboard">
@@ -148,12 +164,38 @@ export default function Admin() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Stat icon={Users} label="Bookings" value={bookings?.length ?? "…"} testid="stat-bookings" />
         <Stat icon={Users} label="Total Guests" value={bookings ? totalGuests : "…"} testid="stat-guests" />
-        <Stat icon={Fish} label="Sea Food Sadhya" value={bookings ? seaCount : "…"} testid="stat-seafood" />
-        <Stat icon={Salad} label="Veg Onam Sadhya" value={bookings ? vegCount : "…"} testid="stat-veg" />
+        <Stat
+          icon={Fish}
+          label="Sea Food Sadhya"
+          value={bookings ? seaAdults + seaKids : "…"}
+          sub={bookings ? `${seaAdults} Adults · ${seaKids} Kids` : undefined}
+          onClick={() => setFilter(filter === "sea" ? "all" : "sea")}
+          active={filter === "sea"}
+          testid="stat-seafood"
+        />
+        <Stat
+          icon={Salad}
+          label="Veg Onam Sadhya"
+          value={bookings ? vegAdults + vegKids : "…"}
+          sub={bookings ? `${vegAdults} Adults · ${vegKids} Kids` : undefined}
+          onClick={() => setFilter(filter === "veg" ? "all" : "veg")}
+          active={filter === "veg"}
+          testid="stat-veg"
+        />
         <Stat icon={Baby} label="Kids" value={bookings ? kidsCount : "…"} testid="stat-kids" />
         <Stat icon={IndianRupee} label="Revenue" value={bookings ? fmt(totalRevenue) : "…"} testid="stat-revenue" />
         <Stat icon={Sailboat} label="Boating" value={bookings ? totalBoating : "…"} testid="stat-boating" />
       </div>
+
+      {filter !== "all" && (
+        <button
+          data-testid="filter-chip"
+          onClick={() => setFilter("all")}
+          className="mb-4 flex items-center gap-2 px-4 py-2 rounded-full bg-leaf text-cream text-xs font-bold tracking-[0.15em] uppercase"
+        >
+          Showing: {filter === "sea" ? "Sea Food Sadhya" : "Veg Onam Sadhya"} ({filtered.length}) ✕
+        </button>
+      )}
 
       <div className="rounded-2xl border border-[#D8C7A5] bg-white/80 overflow-hidden">
         <div className="overflow-x-auto">
@@ -173,7 +215,7 @@ export default function Admin() {
               </tr>
             </thead>
             <tbody>
-              {(bookings || []).map((b) => (
+              {(filtered || []).map((b) => (
                 <tr key={b.reference} className="border-t border-[#E4D6BC] hover:bg-[#F5EBD8]/50" data-testid={`booking-row-${b.reference}`}>
                   <td className="px-4 py-3 font-mono text-xs text-maroon whitespace-nowrap">{b.reference}</td>
                   <td className="px-4 py-3 font-semibold text-ink whitespace-nowrap">{b.name}</td>
@@ -187,8 +229,8 @@ export default function Admin() {
                   <td className="px-4 py-3 text-right font-bold text-leaf whitespace-nowrap">{fmt(b.total)}</td>
                 </tr>
               ))}
-              {bookings && bookings.length === 0 && (
-                <tr><td colSpan="10" className="px-4 py-10 text-center text-ash" data-testid="no-bookings">No bookings yet</td></tr>
+              {bookings && filtered.length === 0 && (
+                <tr><td colSpan="10" className="px-4 py-10 text-center text-ash" data-testid="no-bookings">No bookings found</td></tr>
               )}
             </tbody>
           </table>
@@ -198,11 +240,21 @@ export default function Admin() {
   );
 }
 
-const Stat = ({ icon: Icon, label, value, testid }) => (
-  <div className="rounded-xl border border-[#D8C7A5] bg-[#F1E3C6]/80 p-5" data-testid={testid}>
+const Stat = ({ icon: Icon, label, value, sub, testid, onClick, active }) => (
+  <div
+    onClick={onClick}
+    role={onClick ? "button" : undefined}
+    className={`rounded-xl border p-5 transition-colors ${
+      active
+        ? "border-leaf bg-leaf/10 ring-1 ring-leaf"
+        : "border-[#D8C7A5] bg-[#F1E3C6]/80"
+    } ${onClick ? "cursor-pointer hover:border-leaf" : ""}`}
+    data-testid={testid}
+  >
     <p className="text-[10px] tracking-[0.25em] uppercase text-ash mb-2 flex items-center gap-2">
       <Icon className="w-3.5 h-3.5 text-leaf" /> {label}
     </p>
     <p className="font-display text-3xl text-ink">{value}</p>
+    {sub && <p className="text-[10px] tracking-wider uppercase text-ash mt-1" data-testid={`${testid}-sub`}>{sub}</p>}
   </div>
 );
