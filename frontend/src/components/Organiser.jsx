@@ -19,9 +19,6 @@ export default function Organiser() {
             className="h-14 sm:h-16 w-auto mb-5 mix-blend-multiply"
             data-testid="prime-logo"
           />
-          <h2 className="font-serif text-4xl sm:text-5xl text-ink leading-tight tracking-tight mb-4">
-            Prime Time Events
-          </h2>
           <p className="text-base text-ash leading-relaxed mb-8 max-w-md">
             The Kochi-based event house behind RajaOnam 2026 — crafting large-scale cultural celebrations that bring Kerala's traditions alive, from the royal welcome to the grand sadhya at Bolgatty Palace.
           </p>
