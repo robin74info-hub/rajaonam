@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Flower2, Loader2, Download, LogOut, Users, IndianRupee, Sailboat, Fish, Salad, Baby } from "lucide-react";
+import { Flower2, Loader2, Download, LogOut, Users, IndianRupee, Sailboat, Fish, Salad, Trophy, Gamepad2 } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -129,10 +129,19 @@ export default function Admin() {
   const seaKids = (bookings || []).reduce((s, b) => s + (b.kids_5_12 || 0) + (b.kids_below_5 || 0), 0);
   const vegAdults = (bookings || []).reduce((s, b) => s + (b.veg_adults || 0), 0);
   const vegKids = (bookings || []).reduce((s, b) => s + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0), 0);
-  const kidsCount = seaKids + vegKids;
-  const hasSea = (b) => (b.adults || 0) + (b.kids_5_12 || 0) + (b.kids_below_5 || 0) > 0;
-  const hasVeg = (b) => (b.veg_adults || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0) > 0;
-  const filtered = (bookings || []).filter((b) => (filter === "sea" ? hasSea(b) : filter === "veg" ? hasVeg(b) : true));
+  const contestsCount = (bookings || []).filter((b) => (b.contests || []).length > 0).length;
+  const gamesCount = (bookings || []).filter((b) => (b.games || []).length > 0).length;
+
+  const FILTERS = {
+    "sea-adults": { label: "Sea Food Adults", test: (b) => (b.adults || 0) > 0 },
+    "sea-kids": { label: "Sea Food Kids", test: (b) => (b.kids_5_12 || 0) + (b.kids_below_5 || 0) > 0 },
+    "veg-adults": { label: "Veg Adults", test: (b) => (b.veg_adults || 0) > 0 },
+    "veg-kids": { label: "Veg Kids", test: (b) => (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0) > 0 },
+    contests: { label: "Contests", test: (b) => (b.contests || []).length > 0 },
+    games: { label: "Games", test: (b) => (b.games || []).length > 0 },
+  };
+  const filtered = (bookings || []).filter((b) => (filter === "all" ? true : FILTERS[filter].test(b)));
+  const toggleFilter = (key) => setFilter(filter === key ? "all" : key);
 
   return (
     <div className="min-h-screen px-4 sm:px-10 py-8" data-testid="admin-dashboard">
@@ -161,28 +170,15 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         <Stat icon={Users} label="Bookings" value={bookings?.length ?? "…"} testid="stat-bookings" />
         <Stat icon={Users} label="Total Guests" value={bookings ? totalGuests : "…"} testid="stat-guests" />
-        <Stat
-          icon={Fish}
-          label="Sea Food Sadhya"
-          value={bookings ? seaAdults + seaKids : "…"}
-          sub={bookings ? `${seaAdults} Adults · ${seaKids} Kids` : undefined}
-          onClick={() => setFilter(filter === "sea" ? "all" : "sea")}
-          active={filter === "sea"}
-          testid="stat-seafood"
-        />
-        <Stat
-          icon={Salad}
-          label="Veg Onam Sadhya"
-          value={bookings ? vegAdults + vegKids : "…"}
-          sub={bookings ? `${vegAdults} Adults · ${vegKids} Kids` : undefined}
-          onClick={() => setFilter(filter === "veg" ? "all" : "veg")}
-          active={filter === "veg"}
-          testid="stat-veg"
-        />
-        <Stat icon={Baby} label="Kids" value={bookings ? kidsCount : "…"} testid="stat-kids" />
+        <Stat icon={Fish} label="Sea Food Adults" value={bookings ? seaAdults : "…"} onClick={() => toggleFilter("sea-adults")} active={filter === "sea-adults"} testid="stat-sea-adults" />
+        <Stat icon={Fish} label="Sea Food Kids" value={bookings ? seaKids : "…"} onClick={() => toggleFilter("sea-kids")} active={filter === "sea-kids"} testid="stat-sea-kids" />
+        <Stat icon={Salad} label="Veg Adults" value={bookings ? vegAdults : "…"} onClick={() => toggleFilter("veg-adults")} active={filter === "veg-adults"} testid="stat-veg-adults" />
+        <Stat icon={Salad} label="Veg Kids" value={bookings ? vegKids : "…"} onClick={() => toggleFilter("veg-kids")} active={filter === "veg-kids"} testid="stat-veg-kids" />
+        <Stat icon={Trophy} label="Contests" value={bookings ? contestsCount : "…"} onClick={() => toggleFilter("contests")} active={filter === "contests"} testid="stat-contests" />
+        <Stat icon={Gamepad2} label="Games" value={bookings ? gamesCount : "…"} onClick={() => toggleFilter("games")} active={filter === "games"} testid="stat-games" />
         <Stat icon={IndianRupee} label="Revenue" value={bookings ? fmt(totalRevenue) : "…"} testid="stat-revenue" />
         <Stat icon={Sailboat} label="Boating" value={bookings ? totalBoating : "…"} testid="stat-boating" />
       </div>
@@ -193,7 +189,7 @@ export default function Admin() {
           onClick={() => setFilter("all")}
           className="mb-4 flex items-center gap-2 px-4 py-2 rounded-full bg-leaf text-cream text-xs font-bold tracking-[0.15em] uppercase"
         >
-          Showing: {filter === "sea" ? "Sea Food Sadhya" : "Veg Onam Sadhya"} ({filtered.length}) ✕
+          Showing: {FILTERS[filter].label} ({filtered.length}) ✕
         </button>
       )}
 
