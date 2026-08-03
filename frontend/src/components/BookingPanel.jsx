@@ -268,9 +268,10 @@ export default function BookingPanel({ event, onBooked }) {
                 <SectionTitle n="02" label="Sadhya — Participants" />
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div className="border border-[#D8C7A5] rounded-xl p-4 bg-[#FFFBF2]/50">
-                    <p className="text-sm font-bold text-ink mb-3 flex items-center gap-2" data-testid="seafood-title">
+                    <p className="text-sm font-bold text-ink mb-1 flex items-center gap-2" data-testid="seafood-title">
                       <Fish className="w-4 h-4 text-leaf" /> Sea Food Sadhya
                     </p>
+                    <p className="text-[9px] tracking-wider uppercase text-ash mb-2.5">(package rates)</p>
                     <div className="space-y-2.5">
                       <Stepper label={`Adults · ${fmt(seaA, sym)}`} value={adults} onChange={setAdults} id="adults" />
                       <Stepper label={`Kids (5–12) · ${fmt(seaK, sym)}`} value={kids512} onChange={setKids512} id="kids-5-12" />
@@ -278,9 +279,10 @@ export default function BookingPanel({ event, onBooked }) {
                     </div>
                   </div>
                   <div className="border border-[#D8C7A5] rounded-xl p-4 bg-[#FFFBF2]/50">
-                    <p className="text-sm font-bold text-ink mb-3 flex items-center gap-2" data-testid="veg-title">
+                    <p className="text-sm font-bold text-ink mb-1 flex items-center gap-2" data-testid="veg-title">
                       <Salad className="w-4 h-4 text-leaf" /> Veg Onam Sadhya
                     </p>
+                    <p className="text-[9px] tracking-wider uppercase text-ash mb-2.5">(package rates)</p>
                     <div className="space-y-2.5">
                       <Stepper label={`Adults · ${fmt(vegA, sym)}`} value={vegAdults} onChange={setVegAdults} id="veg-adults" />
                       <Stepper label={`Kids (5–12) · ${fmt(vegK, sym)}`} value={vegKids512} onChange={setVegKids512} id="veg-kids-5-12" />
@@ -348,7 +350,10 @@ export default function BookingPanel({ event, onBooked }) {
                 <Row label="Boating" value={boating && boatSlot ? `${boatSlot} · ${boatPersons} persons` : "—"} testid="summary-boating" />
                 <div className="border-t border-[#D8C7A5] pt-3 flex items-end justify-between">
                   <p className="text-[10px] tracking-[0.25em] uppercase text-ash">Total Ticket Amount</p>
-                  <p className="font-display text-4xl text-leaf leading-none" data-testid="total-price">{fmt(total, sym)}</p>
+                  <div className="text-right">
+                    <p className="font-display text-4xl text-leaf leading-none" data-testid="total-price">{fmt(total, sym)}</p>
+                    <p className="text-[9px] tracking-wider uppercase text-ash mt-1">(package rates)</p>
+                  </div>
                 </div>
               </section>
 
