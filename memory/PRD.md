@@ -101,6 +101,11 @@
 - Each clickable card filters the table (toggle) with a "Showing: X (N) ✕" chip; Export downloads the filtered CSV (rajaonam-bookings-{filter}.csv)
 - Verified: contests filter 4 rows + export, sea-kids filter 8 rows, clear restores all
 
+## Admin Dashboard v11 (2026-08-04)
+- Boating stat card is now a clickable filter (was inactive) — chip + filtered export (rajaonam-bookings-boating.csv)
+- Payment mode tracking: form section 06 (UPI / Card / Net Banking / Pay at Venue, default UPI) → stored as payment_mode → shown in confirmation, dashboard PAYMENT column, and CSV export. Old bookings (pre-feature) show "—"
+- Verified: EO-EO6K3E booked with Net Banking shows in dashboard; boating filter 4 rows + export works
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

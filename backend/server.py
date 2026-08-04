@@ -61,6 +61,10 @@ class BookingCreate(BaseModel):
     boating: bool = False
     boating_slot: Optional[str] = None
     boating_persons: int = Field(ge=0, le=30, default=0)
+    payment_mode: str = "UPI"
+
+
+PAYMENT_MODES = ["UPI", "Card", "Net Banking", "Pay at Venue"]
 
 
 @api_router.get("/")
@@ -83,6 +87,8 @@ async def create_booking(input: BookingCreate):
 
     if input.adults + input.veg_adults < 1:
         raise HTTPException(status_code=400, detail="At least 1 adult required")
+    if input.payment_mode not in PAYMENT_MODES:
+        raise HTTPException(status_code=400, detail="Invalid payment mode")
 
     total_participants = (
         input.adults + input.kids_5_12 + input.kids_below_5
@@ -121,6 +127,7 @@ async def create_booking(input: BookingCreate):
         "currency_symbol": EVENT["currency_symbol"],
         "status": "confirmed",
         "payment": "mock",
+        "payment_mode": input.payment_mode,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.bookings.insert_one(doc)
@@ -201,7 +208,7 @@ async def export_bookings(admin: str = Depends(get_current_admin)):
         "Veg Adults", "Veg Kids 5-12", "Veg Kids Below 5",
         "Total Participants", "Contests", "Games",
         "Boating", "Boating Slot", "Boating Persons",
-        "Total Amount (INR)", "Status",
+        "Payment Mode", "Total Amount (INR)", "Status",
     ])
     for b in rows:
         writer.writerow([
@@ -214,6 +221,7 @@ async def export_bookings(admin: str = Depends(get_current_admin)):
             ", ".join(b.get("contests", [])), ", ".join(b.get("games", [])),
             "Yes" if b.get("boating") else "No",
             b.get("boating_slot") or "-", b.get("boating_persons", 0),
+            b.get("payment_mode") or "-",
             b.get("total", 0), b.get("status", ""),
         ])
     return StreamingResponse(

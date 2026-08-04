@@ -52,7 +52,7 @@ export default function Admin() {
 
   const exportExcel = () => {
     setExporting(true);
-    const header = ["Booking ID","Booked On","Name","Phone","Email","Sea Adults","Sea Kids 5-12","Sea Kids Below 5","Veg Adults","Veg Kids 5-12","Veg Kids Below 5","Total Participants","Contests","Games","Boating","Boating Slot","Boating Persons","Total Amount (INR)","Status"];
+    const header = ["Booking ID","Booked On","Name","Phone","Email","Sea Adults","Sea Kids 5-12","Sea Kids Below 5","Veg Adults","Veg Kids 5-12","Veg Kids Below 5","Total Participants","Contests","Games","Boating","Boating Slot","Boating Persons","Payment Mode","Total Amount (INR)","Status"];
     const lines = filtered.map((b) => [
       b.reference, (b.created_at || "").slice(0, 16).replace("T", " "),
       b.name, b.phone, b.email,
@@ -61,6 +61,7 @@ export default function Admin() {
       b.total_participants || 0,
       (b.contests || []).join("; "), (b.games || []).join("; "),
       b.boating ? "Yes" : "No", b.boating_slot || "-", b.boating_persons || 0,
+      b.payment_mode || "-",
       b.total || 0, b.status || "",
     ]);
     const csv = "\ufeff" + [header, ...lines]
@@ -139,6 +140,7 @@ export default function Admin() {
     "veg-kids": { label: "Veg Kids", test: (b) => (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0) > 0 },
     contests: { label: "Contests", test: (b) => (b.contests || []).length > 0 },
     games: { label: "Games", test: (b) => (b.games || []).length > 0 },
+    boating: { label: "Boating", test: (b) => !!b.boating },
   };
   const filtered = (bookings || []).filter((b) => (filter === "all" ? true : FILTERS[filter].test(b)));
   const toggleFilter = (key) => setFilter(filter === key ? "all" : key);
@@ -180,7 +182,7 @@ export default function Admin() {
         <Stat icon={Trophy} label="Contests" value={bookings ? contestsCount : "…"} onClick={() => toggleFilter("contests")} active={filter === "contests"} testid="stat-contests" />
         <Stat icon={Gamepad2} label="Games" value={bookings ? gamesCount : "…"} onClick={() => toggleFilter("games")} active={filter === "games"} testid="stat-games" />
         <Stat icon={IndianRupee} label="Revenue" value={bookings ? fmt(totalRevenue) : "…"} testid="stat-revenue" />
-        <Stat icon={Sailboat} label="Boating" value={bookings ? totalBoating : "…"} testid="stat-boating" />
+        <Stat icon={Sailboat} label="Boating" value={bookings ? totalBoating : "…"} onClick={() => toggleFilter("boating")} active={filter === "boating"} testid="stat-boating" />
       </div>
 
       {filter !== "all" && (
@@ -207,6 +209,7 @@ export default function Admin() {
                 <th className="px-4 py-3.5">Contests</th>
                 <th className="px-4 py-3.5">Games</th>
                 <th className="px-4 py-3.5">Boating</th>
+                <th className="px-4 py-3.5">Payment</th>
                 <th className="px-4 py-3.5 text-right">Total</th>
               </tr>
             </thead>
@@ -222,11 +225,12 @@ export default function Admin() {
                   <td className="px-4 py-3 text-ash max-w-[180px] truncate">{b.contests?.join(", ") || "—"}</td>
                   <td className="px-4 py-3 text-ash max-w-[180px] truncate">{b.games?.join(", ") || "—"}</td>
                   <td className="px-4 py-3 text-ash whitespace-nowrap">{b.boating ? `${b.boating_slot} · ${b.boating_persons}p` : "—"}</td>
+                  <td className="px-4 py-3 text-ink whitespace-nowrap" data-testid={`payment-mode-${b.reference}`}>{b.payment_mode || "—"}</td>
                   <td className="px-4 py-3 text-right font-bold text-leaf whitespace-nowrap">{fmt(b.total)}</td>
                 </tr>
               ))}
               {bookings && filtered.length === 0 && (
-                <tr><td colSpan="10" className="px-4 py-10 text-center text-ash" data-testid="no-bookings">No bookings found</td></tr>
+                <tr><td colSpan="11" className="px-4 py-10 text-center text-ash" data-testid="no-bookings">No bookings found</td></tr>
               )}
             </tbody>
           </table>

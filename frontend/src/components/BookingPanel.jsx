@@ -98,6 +98,7 @@ export default function BookingPanel({ event, onBooked }) {
   const [boating, setBoating] = useState(null);
   const [boatSlot, setBoatSlot] = useState(null);
   const [boatPersons, setBoatPersons] = useState(1);
+  const [payMode, setPayMode] = useState("UPI");
   const [errors, setErrors] = useState({});
   const [phase, setPhase] = useState("idle");
   const [booking, setBooking] = useState(null);
@@ -143,6 +144,7 @@ export default function BookingPanel({ event, onBooked }) {
         boating: boating === true,
         boating_slot: boating === true ? boatSlot : null,
         boating_persons: boating === true ? boatPersons : 0,
+        payment_mode: payMode,
       };
       const [res] = await Promise.all([
         axios.post(`${API}/bookings`, payload),
@@ -175,6 +177,7 @@ export default function BookingPanel({ event, onBooked }) {
     setBoating(null);
     setBoatSlot(null);
     setBoatPersons(1);
+    setPayMode("UPI");
     setErrors({});
   };
 
@@ -226,6 +229,7 @@ export default function BookingPanel({ event, onBooked }) {
                 {booking.contests?.length > 0 && <Row label="Contests" value={booking.contests.join(", ")} testid="confirmation-contests" />}
                 {booking.games?.length > 0 && <Row label="Games" value={booking.games.join(", ")} testid="confirmation-games" />}
                 {booking.boating && <Row label="Boating" value={`${booking.boating_slot} · ${booking.boating_persons} persons`} testid="confirmation-boating" />}
+                <Row label="Payment Mode" value={booking.payment_mode || "UPI"} testid="confirmation-payment-mode" />
                 <div className="border-t border-[#D8C7A5] pt-3 flex justify-between items-baseline">
                   <span className="text-xs tracking-[0.2em] uppercase text-ash">Paid</span>
                   <span className="font-display text-2xl text-leaf" data-testid="confirmation-total">
@@ -340,6 +344,27 @@ export default function BookingPanel({ event, onBooked }) {
                 )}
               </section>
 
+              <section>
+                <SectionTitle n="06" label="Payment Mode" />
+                <div className="flex flex-wrap gap-2" role="radiogroup" data-testid="payment-mode-group">
+                  {["UPI", "Card", "Net Banking", "Pay at Venue"].map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      role="radio"
+                      aria-selected={payMode === m}
+                      data-testid={`pay-mode-${m.toLowerCase().replace(/\s+/g, "-")}`}
+                      onClick={() => setPayMode(m)}
+                      className={`px-5 py-2.5 rounded-full border text-xs font-semibold transition-colors ${
+                        payMode === m ? "bg-leaf border-leaf text-cream" : "border-[#D8C7A5] text-ink hover:border-leaf bg-[#FFFBF2]/70"
+                      }`}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </section>
+
               <section className="border border-[#D8C7A5] rounded-xl p-5 bg-[#FFFBF2]/80 space-y-2.5" data-testid="booking-summary">
                 <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon mb-3">Booking Summary</p>
                 <Row label="Sea Food Sadhya" value={`${adults}A · ${kids512}K · ${kidsU5} below 5`} testid="summary-seafood" />
@@ -348,6 +373,7 @@ export default function BookingPanel({ event, onBooked }) {
                 <Row label="Contests" value={joinContests && contests.length ? contests.join(", ") : "—"} testid="summary-contests" />
                 <Row label="Games" value={joinGames && games.length ? games.join(", ") : "—"} testid="summary-games" />
                 <Row label="Boating" value={boating && boatSlot ? `${boatSlot} · ${boatPersons} persons` : "—"} testid="summary-boating" />
+                <Row label="Payment Mode" value={payMode} testid="summary-payment-mode" />
                 <div className="border-t border-[#D8C7A5] pt-3 flex items-end justify-between">
                   <p className="text-[10px] tracking-[0.25em] uppercase text-ash">Total Ticket Amount</p>
                   <div className="text-right">
