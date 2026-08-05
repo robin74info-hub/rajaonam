@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import axios from "axios";
 import { Flower2, Loader2, Download, LogOut, Users, IndianRupee, Sailboat, Fish, Salad, Trophy, Gamepad2, QrCode, UserCheck } from "lucide-react";
 
@@ -9,6 +9,7 @@ const fmt = (n) => `₹${(n || 0).toLocaleString("en-IN")}`;
 
 export default function Admin() {
   const [token, setToken] = useState(() => localStorage.getItem("admin_token"));
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -36,6 +37,11 @@ export default function Admin() {
     try {
       const { data } = await axios.post(`${API}/auth/login`, { email: email.trim(), password });
       localStorage.setItem("admin_token", data.token);
+      localStorage.setItem("admin_role", data.role || "admin");
+      if (data.role === "gate") {
+        navigate("/scanner");
+        return;
+      }
       setToken(data.token);
     } catch (err) {
       const d = err.response?.data?.detail;
@@ -47,6 +53,7 @@ export default function Admin() {
 
   const logout = () => {
     localStorage.removeItem("admin_token");
+    localStorage.removeItem("admin_role");
     setToken(null);
     setBookings(null);
   };
@@ -78,8 +85,7 @@ export default function Admin() {
     setExporting(false);
   };
 
-  if (!token) {
-    return (
+  if (!token) {    return (
       <div className="min-h-screen flex items-center justify-center px-4" data-testid="admin-login-page">
         <form onSubmit={login} className="w-full max-w-sm rounded-2xl border border-[#D8C7A5] bg-[#F1E3C6]/90 shadow-[0_25px_60px_rgba(138,106,42,0.28)] overflow-hidden">
           <div className="flex items-center gap-3 px-7 pt-7 pb-5 bg-[#1b5812]">
@@ -124,6 +130,8 @@ export default function Admin() {
       </div>
     );
   }
+
+  if (localStorage.getItem("admin_role") === "gate") return <Navigate to="/scanner" replace />;
 
   const totalRevenue = (bookings || []).reduce((s, b) => s + (b.total || 0), 0);
   const totalGuests = (bookings || []).reduce((s, b) => s + (b.total_participants || 0), 0);

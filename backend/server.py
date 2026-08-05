@@ -306,30 +306,44 @@ async def get_booking(reference: str):
 JWT_ALGORITHM = "HS256"
 
 
-def create_access_token(email: str) -> str:
+def create_access_token(email: str, role: str) -> str:
     payload = {
         "sub": email,
-        "role": "admin",
+        "role": role,
         "type": "access",
         "exp": datetime.now(timezone.utc) + timedelta(hours=12),
     }
     return jwt.encode(payload, os.environ["JWT_SECRET"], algorithm=JWT_ALGORITHM)
 
 
-async def get_current_admin(request: Request):
+async def _decode_token(request: Request):
     auth = request.headers.get("Authorization", "")
     token = auth[7:] if auth.startswith("Bearer ") else None
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     try:
         payload = jwt.decode(token, os.environ["JWT_SECRET"], algorithms=[JWT_ALGORITHM])
-        if payload.get("role") != "admin" or payload.get("type") != "access":
+        if payload.get("type") != "access":
             raise HTTPException(status_code=401, detail="Invalid token")
-        return payload["sub"]
+        return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+
+async def get_current_admin(request: Request):
+    payload = await _decode_token(request)
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return payload["sub"]
+
+
+async def get_current_staff(request: Request):
+    payload = await _decode_token(request)
+    if payload.get("role") not in ("admin", "gate"):
+        raise HTTPException(status_code=403, detail="Staff access required")
+    return payload["sub"]
 
 
 class AdminLogin(BaseModel):
@@ -340,10 +354,11 @@ class AdminLogin(BaseModel):
 @api_router.post("/auth/login")
 async def admin_login(input: AdminLogin):
     email = input.email.lower()
-    admin = await db.users.find_one({"email": email, "role": "admin"})
-    if not admin or not bcrypt.checkpw(input.password.encode("utf-8"), admin["password_hash"].encode("utf-8")):
+    user = await db.users.find_one({"email": email, "role": {"$in": ["admin", "gate"]}})
+    if not user or not bcrypt.checkpw(input.password.encode("utf-8"), user["password_hash"].encode("utf-8")):
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    return {"token": create_access_token(email), "email": email, "role": "admin"}
+    role = user.get("role", "admin")
+    return {"token": create_access_token(email, role), "email": email, "role": role}
 
 
 @api_router.get("/auth/me")
@@ -369,7 +384,7 @@ CAT_KEYS = ["adults", "kids_5_12", "kids_below_5", "veg_adults", "veg_kids_5_12"
 
 
 @api_router.post("/checkin/{reference}")
-async def checkin_booking(reference: str, input: CheckinUpdate, admin: str = Depends(get_current_admin)):
+async def checkin_booking(reference: str, input: CheckinUpdate, admin: str = Depends(get_current_staff)):
     doc = await db.bookings.find_one({"reference": reference}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Booking not found")
@@ -455,22 +470,23 @@ logger = logging.getLogger(__name__)
 @app.on_event("startup")
 async def seed_admin():
     await db.users.create_index("email", unique=True)
-    email = os.environ["ADMIN_EMAIL"].lower()
-    password = os.environ["ADMIN_PASSWORD"]
-    existing = await db.users.find_one({"email": email})
-    if existing is None:
-        hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-        await db.users.insert_one({
-            "email": email,
-            "password_hash": hashed,
-            "role": "admin",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        })
-        logger.info("Admin user seeded")
-    elif not bcrypt.checkpw(password.encode("utf-8"), existing["password_hash"].encode("utf-8")):
-        hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-        await db.users.update_one({"email": email}, {"$set": {"password_hash": hashed}})
-        logger.info("Admin password updated")
+    for env_email, env_pass, role in [("ADMIN_EMAIL", "ADMIN_PASSWORD", "admin"), ("GATE_EMAIL", "GATE_PASSWORD", "gate")]:
+        email = os.environ[env_email].lower()
+        password = os.environ[env_pass]
+        existing = await db.users.find_one({"email": email})
+        if existing is None:
+            hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+            await db.users.insert_one({
+                "email": email,
+                "password_hash": hashed,
+                "role": role,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
+            logger.info(f"{role} user seeded: {email}")
+        elif not bcrypt.checkpw(password.encode("utf-8"), existing["password_hash"].encode("utf-8")):
+            hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+            await db.users.update_one({"email": email}, {"$set": {"password_hash": hashed, "role": role}})
+            logger.info(f"{role} password updated: {email}")
 
 
 @app.on_event("shutdown")

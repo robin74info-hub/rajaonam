@@ -155,13 +155,15 @@ export default function Scanner() {
             <p className="text-xs tracking-[0.3em] uppercase font-bold text-maroon">RAJAONAM 2026</p>
             <h1 className="font-serif text-3xl text-ink tracking-tight">Gate Scanner</h1>
           </div>
-          <Link
-            to="/admin"
-            data-testid="back-to-admin-link"
-            className="flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-ash hover:text-leaf transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" /> Dashboard
-          </Link>
+          {localStorage.getItem("admin_role") === "admin" && (
+            <Link
+              to="/admin"
+              data-testid="back-to-admin-link"
+              className="flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-ash hover:text-leaf transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" /> Dashboard
+            </Link>
+          )}
         </div>
 
         {stage === "scan" && (

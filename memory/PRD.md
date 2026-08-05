@@ -135,6 +135,12 @@
 - Dashboard: Guests Checked In stat (person count), column shows "2/3" (gold partial, green ✓ full), CSV "Guests Checked In" column
 - Verified: EO-IXXUIE 2-of-3 partial → pending shown → re-scan completes 3/3; over-cap capped; zero selection rejected
 
+## Gate Role v16 (2026-08-05)
+- Separate gate login: gate@rajaonam.com / Gate@2026 (role "gate", seeded from env)
+- Gate can ONLY: login (redirects to /scanner), scan/manual check-in. Blocked (403) from /api/admin/bookings + export; /admin redirects gate → /scanner; Dashboard link hidden on scanner for gate
+- Backend: get_current_staff (admin+gate) for checkin, get_current_admin (admin-only) for bookings/export; login returns role
+- Verified: gate login → /scanner, no dashboard access anywhere, check-in works; admin unaffected (25 bookings visible)
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking
