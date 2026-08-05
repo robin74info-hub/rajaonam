@@ -10,6 +10,7 @@ import Marquee from "@/components/Marquee";
 import Organiser from "@/components/Organiser";
 import BrochureButton from "@/components/BrochureButton";
 import Admin from "@/components/Admin";
+import Scanner from "@/components/Scanner";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -70,6 +71,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/scanner" element={<Scanner />} />
         </Routes>
       </BrowserRouter>
     </div>

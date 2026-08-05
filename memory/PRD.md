@@ -120,6 +120,14 @@
 - Success page also has "Download Ticket (PDF)" button
 - Verified: EO-5TA1SL — QR GET 200, PDF GET 200 (valid %PDF), email 202 with public URLs; PDF content extracted and confirmed (testing_agent subagent not available in toolset — verified via curl/browser/PDF extraction)
 
+## QR Gate Scanner v14 (2026-08-05)
+- /scanner route (admin-token protected, redirects to /admin login): camera QR scanning via html5-qrcode + manual Booking ID entry fallback
+- POST /api/checkin/{reference} (Bearer-protected): marks checked_in + checked_in_at; returns ok / already (duplicate) / 404
+- QR payload parsed: RAJAONAM-2026|EO-XXXXXX|name|guests → reference
+- Result cards: green "Welcome, {name}!" with guests/sadhya/boating detail, orange "Already Checked In", red "Invalid Ticket"
+- Admin dashboard: Gate Scanner link, Checked In stat card, CHECKED IN column (✓), checked_in in CSV export
+- Verified: checkin ok → duplicate → 404 → 401 flows; UI manual entry all three states; camera NOT testable headless (needs real phone)
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

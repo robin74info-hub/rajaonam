@@ -356,6 +356,21 @@ async def list_bookings(admin: str = Depends(get_current_admin)):
     return await db.bookings.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
 
 
+@api_router.post("/checkin/{reference}")
+async def checkin_booking(reference: str, admin: str = Depends(get_current_admin)):
+    doc = await db.bookings.find_one({"reference": reference}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    if doc.get("checked_in"):
+        return {"status": "already", "booking": doc}
+    await db.bookings.update_one(
+        {"reference": reference},
+        {"$set": {"checked_in": True, "checked_in_at": datetime.now(timezone.utc).isoformat()}},
+    )
+    doc["checked_in"] = True
+    return {"status": "ok", "booking": doc}
+
+
 @api_router.get("/admin/bookings/export")
 async def export_bookings(admin: str = Depends(get_current_admin)):
     rows = await db.bookings.find({}, {"_id": 0}).sort("created_at", -1).to_list(10000)
