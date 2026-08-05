@@ -194,7 +194,7 @@ export default function BookingPanel({ event, onBooked }) {
         </span>
         <div>
           <p className="font-serif text-xl leading-none text-[#fabd8f]" data-testid="panel-event-name">
-            {event?.name || "Raja Onam - Oru Kottara Sadhya 2026"}
+            {event?.name || "RAJAONAM 2026"}
           </p>
           <p className="text-[10px] tracking-[0.25em] uppercase text-[#fabd8f]/75 mt-1">{event?.edition || "Grand Onam Celebration"}</p>
         </div>

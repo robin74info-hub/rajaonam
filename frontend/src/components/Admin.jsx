@@ -86,7 +86,7 @@ export default function Admin() {
             </span>
             <div>
               <p className="font-serif text-xl text-[#fabd8f]">Admin Dashboard</p>
-              <p className="text-[10px] tracking-[0.25em] uppercase text-[#fabd8f]/75 mt-1">Raja Onam 2026</p>
+              <p className="text-[10px] tracking-[0.25em] uppercase text-[#fabd8f]/75 mt-1">RAJAONAM 2026</p>
             </div>
           </div>
           <div className="px-7 py-7 space-y-5">
@@ -149,7 +149,7 @@ export default function Admin() {
     <div className="min-h-screen px-4 sm:px-10 py-8" data-testid="admin-dashboard">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
-          <p className="text-xs tracking-[0.3em] uppercase font-bold text-maroon">Raja Onam 2026</p>
+          <p className="text-xs tracking-[0.3em] uppercase font-bold text-maroon">RAJAONAM 2026</p>
           <h1 className="font-serif text-4xl text-ink tracking-tight">Bookings Dashboard</h1>
         </div>
         <div className="flex gap-3">

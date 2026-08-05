@@ -34,7 +34,7 @@ api_router = APIRouter(prefix="/api")
 
 EVENT = {
     "id": "rajaonam-2026",
-    "name": "Raja Onam - Oru Kottara Sadhya 2026",
+    "name": "RAJAONAM 2026",
     "tagline": "Oru Kottara Sadhya 2026",
     "edition": "Grand Onam Celebration",
     "date": "26 August 2026",
