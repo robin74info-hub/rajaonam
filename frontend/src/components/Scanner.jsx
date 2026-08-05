@@ -153,7 +153,7 @@ export default function Scanner() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <p className="text-xs tracking-[0.3em] uppercase font-bold text-maroon">RAJAONAM 2026</p>
-            <h1 className="font-serif text-3xl text-ink tracking-tight">Gate Scanner</h1>
+            <h1 className="font-serif text-3xl text-ink tracking-tight">Ticket Scanner</h1>
           </div>
           {localStorage.getItem("admin_role") === "admin" && (
             <Link

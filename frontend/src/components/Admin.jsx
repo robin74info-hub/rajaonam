@@ -173,7 +173,7 @@ export default function Admin() {
             data-testid="gate-scanner-link"
             className="flex items-center gap-2 px-6 py-3 rounded-full border border-[#1b5812] text-[#1b5812] text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#1b5812] hover:text-[#fabd8f] transition-colors"
           >
-            <QrCode className="w-4 h-4" /> Gate Scanner
+            <QrCode className="w-4 h-4" /> Ticket Scanner
           </Link>
           <button
             data-testid="export-excel-btn"
