@@ -53,7 +53,7 @@ export default function Admin() {
 
   const exportExcel = () => {
     setExporting(true);
-    const header = ["Booking ID","Booked On","Name","Phone","Email","Sea Adults","Sea Kids 5-12","Sea Kids Below 5","Veg Adults","Veg Kids 5-12","Veg Kids Below 5","Total Participants","Contests","Games","Boating","Boating Slot","Boating Persons","Payment Mode","Checked In","Total Amount (INR)","Status"];
+    const header = ["Booking ID","Booked On","Name","Phone","Email","Sea Adults","Sea Kids 5-12","Sea Kids Below 5","Veg Adults","Veg Kids 5-12","Veg Kids Below 5","Total Participants","Contests","Games","Boating","Boating Slot","Boating Persons","Payment Mode","Guests Checked In","Total Amount (INR)","Status"];
     const lines = filtered.map((b) => [
       b.reference, (b.created_at || "").slice(0, 16).replace("T", " "),
       b.name, b.phone, b.email,
@@ -63,7 +63,7 @@ export default function Admin() {
       (b.contests || []).join("; "), (b.games || []).join("; "),
       b.boating ? "Yes" : "No", b.boating_slot || "-", b.boating_persons || 0,
       b.payment_mode || "-",
-      b.checked_in ? "Yes" : "No",
+      `${guestsChecked(b)}/${b.total_participants || 0}`,
       b.total || 0, b.status || "",
     ]);
     const csv = "\ufeff" + [header, ...lines]
@@ -134,7 +134,11 @@ export default function Admin() {
   const vegKids = (bookings || []).reduce((s, b) => s + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0), 0);
   const contestsCount = (bookings || []).filter((b) => (b.contests || []).length > 0).length;
   const gamesCount = (bookings || []).filter((b) => (b.games || []).length > 0).length;
-  const checkedInCount = (bookings || []).filter((b) => b.checked_in).length;
+  const guestsChecked = (b) => {
+    if (b.checked_in_counts) return Object.values(b.checked_in_counts).reduce((s, n) => s + n, 0);
+    return b.checked_in ? (b.total_participants || 0) : 0;
+  };
+  const checkedInCount = (bookings || []).reduce((s, b) => s + guestsChecked(b), 0);
 
   const FILTERS = {
     "sea-adults": { label: "Sea Food Adults", test: (b) => (b.adults || 0) > 0 },
@@ -193,7 +197,7 @@ export default function Admin() {
         <Stat icon={Gamepad2} label="Games" value={bookings ? gamesCount : "…"} onClick={() => toggleFilter("games")} active={filter === "games"} testid="stat-games" />
         <Stat icon={IndianRupee} label="Revenue" value={bookings ? fmt(totalRevenue) : "…"} testid="stat-revenue" />
         <Stat icon={Sailboat} label="Boating" value={bookings ? totalBoating : "…"} onClick={() => toggleFilter("boating")} active={filter === "boating"} testid="stat-boating" />
-        <Stat icon={UserCheck} label="Checked In" value={bookings ? checkedInCount : "…"} testid="stat-checked-in" />
+        <Stat icon={UserCheck} label="Guests Checked In" value={bookings ? checkedInCount : "…"} testid="stat-checked-in" />
       </div>
 
       {filter !== "all" && (
@@ -238,7 +242,15 @@ export default function Admin() {
                   <td className="px-4 py-3 text-ash max-w-[180px] truncate">{b.games?.join(", ") || "—"}</td>
                   <td className="px-4 py-3 text-ash whitespace-nowrap">{b.boating ? `${b.boating_slot} · ${b.boating_persons}p` : "—"}</td>
                   <td className="px-4 py-3 text-ink whitespace-nowrap" data-testid={`payment-mode-${b.reference}`}>{b.payment_mode || "—"}</td>
-                  <td className="px-4 py-3 whitespace-nowrap" data-testid={`checked-in-${b.reference}`}>{b.checked_in ? <span className="text-leaf font-bold">✓</span> : <span className="text-ash">—</span>}</td>
+                  <td className="px-4 py-3 whitespace-nowrap" data-testid={`checked-in-${b.reference}`}>
+                    {guestsChecked(b) > 0 ? (
+                      <span className={`font-bold ${guestsChecked(b) >= (b.total_participants || 0) ? "text-leaf" : "text-gold"}`}>
+                        {guestsChecked(b) >= (b.total_participants || 0) ? "✓ " : ""}{guestsChecked(b)}/{b.total_participants}
+                      </span>
+                    ) : (
+                      <span className="text-ash">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-right font-bold text-leaf whitespace-nowrap">{fmt(b.total)}</td>
                 </tr>
               ))}

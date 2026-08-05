@@ -356,18 +356,47 @@ async def list_bookings(admin: str = Depends(get_current_admin)):
     return await db.bookings.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
 
 
+class CheckinUpdate(BaseModel):
+    adults: int = Field(0, ge=0)
+    kids_5_12: int = Field(0, ge=0)
+    kids_below_5: int = Field(0, ge=0)
+    veg_adults: int = Field(0, ge=0)
+    veg_kids_5_12: int = Field(0, ge=0)
+    veg_kids_below_5: int = Field(0, ge=0)
+
+
+CAT_KEYS = ["adults", "kids_5_12", "kids_below_5", "veg_adults", "veg_kids_5_12", "veg_kids_below_5"]
+
+
 @api_router.post("/checkin/{reference}")
-async def checkin_booking(reference: str, admin: str = Depends(get_current_admin)):
+async def checkin_booking(reference: str, input: CheckinUpdate, admin: str = Depends(get_current_admin)):
     doc = await db.bookings.find_one({"reference": reference}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Booking not found")
-    if doc.get("checked_in"):
-        return {"status": "already", "booking": doc}
+
+    current = doc.get("checked_in_counts")
+    if current is None:
+        current = {k: (doc.get(k, 0) if doc.get("checked_in") else 0) for k in CAT_KEYS}
+
+    incoming = input.dict()
+    if sum(incoming.values()) < 1:
+        raise HTTPException(status_code=400, detail="Select at least one guest to check in")
+
+    new_counts = {k: min(current.get(k, 0) + incoming.get(k, 0), doc.get(k, 0)) for k in CAT_KEYS}
+    fully = all(new_counts[k] >= doc.get(k, 0) for k in CAT_KEYS)
+
     await db.bookings.update_one(
         {"reference": reference},
-        {"$set": {"checked_in": True, "checked_in_at": datetime.now(timezone.utc).isoformat()}},
+        {"$set": {
+            "checked_in_counts": new_counts,
+            "checked_in": True,
+            "fully_checked_in": fully,
+            "checked_in_at": datetime.now(timezone.utc).isoformat(),
+        }},
     )
+    doc["checked_in_counts"] = new_counts
     doc["checked_in"] = True
+    doc["fully_checked_in"] = fully
     return {"status": "ok", "booking": doc}
 
 

@@ -128,6 +128,13 @@
 - Admin dashboard: Gate Scanner link, Checked In stat card, CHECKED IN column (✓), checked_in in CSV export
 - Verified: checkin ok → duplicate → 404 → 401 flows; UI manual entry all three states; camera NOT testable headless (needs real phone)
 
+## Partial Check-In v15 (2026-08-05)
+- Scanner now shows PER-PERSON checkboxes after scan (e.g. Sea Food Adult 1/2, Sea Food Kid 1); gatekeeper ticks who entered, submits
+- Backend: POST /api/checkin/{ref} accepts counts per category, stores checked_in_counts (capped at booked), fully_checked_in flag; legacy checked_in bookings treated as fully in
+- Result shows "2/3 checked in · 1 pending" or "all in"; re-scanning same QR shows already-in guests disabled, remaining tickable
+- Dashboard: Guests Checked In stat (person count), column shows "2/3" (gold partial, green ✓ full), CSV "Guests Checked In" column
+- Verified: EO-IXXUIE 2-of-3 partial → pending shown → re-scan completes 3/3; over-cap capped; zero selection rejected
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

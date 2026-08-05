@@ -2,9 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import { Navigate, Link } from "react-router-dom";
 import axios from "axios";
 import { Html5Qrcode } from "html5-qrcode";
-import { QrCode, Check, AlertTriangle, XCircle, Loader2, ArrowLeft, Keyboard } from "lucide-react";
+import { QrCode, Check, AlertTriangle, XCircle, Loader2, ArrowLeft, Keyboard, Square, CheckSquare } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const CATS = [
+  ["adults", "Sea Food Adult"],
+  ["kids_5_12", "Sea Food Kid (5–12)"],
+  ["kids_below_5", "Sea Food Kid (Below 5)"],
+  ["veg_adults", "Veg Adult"],
+  ["veg_kids_5_12", "Veg Kid (5–12)"],
+  ["veg_kids_below_5", "Veg Kid (Below 5)"],
+];
 
 const extractRef = (text) => {
   if (text.includes("|")) {
@@ -15,8 +24,19 @@ const extractRef = (text) => {
   return m ? m[0] : null;
 };
 
+const checkedCounts = (b) => {
+  if (b.checked_in_counts) return b.checked_in_counts;
+  if (b.checked_in) return Object.fromEntries(CATS.map(([k]) => [k, b[k] || 0]));
+  return {};
+};
+
+const guestsChecked = (b) => Object.values(checkedCounts(b)).reduce((s, n) => s + n, 0);
+
 export default function Scanner() {
   const token = localStorage.getItem("admin_token");
+  const [stage, setStage] = useState("scan");
+  const [booking, setBooking] = useState(null);
+  const [ticks, setTicks] = useState({});
   const [result, setResult] = useState(null);
   const [manual, setManual] = useState("");
   const [busy, setBusy] = useState(false);
@@ -45,7 +65,7 @@ export default function Scanner() {
           const ref = extractRef(text);
           if (ref) {
             stopScanner();
-            checkin(ref);
+            fetchBooking(ref);
           }
         },
         () => {}
@@ -62,14 +82,55 @@ export default function Scanner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  const checkin = async (ref) => {
+  const fetchBooking = async (ref) => {
     setBusy(true);
     setResult(null);
     try {
-      const { data } = await axios.post(`${API}/checkin/${ref}`, {}, { headers });
-      setResult({ type: data.status === "ok" ? "ok" : "already", booking: data.booking, ref });
+      const { data } = await axios.get(`${API}/bookings/${ref}`);
+      setBooking(data);
+      setTicks({});
+      setStage("select");
     } catch (e) {
       setResult({ type: e.response?.status === 404 ? "notfound" : "error", ref });
+      setStage("done");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const toggle = (key) => {
+    const already = checkedCounts(booking)[key] || 0;
+    const booked = booking[key] || 0;
+    setTicks((t) => {
+      const current = t[key] || 0;
+      const next = current > 0 ? 0 : Math.min(1, booked - already);
+      return { ...t, [key]: next };
+    });
+  };
+
+  const toggleItem = (key, idx) => {
+    const already = checkedCounts(booking)[key] || 0;
+    if (idx < already) return;
+    setTicks((t) => {
+      const selected = t[key] || 0;
+      const isTicked = idx < already + selected;
+      return { ...t, [key]: isTicked ? idx - already : idx - already + 1 };
+    });
+  };
+
+  const selectedTotal = Object.values(ticks).reduce((s, n) => s + n, 0);
+
+  const submitCheckin = async () => {
+    if (selectedTotal < 1 || busy) return;
+    setBusy(true);
+    try {
+      const { data } = await axios.post(`${API}/checkin/${booking.reference}`, ticks, { headers });
+      setResult({ type: "ok", booking: data.booking });
+      setStage("done");
+    } catch (e) {
+      const d = e.response?.data?.detail;
+      setResult({ type: "error", message: typeof d === "string" ? d : "Check-in failed — try again" });
+      setStage("done");
     } finally {
       setBusy(false);
     }
@@ -77,13 +138,14 @@ export default function Scanner() {
 
   const scanNext = () => {
     setResult(null);
+    setBooking(null);
+    setTicks({});
     setManual("");
+    setStage("scan");
     startScanner();
   };
 
   if (!token) return <Navigate to="/admin" replace />;
-
-  const b = result?.booking;
 
   return (
     <div className="min-h-screen px-4 sm:px-10 py-8 flex flex-col items-center" data-testid="scanner-page">
@@ -102,7 +164,7 @@ export default function Scanner() {
           </Link>
         </div>
 
-        {!result && (
+        {stage === "scan" && (
           <div className="rounded-2xl border border-[#D8C7A5] bg-[#F1E3C6]/90 overflow-hidden shadow-[0_25px_60px_rgba(138,106,42,0.28)]">
             <div className="flex items-center gap-3 px-6 py-4 bg-[#1b5812]">
               <QrCode className="w-5 h-5 text-[#fabd8f]" />
@@ -113,7 +175,7 @@ export default function Scanner() {
               {cameraError && <p className="text-xs text-maroon mt-3" data-testid="camera-error">{cameraError}</p>}
               {busy && (
                 <p className="flex items-center gap-2 text-sm text-ash mt-4">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Checking booking…
+                  <Loader2 className="w-4 h-4 animate-spin" /> Finding booking…
                 </p>
               )}
               <div className="mt-6 pt-5 border-t border-[#D8C7A5]">
@@ -124,7 +186,7 @@ export default function Scanner() {
                   onSubmit={(e) => {
                     e.preventDefault();
                     const ref = extractRef(manual.trim()) || manual.trim().toUpperCase();
-                    if (ref) { stopScanner(); checkin(ref); }
+                    if (ref) { stopScanner(); fetchBooking(ref); }
                   }}
                   className="flex gap-2"
                 >
@@ -140,7 +202,7 @@ export default function Scanner() {
                     type="submit"
                     className="px-5 py-2.5 rounded-full bg-leaf text-cream text-xs font-bold tracking-[0.15em] uppercase hover:bg-[#14523A] transition-colors"
                   >
-                    Check In
+                    Find
                   </button>
                 </form>
               </div>
@@ -148,40 +210,99 @@ export default function Scanner() {
           </div>
         )}
 
-        {result && (
+        {stage === "select" && booking && (
+          <div className="rounded-2xl border border-[#D8C7A5] bg-[#F1E3C6]/90 overflow-hidden shadow-[0_25px_60px_rgba(138,106,42,0.28)]" data-testid="guest-select">
+            <div className="px-6 py-4 bg-[#1b5812]">
+              <p className="text-[#fabd8f] text-sm font-bold tracking-[0.15em] uppercase" data-testid="select-ref">{booking.reference}</p>
+              <p className="text-[#fabd8f]/75 text-xs mt-0.5">{booking.name} · {booking.total_participants} guests booked · {guestsChecked(booking)} already in</p>
+            </div>
+            <div className="p-6 space-y-2">
+              <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon mb-3">Tick the guests entering now</p>
+              {CATS.map(([key, label]) => {
+                const booked = booking[key] || 0;
+                if (booked < 1) return null;
+                const already = checkedCounts(booking)[key] || 0;
+                const selected = ticks[key] || 0;
+                return Array.from({ length: booked }, (_, i) => {
+                  const isIn = i < already;
+                  const isTicked = !isIn && i < already + selected;
+                  return (
+                    <button
+                      key={`${key}-${i}`}
+                      type="button"
+                      disabled={isIn}
+                      onClick={() => toggleItem(key, i)}
+                      data-testid={`checkin-item-${key}-${i}`}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-colors ${
+                        isIn
+                          ? "border-leaf/40 bg-leaf/10 text-ash cursor-default"
+                          : isTicked
+                            ? "border-leaf bg-leaf text-cream"
+                            : "border-[#D8C7A5] bg-[#FFFBF2]/70 text-ink hover:border-leaf"
+                      }`}
+                    >
+                      {isIn || isTicked ? <CheckSquare className="w-5 h-5 shrink-0" /> : <Square className="w-5 h-5 shrink-0" />}
+                      <span className="text-sm font-semibold">{label} {i + 1}</span>
+                      {isIn && <span className="ml-auto text-[10px] tracking-[0.2em] uppercase text-leaf font-bold">Already in</span>}
+                    </button>
+                  );
+                });
+              })}
+              <div className="pt-4 flex gap-3">
+                <button
+                  data-testid="confirm-checkin-btn"
+                  onClick={submitCheckin}
+                  disabled={selectedTotal < 1 || busy}
+                  className="flex-1 py-3.5 rounded-full bg-[#1b5812] text-[#fabd8f] text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#12400c] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Check In {selectedTotal > 0 ? `${selectedTotal} Guest${selectedTotal > 1 ? "s" : ""}` : "Selected"}</>}
+                </button>
+                <button
+                  data-testid="cancel-select-btn"
+                  onClick={scanNext}
+                  className="px-5 py-3.5 rounded-full border border-[#D8C7A5] text-ash text-xs font-bold tracking-[0.15em] uppercase hover:text-maroon hover:border-maroon transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {stage === "done" && result && (
           <div
             data-testid="scan-result"
             className={`rounded-2xl border overflow-hidden shadow-[0_25px_60px_rgba(138,106,42,0.28)] ${
-              result.type === "ok" ? "border-leaf bg-leaf/10" : result.type === "already" ? "border-gold bg-gold/10" : "border-maroon bg-maroon/10"
+              result.type === "ok" ? "border-leaf bg-leaf/10" : "border-maroon bg-maroon/10"
             }`}
           >
             <div className="p-8 flex flex-col items-center text-center gap-4">
               <span className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                result.type === "ok" ? "bg-leaf/15 border border-leaf/40" : result.type === "already" ? "bg-gold/15 border border-gold/40" : "bg-maroon/15 border border-maroon/40"
+                result.type === "ok" ? "bg-leaf/15 border border-leaf/40" : "bg-maroon/15 border border-maroon/40"
               }`}>
-                {result.type === "ok" && <Check className="w-8 h-8 text-leaf" />}
-                {result.type === "already" && <AlertTriangle className="w-8 h-8 text-gold" />}
-                {(result.type === "notfound" || result.type === "error") && <XCircle className="w-8 h-8 text-maroon" />}
+                {result.type === "ok" ? <Check className="w-8 h-8 text-leaf" /> : result.type === "notfound" ? <XCircle className="w-8 h-8 text-maroon" /> : <AlertTriangle className="w-8 h-8 text-maroon" />}
               </span>
-              {result.type === "ok" && (
-                <>
-                  <p className="font-serif text-3xl text-ink" data-testid="result-title">Welcome, {b.name.split(" ")[0]}!</p>
-                  <p className="text-sm text-ash" data-testid="result-detail">
-                    {b.reference} · {b.total_participants} guests
-                    {(b.adults + b.kids_5_12 + b.kids_below_5) > 0 && ` · Sea Food ${b.adults + b.kids_5_12 + b.kids_below_5}`}
-                    {(b.veg_adults + b.veg_kids_5_12 + b.veg_kids_below_5) > 0 && ` · Veg ${b.veg_adults + b.veg_kids_5_12 + b.veg_kids_below_5}`}
-                    {b.boating && ` · Boating ${b.boating_slot}`}
-                  </p>
-                  <p className="text-xs tracking-[0.25em] uppercase font-bold text-leaf">Checked In</p>
-                </>
-              )}
-              {result.type === "already" && (
-                <>
-                  <p className="font-serif text-3xl text-ink" data-testid="result-title">Already Checked In</p>
-                  <p className="text-sm text-ash" data-testid="result-detail">{b.reference} · {b.name} · {b.total_participants} guests</p>
-                  <p className="text-xs tracking-[0.25em] uppercase font-bold text-gold">Duplicate Scan</p>
-                </>
-              )}
+              {result.type === "ok" && (() => {
+                const b = result.booking;
+                const inNow = guestsChecked(b);
+                const pending = (b.total_participants || 0) - inNow;
+                return (
+                  <>
+                    <p className="font-serif text-3xl text-ink" data-testid="result-title">
+                      {pending === 0 ? `Welcome, ${b.name.split(" ")[0]}!` : "Partial Check-In Done"}
+                    </p>
+                    <p className="text-sm text-ash" data-testid="result-detail">
+                      {b.reference} · {b.name}
+                    </p>
+                    <p className={`text-xs tracking-[0.25em] uppercase font-bold ${pending === 0 ? "text-leaf" : "text-gold"}`} data-testid="result-status">
+                      {inNow}/{b.total_participants} checked in{pending > 0 ? ` · ${pending} pending` : " · all in"}
+                    </p>
+                    {pending > 0 && (
+                      <p className="text-xs text-ash">Remaining guests can check in later with the same QR code.</p>
+                    )}
+                  </>
+                );
+              })()}
               {result.type === "notfound" && (
                 <>
                   <p className="font-serif text-3xl text-ink" data-testid="result-title">Invalid Ticket</p>
@@ -191,7 +312,7 @@ export default function Scanner() {
               {result.type === "error" && (
                 <>
                   <p className="font-serif text-3xl text-ink" data-testid="result-title">Something Went Wrong</p>
-                  <p className="text-sm text-ash" data-testid="result-detail">Try scanning again</p>
+                  <p className="text-sm text-ash" data-testid="result-detail">{result.message || "Try scanning again"}</p>
                 </>
               )}
               <button
