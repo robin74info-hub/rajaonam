@@ -92,7 +92,7 @@ export default function Hero({ event }) {
             <CalendarDays className="w-4 h-4 text-leaf" /> {event?.date || "26 August 2026"} · {event?.time || "11:00 AM – 5:00 PM"}
           </span>
           <span className="flex items-center gap-2.5 text-sm font-semibold text-ink" data-testid="hero-venue">
-            <MapPin className="w-4 h-4 text-leaf" /> {event?.venue || "Bolgatty Palace, Kochi"}
+            <MapPin className="w-4 h-4 text-leaf" /> {event?.venue || "Bolgatty Palace & Island Resort, Kochi"}
           </span>
           <button
             data-testid="hero-booking-details-btn"

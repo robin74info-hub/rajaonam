@@ -52,7 +52,7 @@ function Home() {
         <div className="flex flex-col sm:flex-row justify-between gap-4">
           <p className="font-serif text-2xl text-ink">RAJAONAM <span className="text-leaf">2026</span></p>
           <p className="text-xs tracking-[0.2em] uppercase text-ash" data-testid="footer-note">
-            26 August 2026 · 11 AM – 5 PM · Bolgatty Palace, Kochi
+            26 August 2026 · 11 AM – 5 PM · Bolgatty Palace &amp; Island Resort, Kochi
           </p>
         </div>
         <p className="text-[11px] tracking-[0.15em] uppercase text-ash text-center mt-8 pt-6 border-t border-[#E4D6BC]" data-testid="footer-copyright">

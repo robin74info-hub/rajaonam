@@ -39,7 +39,7 @@ EVENT = {
     "edition": "Grand Onam Celebration",
     "date": "26 August 2026",
     "time": "11:00 AM – 5:00 PM",
-    "venue": "Bolgatty Palace, Kochi",
+    "venue": "Bolgatty Palace & Island Resort, Kochi",
     "sea_price_adult": 2999,
     "sea_price_kid": 1399,
     "veg_price_adult": 2699,
@@ -181,7 +181,7 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
     pdf.cell(0, 12, "RajaOnam 2026", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("helvetica", "", 10)
     pdf.set_text_color(122, 106, 88)
-    pdf.cell(0, 6, "Oru Kottara Sadhya  |  Bolgatty Palace, Kochi  |  26 August 2026  |  11:00 AM - 5:00 PM", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 6, "Oru Kottara Sadhya  |  Bolgatty Palace & Island Resort, Kochi  |  26 August 2026  |  11:00 AM - 5:00 PM", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(4)
     pdf.set_draw_color(201, 162, 39)
     pdf.set_line_width(0.8)
@@ -254,7 +254,7 @@ def booking_email_html(doc, qr_url, ticket_url):
 <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #E4D6BC;border-radius:12px;overflow:hidden;">
 <tr><td style="background:#1b5812;padding:24px 32px;">
   <p style="margin:0;color:#fabd8f;font-size:22px;letter-spacing:1px;">RajaOnam 2026</p>
-  <p style="margin:4px 0 0;color:#fabd8f;opacity:0.75;font-size:11px;letter-spacing:3px;text-transform:uppercase;">Oru Kottara Sadhya · Bolgatty Palace, Kochi</p>
+  <p style="margin:4px 0 0;color:#fabd8f;opacity:0.75;font-size:11px;letter-spacing:3px;text-transform:uppercase;">Oru Kottara Sadhya · Bolgatty Palace &amp; Island Resort, Kochi</p>
 </td></tr>
 <tr><td style="padding:32px;">
   <p style="margin:0 0 8px;color:#8A2A1B;font-size:11px;letter-spacing:3px;text-transform:uppercase;">Booking Confirmed</p>
@@ -267,7 +267,7 @@ def booking_email_html(doc, qr_url, ticket_url):
   <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;"><tr><td align="center">
     <a href="{ticket_url}" style="display:inline-block;background:#1b5812;color:#fabd8f;font-size:13px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;padding:14px 36px;border-radius:30px;">Download Ticket (PDF)</a>
   </td></tr></table>
-  <p style="margin:24px 0 0;color:#7A6A58;font-size:13px;line-height:1.6;">26 August 2026 · 11:00 AM – 5:00 PM · Bolgatty Palace, Kochi.<br/>Present your Booking ID <b style="color:#8A2A1B;">{doc['reference']}</b> or the QR code at the entrance.</p>
+  <p style="margin:24px 0 0;color:#7A6A58;font-size:13px;line-height:1.6;">26 August 2026 · 11:00 AM – 5:00 PM · Bolgatty Palace &amp; Island Resort, Kochi.<br/>Present your Booking ID <b style="color:#8A2A1B;">{doc['reference']}</b> or the QR code at the entrance.</p>
 </td></tr>
 <tr><td style="background:#F5EBD8;padding:16px 32px;"><p style="margin:0;color:#7A6A58;font-size:11px;letter-spacing:1px;text-align:center;">Copyright 2026 RajaOnam · Powered by Berrysys Media Global LLC</p></td></tr>
 </table></td></tr></table></body></html>"""

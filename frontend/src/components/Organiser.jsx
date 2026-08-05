@@ -27,10 +27,10 @@ export default function Organiser() {
               <Phone className="w-4 h-4 text-leaf shrink-0" /> +91 98470 00000
             </li>
             <li className="flex items-center gap-3 text-sm text-ink" data-testid="organiser-email">
-              <Mail className="w-4 h-4 text-leaf shrink-0" /> hello@rajaonam.in
+              <Mail className="w-4 h-4 text-leaf shrink-0" /> reach@primetimeevents.in
             </li>
             <li className="flex items-center gap-3 text-sm text-ink" data-testid="organiser-venue">
-              <MapPin className="w-4 h-4 text-leaf shrink-0" /> Bolgatty Palace, Kochi, Kerala
+              <MapPin className="w-4 h-4 text-leaf shrink-0" /> Bolgatty Palace &amp; Island Resort, Kochi, Kerala
             </li>
           </ul>
         </div>
