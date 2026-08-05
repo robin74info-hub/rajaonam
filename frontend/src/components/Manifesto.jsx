@@ -68,8 +68,8 @@ const CHAPTERS = [
   {
     num: "08",
     icon: Coffee,
-    title: "Live Counters & Vintage Delights",
-    body: "Enjoy live counters featuring beer and wine, freshly made banana chips, live achappam making, and a vintage-style tea shop serving piping hot tea with old-world Kerala charm.",
+    title: "LIVE Purchase-on-spot Treats",
+    body: "Enjoy live counters featuring spirited beverages, freshly made banana chips, live achappam making, and a vintage-style tea shop serving piping hot tea with old-world Kerala charm.",
     img: "/assets/chapter7.jpg",
     position: "50% 50%",
     alt: "Live paid counters — beer and wine, tea shop, banana chips, peanut candy, cotton candy, popsicles, achappam and unniyappam",
