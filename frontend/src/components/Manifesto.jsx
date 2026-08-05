@@ -34,9 +34,9 @@ const CHAPTERS = [
     icon: Sailboat,
     title: "Activities & Leisure",
     body: "The festivities extend beyond the feast — guests can enjoy the classic ring throw, balloon shooting and playful face painting, set sail on a serene boating excursion along the tranquil waters surrounding Bolgatty Palace, and a lot more surprise elements.",
-    img: "/assets/houseboat.png",
-    position: "50% 40%",
-    alt: "Houseboat on the Bolgatty backwaters",
+    img: "/assets/boat.jpg",
+    position: "50% 45%",
+    alt: "Cruise boat carrying guests on the Bolgatty backwaters",
   },
   {
     num: "05",
