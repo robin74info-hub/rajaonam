@@ -113,6 +113,13 @@
 - qrcode[pil] + httpx installed
 - Verified: EO-K16SUD success page QR renders; email HTTP 202 to delivered@resend.dev (test address)
 
+## Email QR fix + PDF ticket v13 (2026-08-05)
+- BUG FIX: email QR image was broken — URL was built from internal request.base_url; now uses x-forwarded-proto/host (public URL, works in production too)
+- PDF ticket: GET /api/bookings/{ref}/ticket.pdf (fpdf2) — branded ticket with all booking details + embedded QR; latin-1 sanitized (en-dash fix), multi_cell cursor fix
+- Email now includes working QR image + "Download Ticket (PDF)" button (email proxy has no attachment support, so PDF is a hosted link)
+- Success page also has "Download Ticket (PDF)" button
+- Verified: EO-5TA1SL — QR GET 200, PDF GET 200 (valid %PDF), email 202 with public URLs; PDF content extracted and confirmed (testing_agent subagent not available in toolset — verified via curl/browser/PDF extraction)
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

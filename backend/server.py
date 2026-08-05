@@ -16,6 +16,7 @@ import asyncio
 import base64
 import httpx
 import qrcode
+from fpdf import FPDF
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
@@ -136,11 +137,21 @@ async def create_booking(input: BookingCreate, request: Request):
     }
     await db.bookings.insert_one(doc)
     doc.pop("_id", None)
-    asyncio.create_task(send_confirmation_email(doc, str(request.base_url)))
+    asyncio.create_task(send_confirmation_email(doc, public_base(request)))
     return doc
 
 
 EMAIL_BASE_URL = "https://integrations.emergentagent.com"
+
+
+def public_base(request: Request) -> str:
+    proto = request.headers.get("x-forwarded-proto", request.url.scheme)
+    host = request.headers.get("x-forwarded-host", request.headers.get("host", ""))
+    return f"{proto}://{host}/"
+
+
+def qr_payload(doc) -> str:
+    return f"RAJAONAM-2026|{doc['reference']}|{doc['name']}|{doc['total_participants']} guests"
 
 
 def make_qr_png(data: str) -> bytes:
@@ -155,11 +166,75 @@ async def booking_qr(reference: str):
     doc = await db.bookings.find_one({"reference": reference}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Booking not found")
-    png = make_qr_png(f"RAJAONAM-2026|{doc['reference']}|{doc['name']}|{doc['total_participants']} guests")
-    return Response(content=png, media_type="image/png")
+    return Response(content=make_qr_png(qr_payload(doc)), media_type="image/png")
 
 
-def booking_email_html(doc, qr_url):
+def pdf_safe(s) -> str:
+    return str(s).replace("–", "-").replace("—", "-").replace("₹", "Rs. ").encode("latin-1", "replace").decode("latin-1")
+
+
+def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica", "B", 24)
+    pdf.set_text_color(27, 88, 18)
+    pdf.cell(0, 12, "RajaOnam 2026", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("helvetica", "", 10)
+    pdf.set_text_color(122, 106, 88)
+    pdf.cell(0, 6, "Oru Kottara Sadhya  |  Bolgatty Palace, Kochi  |  26 August 2026  |  11:00 AM - 5:00 PM", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(4)
+    pdf.set_draw_color(201, 162, 39)
+    pdf.set_line_width(0.8)
+    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+    pdf.ln(8)
+    pdf.set_font("helvetica", "B", 15)
+    pdf.set_text_color(138, 42, 27)
+    pdf.cell(0, 9, f"BOOKING ID: {doc['reference']}", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(2)
+    pdf.set_font("helvetica", "", 12)
+    pdf.set_text_color(43, 33, 24)
+    rows = [
+        ("Name", doc["name"]),
+        ("Phone", doc["phone"]),
+        ("Email", doc["email"]),
+        ("Sea Food Sadhya", f"{doc['adults']} Adults, {doc['kids_5_12']} Kids (5-12), {doc['kids_below_5']} Below 5"),
+        ("Veg Onam Sadhya", f"{doc['veg_adults']} Adults, {doc['veg_kids_5_12']} Kids (5-12), {doc['veg_kids_below_5']} Below 5"),
+        ("Contests", ", ".join(doc["contests"]) or "-"),
+        ("Games", ", ".join(doc["games"]) or "-"),
+        ("Boating", f"{doc['boating_slot']} ({doc['boating_persons']} persons)" if doc["boating"] else "-"),
+        ("Total Amount", f"Rs. {doc['total']:,}  (pay at venue)"),
+    ]
+    for k, v in rows:
+        pdf.set_font("helvetica", "B", 11)
+        pdf.cell(50, 8, pdf_safe(k))
+        pdf.set_font("helvetica", "", 11)
+        pdf.multi_cell(0, 8, pdf_safe(v), new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(4)
+    pdf.image(io.BytesIO(qr_png), x=80, y=pdf.get_y(), w=50, h=50)
+    pdf.set_y(pdf.get_y() + 54)
+    pdf.set_font("helvetica", "", 10)
+    pdf.set_text_color(122, 106, 88)
+    pdf.cell(0, 6, "Show this QR code or your Booking ID at the gate.", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.ln(8)
+    pdf.set_font("helvetica", "I", 9)
+    pdf.cell(0, 6, "Copyright 2026 RajaOnam - Powered by Berrysys Media Global LLC", new_x="LMARGIN", new_y="NEXT", align="C")
+    return bytes(pdf.output())
+
+
+@api_router.get("/bookings/{reference}/ticket.pdf")
+async def booking_ticket_pdf(reference: str):
+    doc = await db.bookings.find_one({"reference": reference}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    pdf_bytes = make_ticket_pdf(doc, make_qr_png(qr_payload(doc)))
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"inline; filename=RajaOnam-Ticket-{reference}.pdf"},
+    )
+
+
+def booking_email_html(doc, qr_url, ticket_url):
     rows = "".join([
         f'<tr><td style="padding:8px 0;color:#7A6A58;font-size:13px;text-transform:uppercase;letter-spacing:1px;">{k}</td>'
         f'<td style="padding:8px 0;color:#2B2118;font-size:14px;text-align:right;font-weight:600;">{v}</td></tr>'
@@ -189,6 +264,9 @@ def booking_email_html(doc, qr_url):
     <img src="{qr_url}" width="180" height="180" alt="Booking QR code" style="display:block;" />
     <p style="margin:12px 0 0;color:#7A6A58;font-size:11px;letter-spacing:2px;text-transform:uppercase;">Show this QR at the gate</p>
   </td></tr></table>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;"><tr><td align="center">
+    <a href="{ticket_url}" style="display:inline-block;background:#1b5812;color:#fabd8f;font-size:13px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;padding:14px 36px;border-radius:30px;">Download Ticket (PDF)</a>
+  </td></tr></table>
   <p style="margin:24px 0 0;color:#7A6A58;font-size:13px;line-height:1.6;">26 August 2026 · 11:00 AM – 5:00 PM · Bolgatty Palace, Kochi.<br/>Present your Booking ID <b style="color:#8A2A1B;">{doc['reference']}</b> or the QR code at the entrance.</p>
 </td></tr>
 <tr><td style="background:#F5EBD8;padding:16px 32px;"><p style="margin:0;color:#7A6A58;font-size:11px;letter-spacing:1px;text-align:center;">Copyright 2026 RajaOnam · Powered by Berrysys Media Global LLC</p></td></tr>
@@ -197,10 +275,12 @@ def booking_email_html(doc, qr_url):
 
 async def send_confirmation_email(doc, base_url):
     qr_url = f"{base_url}api/bookings/{doc['reference']}/qr"
+    ticket_url = f"{base_url}api/bookings/{doc['reference']}/ticket.pdf"
+    logger.info(f"Email URLs for {doc['reference']}: qr={qr_url} ticket={ticket_url}")
     payload = {
         "to": [doc["email"]],
         "subject": f"RajaOnam 2026 — Booking Confirmed ({doc['reference']})",
-        "html": booking_email_html(doc, qr_url),
+        "html": booking_email_html(doc, qr_url, ticket_url),
         "from_name": os.environ["EMAIL_FROM_NAME"],
     }
     try:

@@ -241,6 +241,15 @@ export default function BookingPanel({ event, onBooked }) {
                   data-testid="confirmation-qr"
                 />
                 <p className="text-[10px] tracking-[0.25em] uppercase text-ash">Show this QR at the gate</p>
+                <a
+                  href={`${API}/bookings/${booking.reference}/ticket.pdf`}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-testid="download-ticket-btn"
+                  className="mt-1 px-6 py-2.5 rounded-full bg-[#1b5812] text-[#fabd8f] text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-[#12400c] transition-colors"
+                >
+                  Download Ticket (PDF)
+                </a>
               </div>
               <p className="text-sm text-ash leading-relaxed">
                 A confirmation email with your booking details and QR ticket has been sent to <span className="text-ink font-semibold">{booking.email}</span>.
