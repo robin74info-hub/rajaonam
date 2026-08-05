@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Depends
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -12,6 +12,10 @@ import csv
 import io
 import jwt
 import bcrypt
+import asyncio
+import base64
+import httpx
+import qrcode
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
@@ -61,10 +65,10 @@ class BookingCreate(BaseModel):
     boating: bool = False
     boating_slot: Optional[str] = None
     boating_persons: int = Field(ge=0, le=30, default=0)
-    payment_mode: str = "UPI"
+    payment_mode: str = "Pending"
 
 
-PAYMENT_MODES = ["UPI", "Card", "Net Banking", "Pay at Venue"]
+PAYMENT_MODES = ["Pending", "UPI", "Card", "Net Banking", "Pay at Venue"]
 
 
 @api_router.get("/")
@@ -78,7 +82,7 @@ async def get_event():
 
 
 @api_router.post("/bookings")
-async def create_booking(input: BookingCreate):
+async def create_booking(input: BookingCreate, request: Request):
     if input.boating:
         if not input.boating_slot or input.boating_slot not in EVENT["boating_slots"]:
             raise HTTPException(status_code=400, detail="Choose a valid boating time slot")
@@ -132,7 +136,83 @@ async def create_booking(input: BookingCreate):
     }
     await db.bookings.insert_one(doc)
     doc.pop("_id", None)
+    asyncio.create_task(send_confirmation_email(doc, str(request.base_url)))
     return doc
+
+
+EMAIL_BASE_URL = "https://integrations.emergentagent.com"
+
+
+def make_qr_png(data: str) -> bytes:
+    img = qrcode.make(data, box_size=8, border=2)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+@api_router.get("/bookings/{reference}/qr")
+async def booking_qr(reference: str):
+    doc = await db.bookings.find_one({"reference": reference}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    png = make_qr_png(f"RAJAONAM-2026|{doc['reference']}|{doc['name']}|{doc['total_participants']} guests")
+    return Response(content=png, media_type="image/png")
+
+
+def booking_email_html(doc, qr_url):
+    rows = "".join([
+        f'<tr><td style="padding:8px 0;color:#7A6A58;font-size:13px;text-transform:uppercase;letter-spacing:1px;">{k}</td>'
+        f'<td style="padding:8px 0;color:#2B2118;font-size:14px;text-align:right;font-weight:600;">{v}</td></tr>'
+        for k, v in [
+            ("Booking ID", doc["reference"]),
+            ("Name", doc["name"]),
+            ("Sea Food Sadhya", f"{doc['adults']} Adults · {doc['kids_5_12']} Kids (5-12) · {doc['kids_below_5']} Below 5"),
+            ("Veg Onam Sadhya", f"{doc['veg_adults']} Adults · {doc['veg_kids_5_12']} Kids (5-12) · {doc['veg_kids_below_5']} Below 5"),
+            ("Contests", ", ".join(doc["contests"]) or "—"),
+            ("Games", ", ".join(doc["games"]) or "—"),
+            ("Boating", f"{doc['boating_slot']} · {doc['boating_persons']} persons" if doc["boating"] else "—"),
+            ("Total Amount", f"₹{doc['total']:,}"),
+        ]
+    ])
+    return f"""<!DOCTYPE html><html><body style="margin:0;padding:0;background:#FFFBF2;font-family:Georgia,serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#FFFBF2;padding:32px 16px;"><tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #E4D6BC;border-radius:12px;overflow:hidden;">
+<tr><td style="background:#1b5812;padding:24px 32px;">
+  <p style="margin:0;color:#fabd8f;font-size:22px;letter-spacing:1px;">RajaOnam 2026</p>
+  <p style="margin:4px 0 0;color:#fabd8f;opacity:0.75;font-size:11px;letter-spacing:3px;text-transform:uppercase;">Oru Kottara Sadhya · Bolgatty Palace, Kochi</p>
+</td></tr>
+<tr><td style="padding:32px;">
+  <p style="margin:0 0 8px;color:#8A2A1B;font-size:11px;letter-spacing:3px;text-transform:uppercase;">Booking Confirmed</p>
+  <p style="margin:0 0 24px;color:#2B2118;font-size:24px;">Your banana leaf is reserved, {doc['name'].split()[0]}!</p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #E4D6BC;">{rows}</table>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr><td align="center" style="background:#FFFBF2;border:1px solid #E4D6BC;border-radius:12px;padding:24px;">
+    <img src="{qr_url}" width="180" height="180" alt="Booking QR code" style="display:block;" />
+    <p style="margin:12px 0 0;color:#7A6A58;font-size:11px;letter-spacing:2px;text-transform:uppercase;">Show this QR at the gate</p>
+  </td></tr></table>
+  <p style="margin:24px 0 0;color:#7A6A58;font-size:13px;line-height:1.6;">26 August 2026 · 11:00 AM – 5:00 PM · Bolgatty Palace, Kochi.<br/>Present your Booking ID <b style="color:#8A2A1B;">{doc['reference']}</b> or the QR code at the entrance.</p>
+</td></tr>
+<tr><td style="background:#F5EBD8;padding:16px 32px;"><p style="margin:0;color:#7A6A58;font-size:11px;letter-spacing:1px;text-align:center;">Copyright 2026 RajaOnam · Powered by Berrysys Media Global LLC</p></td></tr>
+</table></td></tr></table></body></html>"""
+
+
+async def send_confirmation_email(doc, base_url):
+    qr_url = f"{base_url}api/bookings/{doc['reference']}/qr"
+    payload = {
+        "to": [doc["email"]],
+        "subject": f"RajaOnam 2026 — Booking Confirmed ({doc['reference']})",
+        "html": booking_email_html(doc, qr_url),
+        "from_name": os.environ["EMAIL_FROM_NAME"],
+    }
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(
+                f"{EMAIL_BASE_URL}/api/v1/email/send",
+                headers={"X-Email-Key": os.environ["EMERGENT_EMAIL_KEY"]},
+                json=payload,
+            )
+        logger.info(f"Confirmation email to {doc['email']} for {doc['reference']}: HTTP {resp.status_code}")
+    except Exception as e:
+        logger.error(f"Email send failed for {doc['reference']}: {e}")
 
 
 @api_router.get("/bookings/{reference}")

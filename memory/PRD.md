@@ -106,6 +106,13 @@
 - Payment mode tracking: form section 06 (UPI / Card / Net Banking / Pay at Venue, default UPI) → stored as payment_mode → shown in confirmation, dashboard PAYMENT column, and CSV export. Old bookings (pre-feature) show "—"
 - Verified: EO-EO6K3E booked with Net Banking shows in dashboard; boating filter 4 rows + export works
 
+## Submit + QR + Email v12 (2026-08-05)
+- Payment SKIPPED: form button is now "Submit Booking" (no charge; "pay at venue" note); payment_mode defaults to "Pending"
+- Success page shows generated QR code (GET /api/bookings/{ref}/qr → PNG, content: RAJAONAM-2026|ref|name|guests)
+- Confirmation email via Emergent managed Resend proxy (EMERGENT_EMAIL_KEY in .env, EMAIL_FROM_NAME="RajaOnam 2026"): branded HTML with booking details + QR image (linked from backend URL); sent async (asyncio.create_task), failure doesn't break booking
+- qrcode[pil] + httpx installed
+- Verified: EO-K16SUD success page QR renders; email HTTP 202 to delivered@resend.dev (test address)
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking
