@@ -55,7 +55,8 @@ export default function Hero({ event }) {
         </div>
       </div>
 
-      <div className="relative z-10 px-6 sm:px-12 xl:px-20 pt-8 lg:pt-20 pb-14 lg:min-h-[95vh] max-w-3xl">
+      <div className="relative z-10 px-6 sm:px-12 xl:px-20 pt-8 lg:pt-16 pb-14 lg:min-h-[95vh]">
+        <div className="max-w-2xl rounded-2xl bg-[#FFFBF2]/85 backdrop-blur-md border border-white/70 shadow-[0_25px_70px_rgba(43,33,24,0.18)] p-6 sm:p-10">
         <Line delay={0.15}>
           <span className="text-xs tracking-[0.35em] uppercase font-bold text-maroon" data-testid="hero-tagline">
             {event?.tagline || "Oru Kottara Sadhya 2026"}
@@ -102,6 +103,7 @@ export default function Hero({ event }) {
             Booking Details <ArrowDown className="w-3.5 h-3.5" />
           </button>
         </motion.div>
+        </div>
       </div>
     </section>
   );
