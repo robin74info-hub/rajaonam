@@ -29,7 +29,7 @@ export default function Hero({ event }) {
         <img
           src="/assets/onam-hero.png"
           alt="Family making a pookalam during Onam with King Mahabali"
-          className="w-full h-[115%] object-cover"
+          className="w-full h-[115%] object-cover origin-top-left scale-[1.12] translate-x-[5%]"
           style={{ objectPosition: "center top" }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#FFFBF2]/55 via-[#FFFBF2]/10 to-transparent" />
