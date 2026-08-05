@@ -29,7 +29,7 @@ export default function Hero({ event }) {
         <img
           src="/assets/onam-hero.png"
           alt="Family making a pookalam during Onam with King Mahabali"
-          className="w-full h-[115%] object-cover origin-top-left scale-[1.12] translate-x-[5%]"
+          className="w-full h-[115%] object-cover"
           style={{ objectPosition: "center top" }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#FFFBF2]/55 via-[#FFFBF2]/10 to-transparent" />
@@ -55,7 +55,7 @@ export default function Hero({ event }) {
         </div>
       </div>
 
-      <div className="relative z-10 pl-[15px] pr-6 sm:pr-12 pt-8 lg:pt-16 pb-14 lg:min-h-[95vh]">
+      <div className="relative z-10 pl-[15px] sm:pl-[70px] lg:pl-[130px] pr-6 sm:pr-12 pt-8 lg:pt-16 pb-14 lg:min-h-[95vh]">
         <div className="max-w-xl rounded-2xl bg-[#FFFBF2]/85 backdrop-blur-md border border-white/70 shadow-[0_25px_70px_rgba(43,33,24,0.18)] p-5 sm:p-8">
         <Line delay={0.15}>
           <span className="text-xs tracking-[0.35em] uppercase font-bold text-maroon" data-testid="hero-tagline">
