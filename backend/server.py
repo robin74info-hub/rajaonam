@@ -138,6 +138,7 @@ async def create_booking(input: BookingCreate, request: Request):
     await db.bookings.insert_one(doc)
     doc.pop("_id", None)
     asyncio.create_task(send_confirmation_email(doc, public_base(request)))
+    asyncio.create_task(send_whatsapp_confirmation(doc, public_base(request)))
     return doc
 
 
@@ -295,6 +296,44 @@ async def send_confirmation_email(doc, base_url):
         logger.error(f"Email send failed for {doc['reference']}: {e}")
 
 
+WHATSAPP_SERVICE_URL = os.environ.get("WHATSAPP_SERVICE_URL", "http://localhost:3001")
+
+
+def normalize_phone(phone: str) -> str:
+    digits = "".join(ch for ch in phone if ch.isdigit())
+    if digits.startswith("00"):
+        digits = digits[2:]
+    if len(digits) == 10:
+        digits = "91" + digits
+    return digits
+
+
+async def send_whatsapp_confirmation(doc, base_url):
+    phone = normalize_phone(doc["phone"])
+    qr_url = f"{base_url}api/bookings/{doc['reference']}/qr"
+    ticket_url = f"{base_url}api/bookings/{doc['reference']}/ticket.pdf"
+    caption = (
+        f"🌸 *RAJAONAM 2026 — Booking Confirmed* 🌸\n\n"
+        f"*Booking ID:* {doc['reference']}\n"
+        f"*Name:* {doc['name']}\n"
+        f"*Sea Food Sadhya:* {doc['adults']} Adults · {doc['kids_5_12']} Kids (5-12) · {doc['kids_below_5']} Below 5\n"
+        f"*Veg Onam Sadhya:* {doc['veg_adults']} Adults · {doc['veg_kids_5_12']} Kids (5-12) · {doc['veg_kids_below_5']} Below 5\n"
+        f"*Contests:* {', '.join(doc['contests']) or '—'}\n"
+        f"*Games:* {', '.join(doc['games']) or '—'}\n"
+        f"*Boating:* {doc['boating_slot'] + ' · ' + str(doc['boating_persons']) + ' persons' if doc['boating'] else '—'}\n"
+        f"*Total:* ₹{doc['total']:,} (pay at venue)\n\n"
+        f"26 Aug 2026 · 11 AM – 5 PM\nBolgatty Palace & Island Resort, Kochi\n\n"
+        f"Show this QR at the gate."
+    )
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            r1 = await client.post(f"{WHATSAPP_SERVICE_URL}/send-image", json={"phone": phone, "image_url": qr_url, "caption": caption})
+            r2 = await client.post(f"{WHATSAPP_SERVICE_URL}/send", json={"phone": phone, "message": f"📄 Download your ticket (PDF): {ticket_url}"})
+        logger.info(f"WhatsApp to {phone} for {doc['reference']}: img={r1.status_code} pdf={r2.status_code}")
+    except Exception as e:
+        logger.error(f"WhatsApp send failed for {doc['reference']}: {e}")
+
+
 @api_router.get("/bookings/{reference}")
 async def get_booking(reference: str):
     doc = await db.bookings.find_one({"reference": reference}, {"_id": 0})
@@ -344,6 +383,29 @@ async def get_current_staff(request: Request):
     if payload.get("role") not in ("admin", "gate"):
         raise HTTPException(status_code=403, detail="Staff access required")
     return payload["sub"]
+
+
+@api_router.get("/admin/whatsapp/status")
+async def whatsapp_status(admin: str = Depends(get_current_admin)):
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(f"{WHATSAPP_SERVICE_URL}/status")
+        return resp.json()
+    except Exception as e:
+        return {"connected": False, "error": str(e)}
+
+
+@api_router.get("/admin/whatsapp/qr-image")
+async def whatsapp_qr_image(admin: str = Depends(get_current_admin)):
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(f"{WHATSAPP_SERVICE_URL}/qr")
+        qr = resp.json().get("qr")
+    except Exception:
+        qr = None
+    if not qr:
+        raise HTTPException(status_code=404, detail="No pairing QR available — already connected or service starting")
+    return Response(content=make_qr_png(qr), media_type="image/png")
 
 
 class AdminLogin(BaseModel):

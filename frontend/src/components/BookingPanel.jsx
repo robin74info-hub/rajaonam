@@ -252,7 +252,7 @@ export default function BookingPanel({ event, onBooked }) {
                 </a>
               </div>
               <p className="text-sm text-ash leading-relaxed">
-                A confirmation email with your booking details and QR ticket has been sent to <span className="text-ink font-semibold">{booking.email}</span>.
+                A confirmation email and a WhatsApp message with your QR ticket have been sent to <span className="text-ink font-semibold">{booking.email}</span> and <span className="text-ink font-semibold">{booking.phone}</span>.
               </p>
               <button
                 data-testid="book-another-btn"

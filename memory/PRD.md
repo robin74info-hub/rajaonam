@@ -141,6 +141,15 @@
 - Backend: get_current_staff (admin+gate) for checkin, get_current_admin (admin-only) for bookings/export; login returns role
 - Verified: gate login → /scanner, no dashboard access anywhere, check-in works; admin unaffected (25 bookings visible)
 
+## WhatsApp Confirmations v17 (2026-08-07)
+- Baileys WhatsApp microservice at /app/whatsapp-service (port 3001, supervisor program "whatsapp") — pairs with a WhatsApp number via QR (Linked Devices), no API keys
+- After booking: WhatsApp message with QR image + full details caption, then ticket PDF link (phone normalized to 91XXXXXXXXXX); non-blocking, failure logged
+- Admin dashboard: "WhatsApp Confirmations" card — live status (polls 15s), pairing QR image + pairing instructions, refresh button
+- Backend proxies: GET /api/admin/whatsapp/status, GET /api/admin/whatsapp/qr-image (admin-only)
+- Confirmation page text now mentions email + WhatsApp
+- Verified: service running, pairing QR renders in dashboard, booking EO-5VJ1MR triggered send (503 until paired — EXPECTED)
+- PENDING MANUAL STEP: user must scan the pairing QR in /admin with the WhatsApp number that will send tickets
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

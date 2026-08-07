@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import axios from "axios";
-import { Flower2, Loader2, Download, LogOut, Users, IndianRupee, Sailboat, Fish, Salad, Trophy, Gamepad2, QrCode, UserCheck } from "lucide-react";
+import { Flower2, Loader2, Download, LogOut, Users, IndianRupee, Sailboat, Fish, Salad, Trophy, Gamepad2, QrCode, UserCheck, MessageCircle, RefreshCw } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -17,8 +17,32 @@ export default function Admin() {
   const [bookings, setBookings] = useState(null);
   const [exporting, setExporting] = useState(false);
   const [filter, setFilter] = useState("all");
+  const [wa, setWa] = useState(null);
+  const [waQr, setWaQr] = useState(null);
 
   const headers = { Authorization: `Bearer ${token}` };
+
+  const fetchWaStatus = () =>
+    axios.get(`${API}/admin/whatsapp/status`, { headers }).then((r) => setWa(r.data)).catch(() => setWa({ connected: false }));
+
+  useEffect(() => {
+    if (!token) return;
+    fetchWaStatus();
+    const iv = setInterval(fetchWaStatus, 15000);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
+  useEffect(() => {
+    if (wa && !wa.connected && !waQr) {
+      axios
+        .get(`${API}/admin/whatsapp/qr-image`, { headers, responseType: "blob" })
+        .then((r) => setWaQr(URL.createObjectURL(r.data)))
+        .catch(() => setWaQr(null));
+    }
+    if (wa?.connected && waQr) setWaQr(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wa]);
 
   const loadBookings = () =>
     axios.get(`${API}/admin/bookings`, { headers }).then((r) => setBookings(r.data)).catch((e) => {
@@ -206,6 +230,41 @@ export default function Admin() {
         <Stat icon={IndianRupee} label="Revenue" value={bookings ? fmt(totalRevenue) : "…"} testid="stat-revenue" />
         <Stat icon={Sailboat} label="Boating" value={bookings ? totalBoating : "…"} onClick={() => toggleFilter("boating")} active={filter === "boating"} testid="stat-boating" />
         <Stat icon={UserCheck} label="Guests Checked In" value={bookings ? checkedInCount : "…"} testid="stat-checked-in" />
+      </div>
+
+      <div className="rounded-xl border border-[#D8C7A5] bg-[#F1E3C6]/80 p-5 mb-8" data-testid="whatsapp-card">
+        <div className="flex flex-wrap items-center gap-4">
+          <span className={`w-10 h-10 rounded-full flex items-center justify-center ${wa?.connected ? "bg-leaf/15 border border-leaf/40" : "bg-maroon/10 border border-maroon/30"}`}>
+            <MessageCircle className={`w-5 h-5 ${wa?.connected ? "text-leaf" : "text-maroon"}`} />
+          </span>
+          <div className="flex-1 min-w-[200px]">
+            <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon">WhatsApp Confirmations</p>
+            <p className="text-sm text-ink mt-1" data-testid="whatsapp-status">
+              {wa === null ? "Checking…" : wa.connected ? "Connected — guests receive their QR ticket on WhatsApp after booking" : "Not connected — pair a WhatsApp number to send tickets"}
+            </p>
+          </div>
+          <button
+            data-testid="whatsapp-refresh-btn"
+            onClick={() => { setWaQr(null); fetchWaStatus(); }}
+            className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#D8C7A5] text-ash text-xs font-bold tracking-[0.15em] uppercase hover:text-leaf hover:border-leaf transition-colors"
+          >
+            <RefreshCw className="w-3.5 h-3.5" /> Refresh
+          </button>
+        </div>
+        {wa && !wa.connected && waQr && (
+          <div className="mt-5 pt-5 border-t border-[#D8C7A5] flex flex-col sm:flex-row items-center gap-5">
+            <img src={waQr} alt="WhatsApp pairing QR" className="w-44 h-44 rounded-lg border border-[#D8C7A5] bg-white p-2" data-testid="whatsapp-pair-qr" />
+            <div className="text-sm text-ash leading-relaxed">
+              <p className="font-bold text-ink mb-2">Pair your WhatsApp (one-time):</p>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Open WhatsApp on the phone that should send tickets</li>
+                <li>Go to <span className="text-ink font-semibold">Settings → Linked Devices</span></li>
+                <li>Tap <span className="text-ink font-semibold">Link a Device</span> and scan this QR</li>
+              </ol>
+              <p className="mt-2 text-xs">The QR refreshes every minute — click Refresh if it expires.</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {filter !== "all" && (
