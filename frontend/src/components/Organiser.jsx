@@ -24,7 +24,7 @@ export default function Organiser() {
           </p>
           <ul className="space-y-3">
             <li className="flex items-center gap-3 text-sm text-ink" data-testid="organiser-phone">
-              <Phone className="w-4 h-4 text-leaf shrink-0" /> +91 98470 00000
+              <Phone className="w-4 h-4 text-leaf shrink-0" /> +91 90485 99965
             </li>
             <li className="flex items-center gap-3 text-sm text-ink" data-testid="organiser-email">
               <Mail className="w-4 h-4 text-leaf shrink-0" /> reach@primetimeevents.in
