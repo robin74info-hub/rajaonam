@@ -57,6 +57,8 @@ export default function Hero({ event }) {
 
       <div className="relative z-10 pl-[15px] sm:pl-[70px] lg:pl-[130px] pr-6 sm:pr-12 pt-8 lg:pt-16 pb-14 lg:min-h-[95vh]">
         <div className="max-w-xl rounded-2xl bg-[#FFFBF2]/85 backdrop-blur-md border border-white/70 shadow-[0_25px_70px_rgba(43,33,24,0.18)] p-5 sm:p-8">
+        <h1 className="sr-only" data-testid="hero-h1">Raja Onam 2026 – A Royal Onam Celebration at Bolgatty Palace</h1>
+
         <Line delay={0.15}>
           <span className="text-xs tracking-[0.35em] uppercase font-bold text-maroon" data-testid="hero-tagline">
             {event?.tagline || "Oru Kottara Sadhya 2026"}

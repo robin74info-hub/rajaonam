@@ -190,9 +190,14 @@
 - BLOCKER: user's Twilio account is TRIAL — API returns "trial accounts have limited parameter access" even for plain text WhatsApp. Credentials verified valid (account fetch works). Needs: activate WhatsApp Sandbox in Twilio Console (Messaging → Try it out) + join sandbox from 9048599965, OR upgrade to paid account + register own sender
 - Baileys service still exists at /app/whatsapp-service but is now UNUSED by backend
 
+## SEO Metadata v24 (2026-08-08)
+- index.html title: "RAJAONAM 2026 | Onam Celebration at Bolgatty Palace, Kochi, Kerala"
+- Meta description: "Celebrate Raja Onam 2026 at Bolgatty Palace, Kochi on 26 August. Enjoy Mahabali's grand welcome, Onam Sadhya, Samudra Sadhya, games, music, cultural programs and family entertainment. Book tickets online."
+- Hero.jsx: added h1 "Raja Onam 2026 – A Royal Onam Celebration at Bolgatty Palace" as sr-only (visual logo image preserved); verified title, h1 count=1, hero renders unchanged
+- Admin dashboard card reorder (WhatsApp, Website QR, Manual Booking below bookings table) verified working from previous session
+
 ## Backlog
-- P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
-- P1: Email confirmation (Resend) to guest after booking
-- P1: Admin/organizer view of bookings
+- P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
 - P2: Currency/locale switcher
+- P2: Printable A4 marketing poster PDF with website QR + event details
