@@ -80,8 +80,13 @@ export default function Hero({ event }) {
         </motion.div>
 
         <Line delay={0.6}>
-          <span className="block max-w-md text-base sm:text-lg text-ink font-medium leading-relaxed mt-6">
-            King Mahabali returns to Kerala — and Bolgatty Palace lays out its grandest sea food sadhya. One unforgettable afternoon.
+          <span className="block font-display text-2xl sm:text-3xl text-maroon tracking-wide mt-6" data-testid="hero-heading">
+            RAJA ONAM 2026
+          </span>
+        </Line>
+        <Line delay={0.75}>
+          <span className="block max-w-md text-base sm:text-lg text-ink font-medium leading-relaxed mt-3" data-testid="hero-description">
+            Mahabali returns to Kerala for a grand celebration of Onam, bringing together tradition, culture, food, music, games and unforgettable family moments.
           </span>
         </Line>
 

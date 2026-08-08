@@ -196,6 +196,11 @@
 - Hero.jsx: added h1 "Raja Onam 2026 – A Royal Onam Celebration at Bolgatty Palace" as sr-only (visual logo image preserved); verified title, h1 count=1, hero renders unchanged
 - Admin dashboard card reorder (WhatsApp, Website QR, Manual Booking below bookings table) verified working from previous session
 
+## Hero Copy + Email Venue Link v25 (2026-08-08)
+- Hero.jsx: after logo now shows "RAJA ONAM 2026" heading + "Mahabali returns to Kerala for a grand celebration of Onam, bringing together tradition, culture, food, music and unforgettable family moments." (data-testids hero-heading, hero-description)
+- server.py booking_email_html: added "📍 Venue Location — Open in Google Maps" link (https://maps.app.goo.gl/q6ZminHj9X8hBhBa6) right after the QR code block in confirmation emails
+- Verified: hero renders both lines, backend syntax OK, email HTML generation includes maps link
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

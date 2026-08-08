@@ -391,6 +391,7 @@ def booking_email_html(doc, qr_url, ticket_url):
   <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr><td align="center" style="background:#FFFBF2;border:1px solid #E4D6BC;border-radius:12px;padding:24px;">
     <img src="{qr_url}" width="180" height="180" alt="Booking QR code" style="display:block;" />
     <p style="margin:12px 0 0;color:#7A6A58;font-size:11px;letter-spacing:2px;text-transform:uppercase;">Show this QR at the gate</p>
+    <p style="margin:16px 0 0;"><a href="https://maps.app.goo.gl/q6ZminHj9X8hBhBa6" style="color:#1b5812;font-size:13px;font-weight:bold;text-decoration:none;">&#128205; Venue Location — Open in Google Maps</a></p>
   </td></tr></table>
   <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;"><tr><td align="center">
     <a href="{ticket_url}" style="display:inline-block;background:#1b5812;color:#fabd8f;font-size:13px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;padding:14px 36px;border-radius:30px;">Download Ticket (PDF)</a>
