@@ -229,6 +229,12 @@
 - Verified: tabs show Billed (1) / Unbilled (0) / Complimentary (0); unbilled and comp tabs show "No bookings found"
 - NOTE for future agents: DB is now production data — do NOT seed test bookings without flagging them
 
+## Billed Data Cleared + Razorpay Live Verification v31 (2026-08-08)
+- User asked to remove billed data too: deleted EO-NZL4VT "Paid Person" — bookings collection now completely EMPTY (0 records). Dashboard shows all zeros.
+- User reported "test mode" + UPI failing on rajaonam.com (PRODUCTION). Diagnosis: production was deployed BEFORE live Razorpay keys were added — it still runs old test keys. Preview verified using rzp_live_TNHXkrBGaKvHUT (matches user-provided key/secret), live order creation works.
+- User confirmed: Razorpay account fully activated, UPI enabled for live mode.
+- FIX PENDING (user action): REDEPLOY the app so production picks up the live keys. UPI should work in live mode after redeploy.
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
