@@ -525,6 +525,15 @@ async def whatsapp_status(admin: str = Depends(get_current_admin)):
     return {"connected": True, "provider": "twilio", "sender": TWILIO_FROM.replace("whatsapp:", "")}
 
 
+@api_router.get("/admin/website-qr")
+async def website_qr(request: Request, admin: str = Depends(get_current_admin)):
+    site_url = public_base(request).rstrip("/")
+    img = qrcode.make(site_url, box_size=12, border=3)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return Response(content=buf.getvalue(), media_type="image/png")
+
+
 @api_router.post("/admin/manual-booking")
 async def create_manual_booking(input: BookingCreate, request: Request, admin: str = Depends(get_current_admin)):
     if input.ticket_type not in TICKET_TYPES:

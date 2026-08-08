@@ -59,8 +59,28 @@ export default function Admin() {
   };
   const [wa, setWa] = useState(null);
   const [waQr, setWaQr] = useState(null);
+  const [siteQr, setSiteQr] = useState(null);
 
   const headers = { Authorization: `Bearer ${token}` };
+
+  useEffect(() => {
+    if (!token) return;
+    axios
+      .get(`${API}/admin/website-qr`, { headers, responseType: "blob" })
+      .then((r) => setSiteQr(URL.createObjectURL(r.data)))
+      .catch(() => setSiteQr(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
+  const downloadSiteQr = async () => {
+    const res = await axios.get(`${API}/admin/website-qr`, { headers, responseType: "blob" });
+    const url = URL.createObjectURL(new Blob([res.data], { type: "image/png" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "rajaonam-website-qr.png";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const fetchWaStatus = () =>
     axios.get(`${API}/admin/whatsapp/status`, { headers }).then((r) => setWa(r.data)).catch(() => setWa({ connected: false }));
@@ -311,6 +331,31 @@ export default function Admin() {
             </div>
           </div>
         )}
+      </div>
+
+      <div className="rounded-xl border border-[#D8C7A5] bg-[#F1E3C6]/80 p-5 mb-8" data-testid="website-qr-card">
+        <div className="flex flex-wrap items-center gap-5">
+          {siteQr ? (
+            <img src={siteQr} alt="Website QR code" className="w-28 h-28 rounded-lg border border-[#D8C7A5] bg-white p-1.5" data-testid="website-qr-image" />
+          ) : (
+            <div className="w-28 h-28 rounded-lg border border-[#D8C7A5] bg-white/60 flex items-center justify-center">
+              <Loader2 className="w-5 h-5 animate-spin text-ash" />
+            </div>
+          )}
+          <div className="flex-1 min-w-[220px]">
+            <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon">Website QR Code</p>
+            <p className="text-sm text-ash mt-1 leading-relaxed">
+              Scanning this QR opens your booking website. Download and use it on posters, flyers, WhatsApp status and social media.
+            </p>
+          </div>
+          <button
+            data-testid="download-website-qr-btn"
+            onClick={downloadSiteQr}
+            className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#1b5812] text-[#fabd8f] text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#12400c] transition-colors"
+          >
+            <Download className="w-4 h-4" /> Download QR
+          </button>
+        </div>
       </div>
 
       <div className="rounded-xl border border-[#D8C7A5] bg-[#F1E3C6]/80 p-5 mb-8" data-testid="manual-booking-card">
