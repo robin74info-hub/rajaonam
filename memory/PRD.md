@@ -170,6 +170,12 @@
 - "Pay at Venue" button REMOVED — online payment is the only booking path (backend /api/bookings endpoint still exists but unused by UI)
 - Verified: live order created (order_TNHekfDTPGppas, ₹2,999), form shows only "Pay Online"
 
+## Billed/Unbilled Dashboard v21 (2026-08-08)
+- Clear Data button + DELETE endpoint REMOVED
+- Dashboard splits Billed (status=confirmed, paid) vs Unbilled (status=pending_payment — filled form, started Razorpay, never paid)
+- Billed/Unbilled stat cards + view tabs above table; stats/revenue computed from billed only; unbilled rows show "Not Paid" in maroon; export per view (rajaonam-bookings-billed/unbilled[-filter].csv)
+- Verified: EO-NZL4VT billed (verified payment), EO-KCC1AU + EO-HNDT2O unbilled; tabs switch, export downloads per view
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

@@ -551,13 +551,7 @@ async def auth_me(admin: str = Depends(get_current_admin)):
 
 @api_router.get("/admin/bookings")
 async def list_bookings(admin: str = Depends(get_current_admin)):
-    return await db.bookings.find({"status": "confirmed"}, {"_id": 0}).sort("created_at", -1).to_list(2000)
-
-
-@api_router.delete("/admin/bookings")
-async def clear_bookings(admin: str = Depends(get_current_admin)):
-    result = await db.bookings.delete_many({})
-    return {"deleted": result.deleted_count}
+    return await db.bookings.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
 
 
 class CheckinUpdate(BaseModel):

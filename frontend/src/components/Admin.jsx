@@ -17,6 +17,7 @@ export default function Admin() {
   const [bookings, setBookings] = useState(null);
   const [exporting, setExporting] = useState(false);
   const [filter, setFilter] = useState("all");
+  const [view, setView] = useState("billed");
   const [wa, setWa] = useState(null);
   const [waQr, setWaQr] = useState(null);
 
@@ -82,12 +83,6 @@ export default function Admin() {
     setBookings(null);
   };
 
-  const clearData = async () => {
-    if (!window.confirm("Delete ALL bookings? This cannot be undone.")) return;
-    await axios.delete(`${API}/admin/bookings`, { headers });
-    loadBookings();
-  };
-
   const exportExcel = () => {
     setExporting(true);
     const header = ["Booking ID","Booked On","Name","Phone","Email","Sea Adults","Sea Kids 5-12","Sea Kids Below 5","Veg Adults","Veg Kids 5-12","Veg Kids Below 5","Total Participants","Contests","Games","Boating","Boating Slot","Boating Persons","Payment Mode","Guests Checked In","Total Amount (INR)","Status"];
@@ -109,7 +104,7 @@ export default function Admin() {
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = filter === "all" ? "rajaonam-bookings.csv" : `rajaonam-bookings-${filter}.csv`;
+    a.download = `rajaonam-bookings-${view}${filter === "all" ? "" : `-${filter}`}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     setExporting(false);
@@ -163,20 +158,22 @@ export default function Admin() {
 
   if (localStorage.getItem("admin_role") === "gate") return <Navigate to="/scanner" replace />;
 
-  const totalRevenue = (bookings || []).reduce((s, b) => s + (b.total || 0), 0);
-  const totalGuests = (bookings || []).reduce((s, b) => s + (b.total_participants || 0), 0);
-  const totalBoating = (bookings || []).filter((b) => b.boating).length;
-  const seaAdults = (bookings || []).reduce((s, b) => s + (b.adults || 0), 0);
-  const seaKids = (bookings || []).reduce((s, b) => s + (b.kids_5_12 || 0) + (b.kids_below_5 || 0), 0);
-  const vegAdults = (bookings || []).reduce((s, b) => s + (b.veg_adults || 0), 0);
-  const vegKids = (bookings || []).reduce((s, b) => s + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0), 0);
-  const contestsCount = (bookings || []).filter((b) => (b.contests || []).length > 0).length;
-  const gamesCount = (bookings || []).filter((b) => (b.games || []).length > 0).length;
+  const billed = (bookings || []).filter((b) => b.status === "confirmed");
+  const unbilled = (bookings || []).filter((b) => b.status === "pending_payment");
+  const totalRevenue = billed.reduce((s, b) => s + (b.total || 0), 0);
+  const totalGuests = billed.reduce((s, b) => s + (b.total_participants || 0), 0);
+  const totalBoating = billed.filter((b) => b.boating).length;
+  const seaAdults = billed.reduce((s, b) => s + (b.adults || 0), 0);
+  const seaKids = billed.reduce((s, b) => s + (b.kids_5_12 || 0) + (b.kids_below_5 || 0), 0);
+  const vegAdults = billed.reduce((s, b) => s + (b.veg_adults || 0), 0);
+  const vegKids = billed.reduce((s, b) => s + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0), 0);
+  const contestsCount = billed.filter((b) => (b.contests || []).length > 0).length;
+  const gamesCount = billed.filter((b) => (b.games || []).length > 0).length;
   const guestsChecked = (b) => {
     if (b.checked_in_counts) return Object.values(b.checked_in_counts).reduce((s, n) => s + n, 0);
     return b.checked_in ? (b.total_participants || 0) : 0;
   };
-  const checkedInCount = (bookings || []).reduce((s, b) => s + guestsChecked(b), 0);
+  const checkedInCount = billed.reduce((s, b) => s + guestsChecked(b), 0);
 
   const FILTERS = {
     "sea-adults": { label: "Sea Food Adults", test: (b) => (b.adults || 0) > 0 },
@@ -187,7 +184,8 @@ export default function Admin() {
     games: { label: "Games", test: (b) => (b.games || []).length > 0 },
     boating: { label: "Boating", test: (b) => !!b.boating },
   };
-  const filtered = (bookings || []).filter((b) => (filter === "all" ? true : FILTERS[filter].test(b)));
+  const baseList = view === "billed" ? billed : unbilled;
+  const filtered = baseList.filter((b) => (filter === "all" ? true : FILTERS[filter].test(b)));
   const toggleFilter = (key) => setFilter(filter === key ? "all" : key);
 
   return (
@@ -215,13 +213,6 @@ export default function Admin() {
             Export to Excel
           </button>
           <button
-            data-testid="clear-data-btn"
-            onClick={clearData}
-            className="flex items-center gap-2 px-6 py-3 rounded-full border border-maroon text-maroon text-xs font-bold tracking-[0.2em] uppercase hover:bg-maroon hover:text-cream transition-colors"
-          >
-            Clear Data
-          </button>
-          <button
             data-testid="admin-logout-btn"
             onClick={logout}
             className="flex items-center gap-2 px-6 py-3 rounded-full border border-[#D8C7A5] text-ash text-xs font-bold tracking-[0.2em] uppercase hover:text-maroon hover:border-maroon transition-colors"
@@ -232,7 +223,8 @@ export default function Admin() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-        <Stat icon={Users} label="Bookings" value={bookings?.length ?? "…"} testid="stat-bookings" />
+        <Stat icon={Users} label="Billed Bookings" value={bookings ? billed.length : "…"} onClick={() => setView("billed")} active={view === "billed"} testid="stat-bookings" />
+        <Stat icon={Users} label="Unbilled" value={bookings ? unbilled.length : "…"} onClick={() => setView("unbilled")} active={view === "unbilled"} testid="stat-unbilled" />
         <Stat icon={Users} label="Total Guests" value={bookings ? totalGuests : "…"} testid="stat-guests" />
         <Stat icon={Fish} label="Sea Food Adults" value={bookings ? seaAdults : "…"} onClick={() => toggleFilter("sea-adults")} active={filter === "sea-adults"} testid="stat-sea-adults" />
         <Stat icon={Fish} label="Sea Food Kids" value={bookings ? seaKids : "…"} onClick={() => toggleFilter("sea-kids")} active={filter === "sea-kids"} testid="stat-sea-kids" />
@@ -280,6 +272,21 @@ export default function Admin() {
         )}
       </div>
 
+      <div className="flex gap-2.5 mb-4" data-testid="view-tabs">
+        {[["billed", `Billed (${billed.length})`], ["unbilled", `Unbilled (${unbilled.length})`]].map(([v, label]) => (
+          <button
+            key={v}
+            data-testid={`view-tab-${v}`}
+            onClick={() => setView(v)}
+            className={`px-6 py-2.5 rounded-full text-xs font-bold tracking-[0.15em] uppercase transition-colors ${
+              view === v ? "bg-[#1b5812] text-[#fabd8f]" : "border border-[#D8C7A5] text-ash hover:border-leaf hover:text-leaf"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       {filter !== "all" && (
         <button
           data-testid="filter-chip"
@@ -321,7 +328,9 @@ export default function Admin() {
                   <td className="px-4 py-3 text-ash max-w-[180px] truncate">{b.contests?.join(", ") || "—"}</td>
                   <td className="px-4 py-3 text-ash max-w-[180px] truncate">{b.games?.join(", ") || "—"}</td>
                   <td className="px-4 py-3 text-ash whitespace-nowrap">{b.boating ? `${b.boating_slot} · ${b.boating_persons}p` : "—"}</td>
-                  <td className="px-4 py-3 text-ink whitespace-nowrap" data-testid={`payment-mode-${b.reference}`}>{b.payment_mode || "—"}</td>
+                  <td className="px-4 py-3 whitespace-nowrap" data-testid={`payment-mode-${b.reference}`}>
+                    {b.status === "pending_payment" ? <span className="text-maroon font-semibold">Not Paid</span> : <span className="text-ink">{b.payment_mode || "—"}</span>}
+                  </td>
                   <td className="px-4 py-3 whitespace-nowrap" data-testid={`checked-in-${b.reference}`}>
                     {guestsChecked(b) > 0 ? (
                       <span className={`font-bold ${guestsChecked(b) >= (b.total_participants || 0) ? "text-leaf" : "text-gold"}`}>
