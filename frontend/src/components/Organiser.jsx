@@ -13,12 +13,14 @@ export default function Organiser() {
       >
         <div>
           <p className="text-xs tracking-[0.3em] uppercase font-bold text-maroon mb-4">Presented By</p>
-          <img
-            src="/assets/prime-logo.jpg"
-            alt="Prime Time Events logo"
-            className="h-14 sm:h-16 w-auto mb-5 mix-blend-multiply"
-            data-testid="prime-logo"
-          />
+          <a href="https://primetimeevents.in/" target="_blank" rel="noreferrer" data-testid="prime-logo-link">
+            <img
+              src="/assets/prime-logo.jpg"
+              alt="Prime Time Events logo"
+              className="h-14 sm:h-16 w-auto mb-5 mix-blend-multiply hover:opacity-80 transition-opacity"
+              data-testid="prime-logo"
+            />
+          </a>
           <p className="text-base text-ash leading-relaxed mb-8 max-w-md">
             The Kochi-based event house behind RajaOnam 2026 — crafting large-scale cultural celebrations that bring Kerala's traditions alive, from the royal welcome to the grand sadhya at Bolgatty Palace.
           </p>
