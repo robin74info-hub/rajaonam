@@ -5,7 +5,8 @@ export default function BrochureButton() {
   return (
     <motion.a
       href="/assets/rajaonam-experience.pdf"
-      download="RAJAONAM-2026-EXPERIENCE.pdf"
+      target="_blank"
+      rel="noreferrer"
       data-testid="brochure-download-btn"
       initial={{ x: 80, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}

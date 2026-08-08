@@ -213,6 +213,11 @@
 - App.js footer: background now green #1b5812 with cream text; "Berrysys Media Global LLC" is now an anchor to https://berrysysglobal.com/
 - Verified via screenshots: header text, logo sizes, green footer, berrysys link href
 
+## Brochure Open + COMP Passcode v28 (2026-08-08)
+- BrochureButton.jsx: side button now OPENS the new "RAJAONAM 2026 EXPERIENCE.pdf" in a new tab (was forced download); new PDF (2.4MB) replaced at /assets/rajaonam-experience.pdf
+- Manual complimentary booking now requires passcode PRIME26 before QR generation + email/WhatsApp send: backend validates COMP_PASSCODE env (403 on wrong/missing, case-insensitive); Admin.jsx form has "Passcode" password input (data-testid="manual-passcode-input")
+- Verified: wrong/missing passcode rejected, "prime26" accepted → booking EO-OQ9WT5 created confirmed+comp
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

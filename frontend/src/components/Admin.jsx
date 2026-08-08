@@ -18,7 +18,7 @@ export default function Admin() {
   const [exporting, setExporting] = useState(false);
   const [filter, setFilter] = useState("all");
   const [view, setView] = useState("billed");
-  const emptyManual = { ticket_type: "Guest", name: "", phone: "", email: "", adults: 1, kids_5_12: 0, kids_below_5: 0, veg_adults: 0, veg_kids_5_12: 0, veg_kids_below_5: 0 };
+  const emptyManual = { ticket_type: "Guest", name: "", phone: "", email: "", passcode: "", adults: 1, kids_5_12: 0, kids_below_5: 0, veg_adults: 0, veg_kids_5_12: 0, veg_kids_below_5: 0 };
   const [manual, setManual] = useState(emptyManual);
   const [manualBusy, setManualBusy] = useState(false);
   const [manualDone, setManualDone] = useState(null);
@@ -35,6 +35,7 @@ export default function Admin() {
     if (!/^[+\d][\d\s-]{6,14}$/.test(manual.phone.trim())) return setManualError("Enter a valid phone number");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(manual.email.trim())) return setManualError("Enter a valid email");
     if (manual.adults + manual.veg_adults < 1) return setManualError("At least 1 adult required");
+    if (!manual.passcode.trim()) return setManualError("Enter the organiser passcode");
     setManualBusy(true);
     try {
       const { data } = await axios.post(`${API}/admin/manual-booking`, {
@@ -463,6 +464,7 @@ export default function Admin() {
           <input data-testid="manual-name-input" value={manual.name} onChange={setM("name")} placeholder="Full name" className="bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf" />
           <input data-testid="manual-phone-input" value={manual.phone} onChange={setM("phone")} placeholder="Phone / WhatsApp" type="tel" className="bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf" />
           <input data-testid="manual-email-input" value={manual.email} onChange={setM("email")} placeholder="Email" type="email" className="bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf" />
+          <input data-testid="manual-passcode-input" value={manual.passcode} onChange={setM("passcode")} placeholder="Passcode" type="password" className="bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf" />
           {[["adults", "Sea Adults"], ["kids_5_12", "Sea Kids 5-12"], ["kids_below_5", "Sea Kids <5"], ["veg_adults", "Veg Adults"], ["veg_kids_5_12", "Veg Kids 5-12"], ["veg_kids_below_5", "Veg Kids <5"]].map(([k, label]) => (
             <label key={k} className="flex items-center gap-2 bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5">
               <span className="text-[10px] tracking-wider uppercase text-ash whitespace-nowrap">{label}</span>

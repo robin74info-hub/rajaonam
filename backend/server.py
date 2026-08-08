@@ -70,6 +70,7 @@ class BookingCreate(BaseModel):
     boating_persons: int = Field(ge=0, le=30, default=0)
     payment_mode: str = "Pending"
     ticket_type: str = "Guest"
+    passcode: Optional[str] = None
 
 
 PAYMENT_MODES = ["Pending", "UPI", "Card", "Net Banking", "Pay at Venue", "Online (Razorpay)", "COMP"]
@@ -537,6 +538,8 @@ async def website_qr(request: Request, admin: str = Depends(get_current_admin)):
 
 @api_router.post("/admin/manual-booking")
 async def create_manual_booking(input: BookingCreate, request: Request, admin: str = Depends(get_current_admin)):
+    if (input.passcode or "").strip().upper() != os.environ.get("COMP_PASSCODE"):
+        raise HTTPException(status_code=403, detail="Invalid passcode — complimentary tickets require the organiser passcode")
     if input.ticket_type not in TICKET_TYPES:
         raise HTTPException(status_code=400, detail="Invalid ticket type")
     if input.adults + input.veg_adults < 1:
