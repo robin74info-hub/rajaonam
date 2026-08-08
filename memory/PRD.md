@@ -241,6 +241,11 @@
 - Verified all 6 cases via API: billed blocked, comp blocked w/o + with wrong passcode, comp works with PRIME26, unbilled delete works, clear-all works. UI: 0 delete buttons on billed tab.
 - After REDEPLOY: user can clean production dummy data ("Paid Person", "Prod Key Check", "Prod Key Check 2") via Unbilled tab delete. NOTE: "Paid Person" EO-NZL4VT on production is status=confirmed — if it's genuinely a test payment it CANNOT be deleted by design; refund via Razorpay dashboard if needed.
 
+## Billed Delete with Passcode v33 (2026-08-08)
+- User requested billed deletion too: DELETE /api/admin/bookings/{reference} now allows deleting PAID bookings with BILLED_DELETE_PASSCODE=ONAM26 (env). Without/with wrong passcode → 403. Unbilled still free-delete, COMP still uses PRIME26.
+- Admin.jsx: Action column now on ALL tabs; billed delete = confirm dialog + passcode prompt (ONAM26)
+- Verified: billed blocked w/o passcode, blocked with PRIME26 (wrong), works with onam26 (case-insensitive)
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

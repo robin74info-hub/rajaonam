@@ -553,8 +553,10 @@ async def delete_booking(reference: str, input: DeleteBookingRequest, admin: str
             raise HTTPException(status_code=403, detail="Enter the organiser passcode to delete a complimentary booking")
         await db.bookings.delete_one({"reference": reference})
         return {"deleted": reference}
-    raise HTTPException(status_code=403, detail="Paid bookings can never be deleted")
-
+    if (input.passcode or "").strip().upper() != os.environ.get("BILLED_DELETE_PASSCODE"):
+        raise HTTPException(status_code=403, detail="Enter the billed-delete passcode to delete a paid booking")
+    await db.bookings.delete_one({"reference": reference})
+    return {"deleted": reference}
 
 @api_router.post("/admin/bookings/clear-unbilled")
 async def clear_unbilled(admin: str = Depends(get_current_admin)):

@@ -87,6 +87,21 @@ export default function Admin() {
     }
   };
 
+  const deleteBilled = async (ref) => {
+    if (!window.confirm(`Delete PAID booking ${ref}? This permanently removes billed data.`)) return;
+    const pc = window.prompt(`Enter the billed-delete passcode to delete paid booking ${ref}:`);
+    if (!pc) return;
+    setDeleting(ref);
+    try {
+      await axios.delete(`${API}/admin/bookings/${ref}`, { headers, data: { passcode: pc } });
+      loadBookings();
+    } catch (err) {
+      alert(err.response?.data?.detail || "Delete failed");
+    } finally {
+      setDeleting("");
+    }
+  };
+
   const clearUnbilled = async () => {
     if (!window.confirm(`Delete ALL ${unbilled.length} unbilled bookings? This cannot be undone.`)) return;
     try {
@@ -389,7 +404,7 @@ export default function Admin() {
                 <th className="px-4 py-3.5">Payment</th>
                 <th className="px-4 py-3.5">Checked In</th>
                 <th className="px-4 py-3.5 text-right">Total</th>
-                {view !== "billed" && <th className="px-4 py-3.5 text-right">Action</th>}
+                <th className="px-4 py-3.5 text-right">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -426,22 +441,20 @@ export default function Admin() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-right font-bold text-leaf whitespace-nowrap">{fmt(b.total)}</td>
-                  {view !== "billed" && (
-                    <td className="px-4 py-3 text-right whitespace-nowrap">
-                      <button
-                        data-testid={`delete-${b.reference}`}
-                        onClick={() => (view === "unbilled" ? deleteUnbilled(b.reference) : deleteComp(b.reference))}
-                        disabled={deleting === b.reference}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-maroon/40 text-maroon text-[10px] font-bold tracking-wider uppercase hover:bg-maroon hover:text-cream transition-colors disabled:opacity-60"
-                      >
-                        {deleting === b.reference ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />} Delete
-                      </button>
-                    </td>
-                  )}
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <button
+                      data-testid={`delete-${b.reference}`}
+                      onClick={() => (view === "unbilled" ? deleteUnbilled(b.reference) : view === "complimentary" ? deleteComp(b.reference) : deleteBilled(b.reference))}
+                      disabled={deleting === b.reference}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-maroon/40 text-maroon text-[10px] font-bold tracking-wider uppercase hover:bg-maroon hover:text-cream transition-colors disabled:opacity-60"
+                    >
+                      {deleting === b.reference ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />} Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
               {bookings && filtered.length === 0 && (
-                <tr><td colSpan={view === "billed" ? "12" : "13"} className="px-4 py-10 text-center text-ash" data-testid="no-bookings">No bookings found</td></tr>
+                <tr><td colSpan="13" className="px-4 py-10 text-center text-ash" data-testid="no-bookings">No bookings found</td></tr>
               )}
             </tbody>
           </table>
