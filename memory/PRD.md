@@ -223,6 +223,12 @@
 - Manual complimentary booking card remains functional (creates ticket + sends email/WhatsApp with PRIME26 passcode); comp bookings just aren't listed in the table
 - Verified: stat-unbilled/stat-comp/view tabs absent, table shows billed rows only
 
+## Dummy Data Cleanup v30 (2026-08-08)
+- User clarified v29: keep the Unbilled + Complimentary tabs/stat cards — only the dummy DATA should go. Admin.jsx restored from git (tabs, stats, passcode field all intact)
+- Deleted 7 dummy bookings from MongoDB: 2 unbilled (pending_payment) + 5 complimentary (COMP). Only real record remains: EO-NZL4VT "Paid Person" (Online Razorpay, ₹5,698)
+- Verified: tabs show Billed (1) / Unbilled (0) / Complimentary (0); unbilled and comp tabs show "No bookings found"
+- NOTE for future agents: DB is now production data — do NOT seed test bookings without flagging them
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

@@ -17,6 +17,7 @@ export default function Admin() {
   const [bookings, setBookings] = useState(null);
   const [exporting, setExporting] = useState(false);
   const [filter, setFilter] = useState("all");
+  const [view, setView] = useState("billed");
   const emptyManual = { ticket_type: "Guest", name: "", phone: "", email: "", passcode: "", adults: 1, kids_5_12: 0, kids_below_5: 0, veg_adults: 0, veg_kids_5_12: 0, veg_kids_below_5: 0 };
   const [manual, setManual] = useState(emptyManual);
   const [manualBusy, setManualBusy] = useState(false);
@@ -163,7 +164,7 @@ export default function Admin() {
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = `rajaonam-bookings-billed${filter === "all" ? "" : `-${filter}`}.csv`;
+    a.download = `rajaonam-bookings-${view}${filter === "all" ? "" : `-${filter}`}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     setExporting(false);
@@ -218,6 +219,8 @@ export default function Admin() {
   if (localStorage.getItem("admin_role") === "gate") return <Navigate to="/scanner" replace />;
 
   const billed = (bookings || []).filter((b) => b.status === "confirmed" && b.payment_mode !== "COMP");
+  const unbilled = (bookings || []).filter((b) => b.status === "pending_payment");
+  const compList = (bookings || []).filter((b) => b.payment_mode === "COMP");
   const totalRevenue = billed.reduce((s, b) => s + (b.total || 0), 0);
   const totalGuests = billed.reduce((s, b) => s + (b.total_participants || 0), 0);
   const totalBoating = billed.filter((b) => b.boating).length;
@@ -242,7 +245,7 @@ export default function Admin() {
     games: { label: "Games", test: (b) => (b.games || []).length > 0 },
     boating: { label: "Boating", test: (b) => !!b.boating },
   };
-  const baseList = billed;
+  const baseList = view === "billed" ? billed : view === "unbilled" ? unbilled : compList;
   const filtered = baseList.filter((b) => (filter === "all" ? true : FILTERS[filter].test(b)));
   const toggleFilter = (key) => setFilter(filter === key ? "all" : key);
 
@@ -281,7 +284,9 @@ export default function Admin() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-        <Stat icon={Users} label="Billed Bookings" value={bookings ? billed.length : "…"} testid="stat-bookings" />
+        <Stat icon={Users} label="Billed Bookings" value={bookings ? billed.length : "…"} onClick={() => setView("billed")} active={view === "billed"} testid="stat-bookings" />
+        <Stat icon={Users} label="Unbilled" value={bookings ? unbilled.length : "…"} onClick={() => setView("unbilled")} active={view === "unbilled"} testid="stat-unbilled" />
+        <Stat icon={Ticket} label="Complimentary" value={bookings ? compList.length : "…"} onClick={() => setView("complimentary")} active={view === "complimentary"} testid="stat-comp" />
         <Stat icon={Users} label="Total Guests" value={bookings ? totalGuests : "…"} testid="stat-guests" />
         <Stat icon={Fish} label="Sea Food Adults" value={bookings ? seaAdults : "…"} onClick={() => toggleFilter("sea-adults")} active={filter === "sea-adults"} testid="stat-sea-adults" />
         <Stat icon={Fish} label="Sea Food Kids" value={bookings ? seaKids : "…"} onClick={() => toggleFilter("sea-kids")} active={filter === "sea-kids"} testid="stat-sea-kids" />
@@ -294,9 +299,20 @@ export default function Admin() {
         <Stat icon={UserCheck} label="Guests Checked In" value={bookings ? checkedInCount : "…"} testid="stat-checked-in" />
       </div>
 
-      <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon mb-4" data-testid="view-tabs">
-        Billed Bookings ({billed.length})
-      </p>
+      <div className="flex gap-2.5 mb-4" data-testid="view-tabs">
+        {[["billed", `Billed (${billed.length})`], ["unbilled", `Unbilled (${unbilled.length})`], ["complimentary", `Complimentary (${compList.length})`]].map(([v, label]) => (
+          <button
+            key={v}
+            data-testid={`view-tab-${v}`}
+            onClick={() => setView(v)}
+            className={`px-6 py-2.5 rounded-full text-xs font-bold tracking-[0.15em] uppercase transition-colors ${
+              view === v ? "bg-[#1b5812] text-[#fabd8f]" : "border border-[#D8C7A5] text-ash hover:border-leaf hover:text-leaf"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       {filter !== "all" && (
         <button
