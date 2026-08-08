@@ -68,9 +68,11 @@ class BookingCreate(BaseModel):
     boating_slot: Optional[str] = None
     boating_persons: int = Field(ge=0, le=30, default=0)
     payment_mode: str = "Pending"
+    ticket_type: str = "Guest"
 
 
-PAYMENT_MODES = ["Pending", "UPI", "Card", "Net Banking", "Pay at Venue", "Online (Razorpay)"]
+PAYMENT_MODES = ["Pending", "UPI", "Card", "Net Banking", "Pay at Venue", "Online (Razorpay)", "COMP"]
+TICKET_TYPES = ["Guest", "VIP Guest"]
 
 rz_client = razorpay.Client(auth=(os.environ["RAZORPAY_KEY_ID"], os.environ["RAZORPAY_KEY_SECRET"]))
 
@@ -142,6 +144,7 @@ def build_booking_doc(input: BookingCreate, reference: str, total: int, status: 
         "status": status,
         "payment": payment,
         "payment_mode": input.payment_mode,
+        "ticket_type": input.ticket_type,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -324,7 +327,8 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
         ("Contests", ", ".join(doc["contests"]) or "-"),
         ("Games", ", ".join(doc["games"]) or "-"),
         ("Boating", f"{doc['boating_slot']} ({doc['boating_persons']} persons)" if doc["boating"] else "-"),
-        ("Total Amount", f"Rs. {doc['total']:,}  (pay at venue)"),
+        ("Ticket Type", doc.get("ticket_type", "Guest")),
+        ("Total Amount", "COMPLIMENTARY" if doc.get("payment_mode") == "COMP" else f"Rs. {doc['total']:,}  (pay at venue)"),
     ]
     for k, v in rows:
         pdf.set_font("helvetica", "B", 11)
@@ -368,7 +372,8 @@ def booking_email_html(doc, qr_url, ticket_url):
             ("Contests", ", ".join(doc["contests"]) or "—"),
             ("Games", ", ".join(doc["games"]) or "—"),
             ("Boating", f"{doc['boating_slot']} · {doc['boating_persons']} persons" if doc["boating"] else "—"),
-            ("Total Amount", f"₹{doc['total']:,}"),
+            ("Ticket Type", doc.get("ticket_type", "Guest")),
+            ("Total Amount", "Complimentary (COMP)" if doc.get("payment_mode") == "COMP" else f"₹{doc['total']:,}"),
         ]
     ])
     return f"""<!DOCTYPE html><html><body style="margin:0;padding:0;background:#FFFBF2;font-family:Georgia,serif;">
@@ -514,6 +519,21 @@ async def whatsapp_status(admin: str = Depends(get_current_admin)):
         return resp.json()
     except Exception as e:
         return {"connected": False, "error": str(e)}
+
+
+@api_router.post("/admin/manual-booking")
+async def create_manual_booking(input: BookingCreate, request: Request, admin: str = Depends(get_current_admin)):
+    if input.ticket_type not in TICKET_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid ticket type")
+    if input.adults + input.veg_adults < 1:
+        raise HTTPException(status_code=400, detail="At least 1 adult required")
+    input.payment_mode = "COMP"
+    doc = build_booking_doc(input, new_reference(), 0, "confirmed", "comp")
+    await db.bookings.insert_one(doc)
+    doc.pop("_id", None)
+    asyncio.create_task(send_confirmation_email(doc, public_base(request)))
+    asyncio.create_task(send_whatsapp_confirmation(doc, public_base(request)))
+    return doc
 
 
 @api_router.get("/admin/whatsapp/qr-image")

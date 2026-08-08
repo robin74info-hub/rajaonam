@@ -176,6 +176,12 @@
 - Billed/Unbilled stat cards + view tabs above table; stats/revenue computed from billed only; unbilled rows show "Not Paid" in maroon; export per view (rajaonam-bookings-billed/unbilled[-filter].csv)
 - Verified: EO-NZL4VT billed (verified payment), EO-KCC1AU + EO-HNDT2O unbilled; tabs switch, export downloads per view
 
+## Manual COMP Bookings v22 (2026-08-08)
+- POST /api/admin/manual-booking (admin-only): ticket_type Guest/VIP Guest, creates confirmed booking with payment_mode "COMP", total ₹0, fires email + WhatsApp with QR
+- Admin "Manual Booking (Complimentary)" card: type dropdown, name/phone/email, 6 participant counts, Generate → shows ref + QR + email confirmation
+- Third view: Complimentary tab + stat card; COMP gold badge in payment column, VIP badge next to VIP names; ticket_type in CSV export; email/PDF show "Complimentary (COMP)" + ticket type
+- Verified: EO-ZML8ZW (VIP, COMP, ₹0, email 202), UI generated EO-HMGLU7, comp tab 2 rows, gate role blocked (403)
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

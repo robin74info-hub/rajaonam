@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import axios from "axios";
-import { Flower2, Loader2, Download, LogOut, Users, IndianRupee, Sailboat, Fish, Salad, Trophy, Gamepad2, QrCode, UserCheck, MessageCircle, RefreshCw } from "lucide-react";
+import { Flower2, Loader2, Download, LogOut, Users, IndianRupee, Sailboat, Fish, Salad, Trophy, Gamepad2, QrCode, UserCheck, MessageCircle, RefreshCw, Ticket } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -18,6 +18,45 @@ export default function Admin() {
   const [exporting, setExporting] = useState(false);
   const [filter, setFilter] = useState("all");
   const [view, setView] = useState("billed");
+  const emptyManual = { ticket_type: "Guest", name: "", phone: "", email: "", adults: 1, kids_5_12: 0, kids_below_5: 0, veg_adults: 0, veg_kids_5_12: 0, veg_kids_below_5: 0 };
+  const [manual, setManual] = useState(emptyManual);
+  const [manualBusy, setManualBusy] = useState(false);
+  const [manualDone, setManualDone] = useState(null);
+  const [manualError, setManualError] = useState("");
+
+  const setM = (k) => (e) => setManual({ ...manual, [k]: e.target.value });
+  const setMNum = (k) => (e) => setManual({ ...manual, [k]: Math.max(0, Math.min(30, parseInt(e.target.value || "0", 10))) });
+
+  const generateManual = async (e) => {
+    e.preventDefault();
+    setManualError("");
+    setManualDone(null);
+    if (manual.name.trim().length < 2) return setManualError("Enter the guest's full name");
+    if (!/^[+\d][\d\s-]{6,14}$/.test(manual.phone.trim())) return setManualError("Enter a valid phone number");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(manual.email.trim())) return setManualError("Enter a valid email");
+    if (manual.adults + manual.veg_adults < 1) return setManualError("At least 1 adult required");
+    setManualBusy(true);
+    try {
+      const { data } = await axios.post(`${API}/admin/manual-booking`, {
+        ...manual,
+        name: manual.name.trim(),
+        phone: manual.phone.trim(),
+        email: manual.email.trim(),
+        contests: [],
+        games: [],
+        boating: false,
+        boating_persons: 0,
+      }, { headers });
+      setManualDone(data);
+      setManual(emptyManual);
+      loadBookings();
+    } catch (err) {
+      const d = err.response?.data?.detail;
+      setManualError(typeof d === "string" ? d : "Failed — try again");
+    } finally {
+      setManualBusy(false);
+    }
+  };
   const [wa, setWa] = useState(null);
   const [waQr, setWaQr] = useState(null);
 
@@ -85,10 +124,10 @@ export default function Admin() {
 
   const exportExcel = () => {
     setExporting(true);
-    const header = ["Booking ID","Booked On","Name","Phone","Email","Sea Adults","Sea Kids 5-12","Sea Kids Below 5","Veg Adults","Veg Kids 5-12","Veg Kids Below 5","Total Participants","Contests","Games","Boating","Boating Slot","Boating Persons","Payment Mode","Guests Checked In","Total Amount (INR)","Status"];
+    const header = ["Booking ID","Booked On","Name","Ticket Type","Phone","Email","Sea Adults","Sea Kids 5-12","Sea Kids Below 5","Veg Adults","Veg Kids 5-12","Veg Kids Below 5","Total Participants","Contests","Games","Boating","Boating Slot","Boating Persons","Payment Mode","Guests Checked In","Total Amount (INR)","Status"];
     const lines = filtered.map((b) => [
       b.reference, (b.created_at || "").slice(0, 16).replace("T", " "),
-      b.name, b.phone, b.email,
+      b.name, b.ticket_type || "Guest", b.phone, b.email,
       b.adults || 0, b.kids_5_12 || 0, b.kids_below_5 || 0,
       b.veg_adults || 0, b.veg_kids_5_12 || 0, b.veg_kids_below_5 || 0,
       b.total_participants || 0,
@@ -158,8 +197,9 @@ export default function Admin() {
 
   if (localStorage.getItem("admin_role") === "gate") return <Navigate to="/scanner" replace />;
 
-  const billed = (bookings || []).filter((b) => b.status === "confirmed");
+  const billed = (bookings || []).filter((b) => b.status === "confirmed" && b.payment_mode !== "COMP");
   const unbilled = (bookings || []).filter((b) => b.status === "pending_payment");
+  const compList = (bookings || []).filter((b) => b.payment_mode === "COMP");
   const totalRevenue = billed.reduce((s, b) => s + (b.total || 0), 0);
   const totalGuests = billed.reduce((s, b) => s + (b.total_participants || 0), 0);
   const totalBoating = billed.filter((b) => b.boating).length;
@@ -184,7 +224,7 @@ export default function Admin() {
     games: { label: "Games", test: (b) => (b.games || []).length > 0 },
     boating: { label: "Boating", test: (b) => !!b.boating },
   };
-  const baseList = view === "billed" ? billed : unbilled;
+  const baseList = view === "billed" ? billed : view === "unbilled" ? unbilled : compList;
   const filtered = baseList.filter((b) => (filter === "all" ? true : FILTERS[filter].test(b)));
   const toggleFilter = (key) => setFilter(filter === key ? "all" : key);
 
@@ -225,6 +265,7 @@ export default function Admin() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         <Stat icon={Users} label="Billed Bookings" value={bookings ? billed.length : "…"} onClick={() => setView("billed")} active={view === "billed"} testid="stat-bookings" />
         <Stat icon={Users} label="Unbilled" value={bookings ? unbilled.length : "…"} onClick={() => setView("unbilled")} active={view === "unbilled"} testid="stat-unbilled" />
+        <Stat icon={Ticket} label="Complimentary" value={bookings ? compList.length : "…"} onClick={() => setView("complimentary")} active={view === "complimentary"} testid="stat-comp" />
         <Stat icon={Users} label="Total Guests" value={bookings ? totalGuests : "…"} testid="stat-guests" />
         <Stat icon={Fish} label="Sea Food Adults" value={bookings ? seaAdults : "…"} onClick={() => toggleFilter("sea-adults")} active={filter === "sea-adults"} testid="stat-sea-adults" />
         <Stat icon={Fish} label="Sea Food Kids" value={bookings ? seaKids : "…"} onClick={() => toggleFilter("sea-kids")} active={filter === "sea-kids"} testid="stat-sea-kids" />
@@ -272,8 +313,61 @@ export default function Admin() {
         )}
       </div>
 
+      <div className="rounded-xl border border-[#D8C7A5] bg-[#F1E3C6]/80 p-5 mb-8" data-testid="manual-booking-card">
+        <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon mb-4 flex items-center gap-2">
+          <Ticket className="w-4 h-4" /> Manual Booking (Complimentary)
+        </p>
+        <form onSubmit={generateManual} className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <select
+            data-testid="manual-ticket-type"
+            value={manual.ticket_type}
+            onChange={setM("ticket_type")}
+            className="bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink focus:outline-none focus:border-leaf"
+          >
+            <option>Guest</option>
+            <option>VIP Guest</option>
+          </select>
+          <input data-testid="manual-name-input" value={manual.name} onChange={setM("name")} placeholder="Full name" className="bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf" />
+          <input data-testid="manual-phone-input" value={manual.phone} onChange={setM("phone")} placeholder="Phone / WhatsApp" type="tel" className="bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf" />
+          <input data-testid="manual-email-input" value={manual.email} onChange={setM("email")} placeholder="Email" type="email" className="bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf" />
+          {[["adults", "Sea Adults"], ["kids_5_12", "Sea Kids 5-12"], ["kids_below_5", "Sea Kids <5"], ["veg_adults", "Veg Adults"], ["veg_kids_5_12", "Veg Kids 5-12"], ["veg_kids_below_5", "Veg Kids <5"]].map(([k, label]) => (
+            <label key={k} className="flex items-center gap-2 bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5">
+              <span className="text-[10px] tracking-wider uppercase text-ash whitespace-nowrap">{label}</span>
+              <input
+                data-testid={`manual-${k.replace(/_/g, "-")}`}
+                type="number"
+                min="0"
+                max="30"
+                value={manual[k]}
+                onChange={setMNum(k)}
+                className="w-full text-sm text-ink font-semibold text-right focus:outline-none"
+              />
+            </label>
+          ))}
+          <button
+            data-testid="manual-generate-btn"
+            type="submit"
+            disabled={manualBusy}
+            className="col-span-2 py-2.5 rounded-full bg-[#1b5812] text-[#fabd8f] text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#12400c] transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
+          >
+            {manualBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate"}
+          </button>
+        </form>
+        {manualError && <p className="text-xs text-maroon mt-3" data-testid="manual-error">{manualError}</p>}
+        {manualDone && (
+          <div className="mt-4 pt-4 border-t border-[#D8C7A5] flex flex-wrap items-center gap-4" data-testid="manual-success">
+            <img src={`${API}/bookings/${manualDone.reference}/qr`} alt="Ticket QR" className="w-20 h-20 rounded-lg border border-[#D8C7A5] bg-white p-1" data-testid="manual-qr" />
+            <div className="text-sm">
+              <p className="font-mono font-bold text-maroon" data-testid="manual-reference">{manualDone.reference}</p>
+              <p className="text-ash">{manualDone.ticket_type} · {manualDone.total_participants} guests · COMP</p>
+              <p className="text-xs text-leaf font-semibold mt-1">Ticket emailed to {manualDone.email}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="flex gap-2.5 mb-4" data-testid="view-tabs">
-        {[["billed", `Billed (${billed.length})`], ["unbilled", `Unbilled (${unbilled.length})`]].map(([v, label]) => (
+        {[["billed", `Billed (${billed.length})`], ["unbilled", `Unbilled (${unbilled.length})`], ["complimentary", `Complimentary (${compList.length})`]].map(([v, label]) => (
           <button
             key={v}
             data-testid={`view-tab-${v}`}
@@ -320,7 +414,10 @@ export default function Admin() {
               {(filtered || []).map((b) => (
                 <tr key={b.reference} className="border-t border-[#E4D6BC] hover:bg-[#F5EBD8]/50" data-testid={`booking-row-${b.reference}`}>
                   <td className="px-4 py-3 font-mono text-xs text-maroon whitespace-nowrap">{b.reference}</td>
-                  <td className="px-4 py-3 font-semibold text-ink whitespace-nowrap">{b.name}</td>
+                  <td className="px-4 py-3 font-semibold text-ink whitespace-nowrap">
+                    {b.name}
+                    {b.ticket_type === "VIP Guest" && <span className="ml-2 px-2 py-0.5 rounded-full bg-gold/20 text-gold text-[10px] font-bold tracking-wider" data-testid={`vip-badge-${b.reference}`}>VIP</span>}
+                  </td>
                   <td className="px-4 py-3 text-ash whitespace-nowrap">{b.phone}</td>
                   <td className="px-4 py-3 text-ash">{b.email}</td>
                   <td className="px-4 py-3 text-ink whitespace-nowrap">{b.adults}A · {b.kids_5_12}K · {b.kids_below_5}B5</td>
@@ -329,7 +426,13 @@ export default function Admin() {
                   <td className="px-4 py-3 text-ash max-w-[180px] truncate">{b.games?.join(", ") || "—"}</td>
                   <td className="px-4 py-3 text-ash whitespace-nowrap">{b.boating ? `${b.boating_slot} · ${b.boating_persons}p` : "—"}</td>
                   <td className="px-4 py-3 whitespace-nowrap" data-testid={`payment-mode-${b.reference}`}>
-                    {b.status === "pending_payment" ? <span className="text-maroon font-semibold">Not Paid</span> : <span className="text-ink">{b.payment_mode || "—"}</span>}
+                    {b.payment_mode === "COMP" ? (
+                      <span className="px-2.5 py-1 rounded-full bg-gold/20 text-gold text-[10px] font-bold tracking-wider">COMP</span>
+                    ) : b.status === "pending_payment" ? (
+                      <span className="text-maroon font-semibold">Not Paid</span>
+                    ) : (
+                      <span className="text-ink">{b.payment_mode || "—"}</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap" data-testid={`checked-in-${b.reference}`}>
                     {guestsChecked(b) > 0 ? (
