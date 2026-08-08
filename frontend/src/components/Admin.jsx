@@ -298,6 +298,94 @@ export default function Admin() {
         <Stat icon={UserCheck} label="Guests Checked In" value={bookings ? checkedInCount : "…"} testid="stat-checked-in" />
       </div>
 
+      <div className="flex gap-2.5 mb-4" data-testid="view-tabs">
+        {[["billed", `Billed (${billed.length})`], ["unbilled", `Unbilled (${unbilled.length})`], ["complimentary", `Complimentary (${compList.length})`]].map(([v, label]) => (
+          <button
+            key={v}
+            data-testid={`view-tab-${v}`}
+            onClick={() => setView(v)}
+            className={`px-6 py-2.5 rounded-full text-xs font-bold tracking-[0.15em] uppercase transition-colors ${
+              view === v ? "bg-[#1b5812] text-[#fabd8f]" : "border border-[#D8C7A5] text-ash hover:border-leaf hover:text-leaf"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {filter !== "all" && (
+        <button
+          data-testid="filter-chip"
+          onClick={() => setFilter("all")}
+          className="mb-4 flex items-center gap-2 px-4 py-2 rounded-full bg-leaf text-cream text-xs font-bold tracking-[0.15em] uppercase"
+        >
+          Showing: {FILTERS[filter].label} ({filtered.length}) ✕
+        </button>
+      )}
+
+      <div className="rounded-2xl border border-[#D8C7A5] bg-white/80 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm" data-testid="bookings-table">
+            <thead>
+              <tr className="bg-[#1b5812] text-[#fabd8f] text-left text-[11px] tracking-[0.15em] uppercase">
+                <th className="px-4 py-3.5">Booking ID</th>
+                <th className="px-4 py-3.5">Name</th>
+                <th className="px-4 py-3.5">Phone</th>
+                <th className="px-4 py-3.5">Email</th>
+                <th className="px-4 py-3.5">Sea Food</th>
+                <th className="px-4 py-3.5">Veg</th>
+                <th className="px-4 py-3.5">Contests</th>
+                <th className="px-4 py-3.5">Games</th>
+                <th className="px-4 py-3.5">Boating</th>
+                <th className="px-4 py-3.5">Payment</th>
+                <th className="px-4 py-3.5">Checked In</th>
+                <th className="px-4 py-3.5 text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(filtered || []).map((b) => (
+                <tr key={b.reference} className="border-t border-[#E4D6BC] hover:bg-[#F5EBD8]/50" data-testid={`booking-row-${b.reference}`}>
+                  <td className="px-4 py-3 font-mono text-xs text-maroon whitespace-nowrap">{b.reference}</td>
+                  <td className="px-4 py-3 font-semibold text-ink whitespace-nowrap">
+                    {b.name}
+                    {b.ticket_type === "VIP Guest" && <span className="ml-2 px-2 py-0.5 rounded-full bg-gold/20 text-gold text-[10px] font-bold tracking-wider" data-testid={`vip-badge-${b.reference}`}>VIP</span>}
+                  </td>
+                  <td className="px-4 py-3 text-ash whitespace-nowrap">{b.phone}</td>
+                  <td className="px-4 py-3 text-ash">{b.email}</td>
+                  <td className="px-4 py-3 text-ink whitespace-nowrap">{b.adults}A · {b.kids_5_12}K · {b.kids_below_5}B5</td>
+                  <td className="px-4 py-3 text-ink whitespace-nowrap">{b.veg_adults}A · {b.veg_kids_5_12}K · {b.veg_kids_below_5}B5</td>
+                  <td className="px-4 py-3 text-ash max-w-[180px] truncate">{b.contests?.join(", ") || "—"}</td>
+                  <td className="px-4 py-3 text-ash max-w-[180px] truncate">{b.games?.join(", ") || "—"}</td>
+                  <td className="px-4 py-3 text-ash whitespace-nowrap">{b.boating ? `${b.boating_slot} · ${b.boating_persons}p` : "—"}</td>
+                  <td className="px-4 py-3 whitespace-nowrap" data-testid={`payment-mode-${b.reference}`}>
+                    {b.payment_mode === "COMP" ? (
+                      <span className="px-2.5 py-1 rounded-full bg-gold/20 text-gold text-[10px] font-bold tracking-wider">COMP</span>
+                    ) : b.status === "pending_payment" ? (
+                      <span className="text-maroon font-semibold">Not Paid</span>
+                    ) : (
+                      <span className="text-ink">{b.payment_mode || "—"}</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap" data-testid={`checked-in-${b.reference}`}>
+                    {guestsChecked(b) > 0 ? (
+                      <span className={`font-bold ${guestsChecked(b) >= (b.total_participants || 0) ? "text-leaf" : "text-gold"}`}>
+                        {guestsChecked(b) >= (b.total_participants || 0) ? "✓ " : ""}{guestsChecked(b)}/{b.total_participants}
+                      </span>
+                    ) : (
+                      <span className="text-ash">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right font-bold text-leaf whitespace-nowrap">{fmt(b.total)}</td>
+                </tr>
+              ))}
+              {bookings && filtered.length === 0 && (
+                <tr><td colSpan="12" className="px-4 py-10 text-center text-ash" data-testid="no-bookings">No bookings found</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div className="rounded-xl border border-[#D8C7A5] bg-[#F1E3C6]/80 p-5 mb-8" data-testid="whatsapp-card">
         <div className="flex flex-wrap items-center gap-4">
           <span className={`w-10 h-10 rounded-full flex items-center justify-center ${wa?.connected ? "bg-leaf/15 border border-leaf/40" : "bg-maroon/10 border border-maroon/30"}`}>
@@ -411,93 +499,6 @@ export default function Admin() {
         )}
       </div>
 
-      <div className="flex gap-2.5 mb-4" data-testid="view-tabs">
-        {[["billed", `Billed (${billed.length})`], ["unbilled", `Unbilled (${unbilled.length})`], ["complimentary", `Complimentary (${compList.length})`]].map(([v, label]) => (
-          <button
-            key={v}
-            data-testid={`view-tab-${v}`}
-            onClick={() => setView(v)}
-            className={`px-6 py-2.5 rounded-full text-xs font-bold tracking-[0.15em] uppercase transition-colors ${
-              view === v ? "bg-[#1b5812] text-[#fabd8f]" : "border border-[#D8C7A5] text-ash hover:border-leaf hover:text-leaf"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {filter !== "all" && (
-        <button
-          data-testid="filter-chip"
-          onClick={() => setFilter("all")}
-          className="mb-4 flex items-center gap-2 px-4 py-2 rounded-full bg-leaf text-cream text-xs font-bold tracking-[0.15em] uppercase"
-        >
-          Showing: {FILTERS[filter].label} ({filtered.length}) ✕
-        </button>
-      )}
-
-      <div className="rounded-2xl border border-[#D8C7A5] bg-white/80 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm" data-testid="bookings-table">
-            <thead>
-              <tr className="bg-[#1b5812] text-[#fabd8f] text-left text-[11px] tracking-[0.15em] uppercase">
-                <th className="px-4 py-3.5">Booking ID</th>
-                <th className="px-4 py-3.5">Name</th>
-                <th className="px-4 py-3.5">Phone</th>
-                <th className="px-4 py-3.5">Email</th>
-                <th className="px-4 py-3.5">Sea Food</th>
-                <th className="px-4 py-3.5">Veg</th>
-                <th className="px-4 py-3.5">Contests</th>
-                <th className="px-4 py-3.5">Games</th>
-                <th className="px-4 py-3.5">Boating</th>
-                <th className="px-4 py-3.5">Payment</th>
-                <th className="px-4 py-3.5">Checked In</th>
-                <th className="px-4 py-3.5 text-right">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(filtered || []).map((b) => (
-                <tr key={b.reference} className="border-t border-[#E4D6BC] hover:bg-[#F5EBD8]/50" data-testid={`booking-row-${b.reference}`}>
-                  <td className="px-4 py-3 font-mono text-xs text-maroon whitespace-nowrap">{b.reference}</td>
-                  <td className="px-4 py-3 font-semibold text-ink whitespace-nowrap">
-                    {b.name}
-                    {b.ticket_type === "VIP Guest" && <span className="ml-2 px-2 py-0.5 rounded-full bg-gold/20 text-gold text-[10px] font-bold tracking-wider" data-testid={`vip-badge-${b.reference}`}>VIP</span>}
-                  </td>
-                  <td className="px-4 py-3 text-ash whitespace-nowrap">{b.phone}</td>
-                  <td className="px-4 py-3 text-ash">{b.email}</td>
-                  <td className="px-4 py-3 text-ink whitespace-nowrap">{b.adults}A · {b.kids_5_12}K · {b.kids_below_5}B5</td>
-                  <td className="px-4 py-3 text-ink whitespace-nowrap">{b.veg_adults}A · {b.veg_kids_5_12}K · {b.veg_kids_below_5}B5</td>
-                  <td className="px-4 py-3 text-ash max-w-[180px] truncate">{b.contests?.join(", ") || "—"}</td>
-                  <td className="px-4 py-3 text-ash max-w-[180px] truncate">{b.games?.join(", ") || "—"}</td>
-                  <td className="px-4 py-3 text-ash whitespace-nowrap">{b.boating ? `${b.boating_slot} · ${b.boating_persons}p` : "—"}</td>
-                  <td className="px-4 py-3 whitespace-nowrap" data-testid={`payment-mode-${b.reference}`}>
-                    {b.payment_mode === "COMP" ? (
-                      <span className="px-2.5 py-1 rounded-full bg-gold/20 text-gold text-[10px] font-bold tracking-wider">COMP</span>
-                    ) : b.status === "pending_payment" ? (
-                      <span className="text-maroon font-semibold">Not Paid</span>
-                    ) : (
-                      <span className="text-ink">{b.payment_mode || "—"}</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap" data-testid={`checked-in-${b.reference}`}>
-                    {guestsChecked(b) > 0 ? (
-                      <span className={`font-bold ${guestsChecked(b) >= (b.total_participants || 0) ? "text-leaf" : "text-gold"}`}>
-                        {guestsChecked(b) >= (b.total_participants || 0) ? "✓ " : ""}{guestsChecked(b)}/{b.total_participants}
-                      </span>
-                    ) : (
-                      <span className="text-ash">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right font-bold text-leaf whitespace-nowrap">{fmt(b.total)}</td>
-                </tr>
-              ))}
-              {bookings && filtered.length === 0 && (
-                <tr><td colSpan="12" className="px-4 py-10 text-center text-ash" data-testid="no-bookings">No bookings found</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   );
 }
