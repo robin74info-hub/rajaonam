@@ -18,6 +18,7 @@ import httpx
 import qrcode
 import razorpay
 from fpdf import FPDF
+from twilio.rest import Client as TwilioClient
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
@@ -424,6 +425,13 @@ async def send_confirmation_email(doc, base_url):
 
 WHATSAPP_SERVICE_URL = os.environ.get("WHATSAPP_SERVICE_URL", "http://localhost:3001")
 
+twilio_client = TwilioClient(
+    os.environ["TWILIO_API_KEY_SID"],
+    os.environ["TWILIO_API_KEY_SECRET"],
+    os.environ["TWILIO_ACCOUNT_SID"],
+)
+TWILIO_FROM = os.environ["TWILIO_WHATSAPP_FROM"]
+
 
 def normalize_phone(phone: str) -> str:
     digits = "".join(ch for ch in phone if ch.isdigit())
@@ -442,20 +450,21 @@ async def send_whatsapp_confirmation(doc, base_url):
         f"🌸 *RAJAONAM 2026 — Booking Confirmed* 🌸\n\n"
         f"*Booking ID:* {doc['reference']}\n"
         f"*Name:* {doc['name']}\n"
+        f"*Ticket Type:* {doc.get('ticket_type', 'Guest')}\n"
         f"*Sea Food Sadhya:* {doc['adults']} Adults · {doc['kids_5_12']} Kids (5-12) · {doc['kids_below_5']} Below 5\n"
         f"*Veg Onam Sadhya:* {doc['veg_adults']} Adults · {doc['veg_kids_5_12']} Kids (5-12) · {doc['veg_kids_below_5']} Below 5\n"
         f"*Contests:* {', '.join(doc['contests']) or '—'}\n"
         f"*Games:* {', '.join(doc['games']) or '—'}\n"
         f"*Boating:* {doc['boating_slot'] + ' · ' + str(doc['boating_persons']) + ' persons' if doc['boating'] else '—'}\n"
-        f"*Total:* ₹{doc['total']:,} (pay at venue)\n\n"
+        f"*Total:* {'Complimentary (COMP)' if doc.get('payment_mode') == 'COMP' else '₹' + format(doc['total'], ',')}\n\n"
         f"26 Aug 2026 · 11 AM – 5 PM\nBolgatty Palace & Island Resort, Kochi\n\n"
         f"Show this QR at the gate."
     )
     try:
-        async with httpx.AsyncClient(timeout=20) as client:
-            r1 = await client.post(f"{WHATSAPP_SERVICE_URL}/send-image", json={"phone": phone, "image_url": qr_url, "caption": caption})
-            r2 = await client.post(f"{WHATSAPP_SERVICE_URL}/send", json={"phone": phone, "message": f"📄 Download your ticket (PDF): {ticket_url}"})
-        logger.info(f"WhatsApp to {phone} for {doc['reference']}: img={r1.status_code} pdf={r2.status_code}")
+        to = f"whatsapp:+{phone}"
+        m1 = twilio_client.messages.create(from_=TWILIO_FROM, to=to, body=caption, media_url=[qr_url])
+        m2 = twilio_client.messages.create(from_=TWILIO_FROM, to=to, body=f"📄 Download your ticket (PDF): {ticket_url}")
+        logger.info(f"WhatsApp to {to} for {doc['reference']}: {m1.sid} / {m2.sid}")
     except Exception as e:
         logger.error(f"WhatsApp send failed for {doc['reference']}: {e}")
 
@@ -513,12 +522,7 @@ async def get_current_staff(request: Request):
 
 @api_router.get("/admin/whatsapp/status")
 async def whatsapp_status(admin: str = Depends(get_current_admin)):
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(f"{WHATSAPP_SERVICE_URL}/status")
-        return resp.json()
-    except Exception as e:
-        return {"connected": False, "error": str(e)}
+    return {"connected": True, "provider": "twilio", "sender": TWILIO_FROM.replace("whatsapp:", "")}
 
 
 @api_router.post("/admin/manual-booking")

@@ -182,6 +182,14 @@
 - Third view: Complimentary tab + stat card; COMP gold badge in payment column, VIP badge next to VIP names; ticket_type in CSV export; email/PDF show "Complimentary (COMP)" + ticket type
 - Verified: EO-ZML8ZW (VIP, COMP, ₹0, email 202), UI generated EO-HMGLU7, comp tab 2 rows, gate role blocked (403)
 
+## Twilio WhatsApp v23 (2026-08-08)
+- Replaced Baileys companion service with Twilio WhatsApp API (twilio==9.10.9); works in BOTH preview and production (no companion service needed)
+- Creds in backend/.env: TWILIO_ACCOUNT_SID (AC65...), TWILIO_API_KEY_SID/SECRET, TWILIO_WHATSAPP_FROM=whatsapp:+14155238886 (sandbox)
+- send_whatsapp_confirmation: QR image + caption via media_url, then PDF link; non-blocking
+- /api/admin/whatsapp/status now returns {connected: true, provider: twilio}
+- BLOCKER: user's Twilio account is TRIAL — API returns "trial accounts have limited parameter access" even for plain text WhatsApp. Credentials verified valid (account fetch works). Needs: activate WhatsApp Sandbox in Twilio Console (Messaging → Try it out) + join sandbox from 9048599965, OR upgrade to paid account + register own sender
+- Baileys service still exists at /app/whatsapp-service but is now UNUSED by backend
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking
