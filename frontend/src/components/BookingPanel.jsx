@@ -246,10 +246,10 @@ export default function BookingPanel({ event, onBooked }) {
           <Flower2 className="w-5 h-5 text-[#fabd8f] animate-bloom" />
         </span>
         <div>
-          <p className="font-serif text-xl leading-none text-[#fabd8f]" data-testid="panel-event-name">
-            {event?.name || "RAJAONAM 2026"}
+          <p className="font-serif text-lg leading-snug text-[#fabd8f]" data-testid="panel-event-name">
+            RAJAONAM 2026 - GRAND ONAM CELEBRATION
           </p>
-          <p className="text-[10px] tracking-[0.25em] uppercase text-[#fabd8f]/75 mt-1">{event?.edition || "Grand Onam Celebration"}</p>
+          <p className="text-[10px] tracking-[0.25em] uppercase text-[#fabd8f]/75 mt-1">Book Your Tickets</p>
         </div>
       </div>
 

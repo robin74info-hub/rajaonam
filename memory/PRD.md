@@ -207,6 +207,12 @@
 - New assets in /app/frontend/public/assets/: prime-time-festivals.png, event-managed-by.webp
 - Verified via screenshot: marquee green, footer logos render, email text, directions button href correct
 
+## Booking Header + Footer Green v27 (2026-08-08)
+- BookingPanel.jsx: form header now "RAJAONAM 2026 - GRAND ONAM CELEBRATION" with "Book Your Tickets" subline
+- Organiser.jsx: Prime Time Festivals logo enlarged (h-24/28), Event Managed By banner reduced (h-9/10)
+- App.js footer: background now green #1b5812 with cream text; "Berrysys Media Global LLC" is now an anchor to https://berrysysglobal.com/
+- Verified via screenshots: header text, logo sizes, green footer, berrysys link href
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

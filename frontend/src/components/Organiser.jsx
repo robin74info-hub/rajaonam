@@ -17,14 +17,14 @@ export default function Organiser() {
             <img
               src="/assets/prime-time-festivals.png"
               alt="Prime Time Festivals logo"
-              className="h-16 sm:h-20 w-auto mb-5 mix-blend-multiply hover:opacity-80 transition-opacity"
+              className="h-24 sm:h-28 w-auto mb-5 mix-blend-multiply hover:opacity-80 transition-opacity"
               data-testid="prime-logo"
             />
           </a>
           <img
             src="/assets/event-managed-by.webp"
             alt="Event managed by Prime Time Events"
-            className="h-14 sm:h-16 w-auto mb-6 mix-blend-multiply"
+            className="h-9 sm:h-10 w-auto mb-6 mix-blend-multiply"
             data-testid="managed-by-logo"
           />
           <p className="text-base text-ash leading-relaxed mb-8 max-w-md">
