@@ -160,6 +160,11 @@
 - Verified: real order created (₹5,698), bad signature rejected, valid-signature verify → EO-JNTQRM confirmed + email 202, admin shows 27 confirmed only
 - NOT completable in headless env: Razorpay test-mode mock bank page hangs — needs real device test (card 4111… rejected as international by this account; use netbanking/UPI in test)
 
+## Clear Data + WhatsApp prod issue v19 (2026-08-08)
+- DELETE /api/admin/bookings (admin-only) + "Clear Data" button on dashboard (confirm dialog) — works in both envs after redeploy
+- Cleared all 39 test bookings from PREVIEW DB (dashboard now empty)
+- FINDING: WhatsApp pairing QR shows in PREVIEW but NOT in production — the Baileys Node service (/app/whatsapp-service, supervisor program) is NOT part of the Emergent deployment (only frontend+backend deploy); prod /api/admin/whatsapp/status returns "All connection attempts failed". Needs Emergent Support to run the extra service in production, or a hosted WhatsApp API (Twilio/Meta) instead
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

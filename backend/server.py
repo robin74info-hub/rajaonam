@@ -554,6 +554,12 @@ async def list_bookings(admin: str = Depends(get_current_admin)):
     return await db.bookings.find({"status": "confirmed"}, {"_id": 0}).sort("created_at", -1).to_list(2000)
 
 
+@api_router.delete("/admin/bookings")
+async def clear_bookings(admin: str = Depends(get_current_admin)):
+    result = await db.bookings.delete_many({})
+    return {"deleted": result.deleted_count}
+
+
 class CheckinUpdate(BaseModel):
     adults: int = Field(0, ge=0)
     kids_5_12: int = Field(0, ge=0)

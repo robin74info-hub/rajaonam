@@ -82,6 +82,12 @@ export default function Admin() {
     setBookings(null);
   };
 
+  const clearData = async () => {
+    if (!window.confirm("Delete ALL bookings? This cannot be undone.")) return;
+    await axios.delete(`${API}/admin/bookings`, { headers });
+    loadBookings();
+  };
+
   const exportExcel = () => {
     setExporting(true);
     const header = ["Booking ID","Booked On","Name","Phone","Email","Sea Adults","Sea Kids 5-12","Sea Kids Below 5","Veg Adults","Veg Kids 5-12","Veg Kids Below 5","Total Participants","Contests","Games","Boating","Boating Slot","Boating Persons","Payment Mode","Guests Checked In","Total Amount (INR)","Status"];
@@ -207,6 +213,13 @@ export default function Admin() {
           >
             {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             Export to Excel
+          </button>
+          <button
+            data-testid="clear-data-btn"
+            onClick={clearData}
+            className="flex items-center gap-2 px-6 py-3 rounded-full border border-maroon text-maroon text-xs font-bold tracking-[0.2em] uppercase hover:bg-maroon hover:text-cream transition-colors"
+          >
+            Clear Data
           </button>
           <button
             data-testid="admin-logout-btn"
