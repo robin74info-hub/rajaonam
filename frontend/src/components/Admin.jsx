@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import axios from "axios";
-import { Flower2, Loader2, Download, LogOut, Users, IndianRupee, Sailboat, Fish, Salad, Trophy, Gamepad2, QrCode, UserCheck, MessageCircle, RefreshCw, Ticket } from "lucide-react";
+import { Flower2, Loader2, Download, LogOut, Users, IndianRupee, Sailboat, Fish, Salad, Trophy, Gamepad2, QrCode, UserCheck, MessageCircle, RefreshCw, Ticket, Trash2 } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -58,6 +58,45 @@ export default function Admin() {
       setManualBusy(false);
     }
   };
+  const [deleting, setDeleting] = useState("");
+
+  const deleteUnbilled = async (ref) => {
+    if (!window.confirm(`Delete unbilled booking ${ref}? This cannot be undone.`)) return;
+    setDeleting(ref);
+    try {
+      await axios.delete(`${API}/admin/bookings/${ref}`, { headers, data: {} });
+      loadBookings();
+    } catch (err) {
+      alert(err.response?.data?.detail || "Delete failed");
+    } finally {
+      setDeleting("");
+    }
+  };
+
+  const deleteComp = async (ref) => {
+    const pc = window.prompt(`Enter the organiser passcode to delete complimentary booking ${ref}:`);
+    if (!pc) return;
+    setDeleting(ref);
+    try {
+      await axios.delete(`${API}/admin/bookings/${ref}`, { headers, data: { passcode: pc } });
+      loadBookings();
+    } catch (err) {
+      alert(err.response?.data?.detail || "Delete failed");
+    } finally {
+      setDeleting("");
+    }
+  };
+
+  const clearUnbilled = async () => {
+    if (!window.confirm(`Delete ALL ${unbilled.length} unbilled bookings? This cannot be undone.`)) return;
+    try {
+      await axios.post(`${API}/admin/bookings/clear-unbilled`, {}, { headers });
+      loadBookings();
+    } catch (err) {
+      alert(err.response?.data?.detail || "Clear failed");
+    }
+  };
+
   const [wa, setWa] = useState(null);
   const [waQr, setWaQr] = useState(null);
   const [siteQr, setSiteQr] = useState(null);
@@ -312,6 +351,15 @@ export default function Admin() {
             {label}
           </button>
         ))}
+        {view === "unbilled" && unbilled.length > 0 && (
+          <button
+            data-testid="clear-unbilled-btn"
+            onClick={clearUnbilled}
+            className="ml-auto flex items-center gap-2 px-5 py-2.5 rounded-full border border-maroon/40 text-maroon text-xs font-bold tracking-[0.15em] uppercase hover:bg-maroon hover:text-cream transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" /> Clear All Unbilled
+          </button>
+        )}
       </div>
 
       {filter !== "all" && (
@@ -341,6 +389,7 @@ export default function Admin() {
                 <th className="px-4 py-3.5">Payment</th>
                 <th className="px-4 py-3.5">Checked In</th>
                 <th className="px-4 py-3.5 text-right">Total</th>
+                {view !== "billed" && <th className="px-4 py-3.5 text-right">Action</th>}
               </tr>
             </thead>
             <tbody>
@@ -377,10 +426,22 @@ export default function Admin() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-right font-bold text-leaf whitespace-nowrap">{fmt(b.total)}</td>
+                  {view !== "billed" && (
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <button
+                        data-testid={`delete-${b.reference}`}
+                        onClick={() => (view === "unbilled" ? deleteUnbilled(b.reference) : deleteComp(b.reference))}
+                        disabled={deleting === b.reference}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-maroon/40 text-maroon text-[10px] font-bold tracking-wider uppercase hover:bg-maroon hover:text-cream transition-colors disabled:opacity-60"
+                      >
+                        {deleting === b.reference ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />} Delete
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
               {bookings && filtered.length === 0 && (
-                <tr><td colSpan="12" className="px-4 py-10 text-center text-ash" data-testid="no-bookings">No bookings found</td></tr>
+                <tr><td colSpan={view === "billed" ? "12" : "13"} className="px-4 py-10 text-center text-ash" data-testid="no-bookings">No bookings found</td></tr>
               )}
             </tbody>
           </table>

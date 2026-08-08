@@ -536,6 +536,32 @@ async def website_qr(request: Request, admin: str = Depends(get_current_admin)):
     return Response(content=buf.getvalue(), media_type="image/png")
 
 
+class DeleteBookingRequest(BaseModel):
+    passcode: Optional[str] = None
+
+
+@api_router.delete("/admin/bookings/{reference}")
+async def delete_booking(reference: str, input: DeleteBookingRequest, admin: str = Depends(get_current_admin)):
+    doc = await db.bookings.find_one({"reference": reference})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    if doc.get("status") == "pending_payment":
+        await db.bookings.delete_one({"reference": reference})
+        return {"deleted": reference}
+    if doc.get("payment_mode") == "COMP":
+        if (input.passcode or "").strip().upper() != os.environ.get("COMP_PASSCODE"):
+            raise HTTPException(status_code=403, detail="Enter the organiser passcode to delete a complimentary booking")
+        await db.bookings.delete_one({"reference": reference})
+        return {"deleted": reference}
+    raise HTTPException(status_code=403, detail="Paid bookings can never be deleted")
+
+
+@api_router.post("/admin/bookings/clear-unbilled")
+async def clear_unbilled(admin: str = Depends(get_current_admin)):
+    res = await db.bookings.delete_many({"status": "pending_payment"})
+    return {"deleted": res.deleted_count}
+
+
 @api_router.post("/admin/manual-booking")
 async def create_manual_booking(input: BookingCreate, request: Request, admin: str = Depends(get_current_admin)):
     if (input.passcode or "").strip().upper() != os.environ.get("COMP_PASSCODE"):

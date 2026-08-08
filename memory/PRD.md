@@ -235,6 +235,12 @@
 - User confirmed: Razorpay account fully activated, UPI enabled for live mode.
 - FIX PENDING (user action): REDEPLOY the app so production picks up the live keys. UPI should work in live mode after redeploy.
 
+## Safe Delete Feature v32 (2026-08-08)
+- Backend: DELETE /api/admin/bookings/{reference} — deletes ONLY pending_payment (unbilled); COMP bookings require COMP_PASSCODE (PRIME26); paid/confirmed bookings are HARD BLOCKED server-side ("Paid bookings can never be deleted") — cannot be deleted even via direct API. POST /api/admin/bookings/clear-unbilled wipes all pending orders.
+- Frontend Admin.jsx: Delete button per row appears ONLY on Unbilled + Complimentary tabs (Action column); billed tab has no Action column at all. Unbilled delete = confirm dialog; comp delete = passcode prompt; "Clear All Unbilled" button next to tabs (confirm dialog)
+- Verified all 6 cases via API: billed blocked, comp blocked w/o + with wrong passcode, comp works with PRIME26, unbilled delete works, clear-all works. UI: 0 delete buttons on billed tab.
+- After REDEPLOY: user can clean production dummy data ("Paid Person", "Prod Key Check", "Prod Key Check 2") via Unbilled tab delete. NOTE: "Paid Person" EO-NZL4VT on production is status=confirmed — if it's genuinely a test payment it CANNOT be deleted by design; refund via Razorpay dashboard if needed.
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
