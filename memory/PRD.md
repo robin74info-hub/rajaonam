@@ -218,6 +218,11 @@
 - Manual complimentary booking now requires passcode PRIME26 before QR generation + email/WhatsApp send: backend validates COMP_PASSCODE env (403 on wrong/missing, case-insensitive); Admin.jsx form has "Passcode" password input (data-testid="manual-passcode-input")
 - Verified: wrong/missing passcode rejected, "prime26" accepted → booking EO-OQ9WT5 created confirmed+comp
 
+## Admin Billed-Only View v29 (2026-08-08)
+- Admin.jsx: removed Unbilled and Complimentary stat cards, view tabs, and their data lists — dashboard now shows ONLY billed bookings ("Billed Bookings (n)" heading above table)
+- Manual complimentary booking card remains functional (creates ticket + sends email/WhatsApp with PRIME26 passcode); comp bookings just aren't listed in the table
+- Verified: stat-unbilled/stat-comp/view tabs absent, table shows billed rows only
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
