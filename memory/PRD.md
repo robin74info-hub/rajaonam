@@ -165,6 +165,11 @@
 - Cleared all 39 test bookings from PREVIEW DB (dashboard now empty)
 - FINDING: WhatsApp pairing QR shows in PREVIEW but NOT in production — the Baileys Node service (/app/whatsapp-service, supervisor program) is NOT part of the Emergent deployment (only frontend+backend deploy); prod /api/admin/whatsapp/status returns "All connection attempts failed". Needs Emergent Support to run the extra service in production, or a hosted WhatsApp API (Twilio/Meta) instead
 
+## Razorpay LIVE v20 (2026-08-08)
+- Switched to LIVE keys (rzp_live_...) in backend/.env — REAL MONEY now charged on completed payments
+- "Pay at Venue" button REMOVED — online payment is the only booking path (backend /api/bookings endpoint still exists but unused by UI)
+- Verified: live order created (order_TNHekfDTPGppas, ₹2,999), form shows only "Pay Online"
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

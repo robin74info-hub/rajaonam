@@ -443,15 +443,7 @@ export default function BookingPanel({ event, onBooked }) {
                   <>Pay Online {fmt(total, sym)}</>
                 )}
               </button>
-              <button
-                data-testid="pay-button"
-                onClick={pay}
-                disabled={phase === "processing"}
-                className="w-full py-3.5 rounded-full border-2 border-leaf text-leaf text-sm font-bold tracking-[0.2em] uppercase hover:bg-leaf hover:text-cream transition-colors disabled:opacity-80"
-              >
-                Pay at Venue
-              </button>
-              <p className="text-[10px] text-ash text-center tracking-wider">UPI, cards, net banking & wallets via Razorpay · or pay at the venue</p>
+              <p className="text-[10px] text-ash text-center tracking-wider">Secure online payment via Razorpay · UPI, cards, net banking & wallets</p>
               {errors.form && <p className="text-xs text-maroon text-center" data-testid="form-error">{errors.form}</p>}
             </motion.div>
           )}
