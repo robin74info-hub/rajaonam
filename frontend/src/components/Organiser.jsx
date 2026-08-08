@@ -15,12 +15,18 @@ export default function Organiser() {
           <p className="text-xs tracking-[0.3em] uppercase font-bold text-maroon mb-4">Presented By</p>
           <a href="https://primetimeevents.in/" target="_blank" rel="noreferrer" data-testid="prime-logo-link">
             <img
-              src="/assets/prime-logo.jpg"
-              alt="Prime Time Events logo"
-              className="h-14 sm:h-16 w-auto mb-5 mix-blend-multiply hover:opacity-80 transition-opacity"
+              src="/assets/prime-time-festivals.png"
+              alt="Prime Time Festivals logo"
+              className="h-16 sm:h-20 w-auto mb-5 mix-blend-multiply hover:opacity-80 transition-opacity"
               data-testid="prime-logo"
             />
           </a>
+          <img
+            src="/assets/event-managed-by.webp"
+            alt="Event managed by Prime Time Events"
+            className="h-14 sm:h-16 w-auto mb-6 mix-blend-multiply"
+            data-testid="managed-by-logo"
+          />
           <p className="text-base text-ash leading-relaxed mb-8 max-w-md">
             The Kochi-based event house behind RajaOnam 2026 — crafting large-scale cultural celebrations that bring Kerala's traditions alive, from the royal welcome to the grand sadhya at Bolgatty Palace.
           </p>
@@ -29,12 +35,21 @@ export default function Organiser() {
               <Phone className="w-4 h-4 text-leaf shrink-0" /> +91 90485 99965
             </li>
             <li className="flex items-center gap-3 text-sm text-ink" data-testid="organiser-email">
-              <Mail className="w-4 h-4 text-leaf shrink-0" /> reach@primetimeevents.in
+              <Mail className="w-4 h-4 text-leaf shrink-0" /> admin@primetimeevents.in
             </li>
             <li className="flex items-center gap-3 text-sm text-ink" data-testid="organiser-venue">
               <MapPin className="w-4 h-4 text-leaf shrink-0" /> Bolgatty Palace &amp; Island Resort, Kochi, Kerala
             </li>
           </ul>
+          <a
+            href="https://maps.app.goo.gl/q6ZminHj9X8hBhBa6"
+            target="_blank"
+            rel="noreferrer"
+            data-testid="directions-btn"
+            className="mt-6 inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#1b5812] text-[#fabd8f] text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#12400c] transition-colors shadow-[0_10px_30px_rgba(27,88,18,0.35)]"
+          >
+            <MapPin className="w-4 h-4" /> Get Directions
+          </a>
         </div>
         <div className="flex items-center justify-center">
           <img

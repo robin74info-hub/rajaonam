@@ -201,6 +201,12 @@
 - server.py booking_email_html: added "📍 Venue Location — Open in Google Maps" link (https://maps.app.goo.gl/q6ZminHj9X8hBhBa6) right after the QR code block in confirmation emails
 - Verified: hero renders both lines, backend syntax OK, email HTML generation includes maps link
 
+## Footer Branding + Marquee Green v26 (2026-08-08)
+- Marquee.jsx: scrolling text color changed gold → green (text-leaf)
+- Organiser.jsx footer: email now admin@primetimeevents.in; "Presented By" logo replaced with prime-time-festivals.png; added "Event Managed By Prime Time Events" banner (event-managed-by.webp); added green "Get Directions" button below venue linking to https://maps.app.goo.gl/q6ZminHj9X8hBhBa6
+- New assets in /app/frontend/public/assets/: prime-time-festivals.png, event-managed-by.webp
+- Verified via screenshot: marquee green, footer logos render, email text, directions button href correct
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

@@ -9,7 +9,7 @@ export default function Marquee() {
           <div key={half} className="flex shrink-0">
             {row.map((item, i) => (
               <span key={`${half}-${i}`} className="flex items-center">
-                <span className="font-serif italic text-3xl sm:text-4xl text-gold/60 px-10">{item}</span>
+                <span className="font-serif italic text-3xl sm:text-4xl text-leaf px-10">{item}</span>
                 <span className="w-2 h-2 rounded-full bg-maroon/40" />
               </span>
             ))}
