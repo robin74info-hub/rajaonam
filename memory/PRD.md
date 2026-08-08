@@ -150,6 +150,16 @@
 - Verified: service running, pairing QR renders in dashboard, booking EO-5VJ1MR triggered send (503 until paired — EXPECTED)
 - PENDING MANUAL STEP: user must scan the pairing QR in /admin with the WhatsApp number that will send tickets
 
+## Razorpay Online Payments v18 (2026-08-08)
+- TEST keys in backend/.env (RAZORPAY_KEY_ID/SECRET); razorpay==2.0.1 installed
+- Flow: form → "Pay Online ₹X" (Razorpay checkout) OR "Pay at Venue" (instant confirm, as before)
+- POST /api/payments/order: validates, creates pending_payment booking + Razorpay order (receipt=booking ref)
+- POST /api/payments/verify: HMAC signature verify → status confirmed + payment_id → email + WhatsApp fire ONLY after verification
+- Admin list/export show ONLY status=confirmed (pending_payment hidden)
+- Confirmation shows Payment row (Online (Razorpay) / Pay at Venue)
+- Verified: real order created (₹5,698), bad signature rejected, valid-signature verify → EO-JNTQRM confirmed + email 202, admin shows 27 confirmed only
+- NOT completable in headless env: Razorpay test-mode mock bank page hangs — needs real device test (card 4111… rejected as international by this account; use netbanking/UPI in test)
+
 ## Backlog
 - P0: Real payment gateway (Stripe/Razorpay) when user wants live charges
 - P1: Email confirmation (Resend) to guest after booking

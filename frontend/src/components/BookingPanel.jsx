@@ -8,6 +8,16 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const fmt = (n, sym) => `${sym}${n.toLocaleString("en-IN")}`;
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
+const loadRazorpay = () =>
+  new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
+
 const SectionTitle = ({ n, label }) => (
   <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon mb-4">
     <span className="text-gold mr-2">{n}</span>{label}
@@ -124,28 +134,30 @@ export default function BookingPanel({ event, onBooked }) {
     return Object.keys(e).length === 0;
   };
 
+  const buildPayload = (paymentMode) => ({
+    name: form.name.trim(),
+    phone: form.phone.trim(),
+    email: form.email.trim(),
+    adults,
+    kids_5_12: kids512,
+    kids_below_5: kidsU5,
+    veg_adults: vegAdults,
+    veg_kids_5_12: vegKids512,
+    veg_kids_below_5: vegKidsU5,
+    contests: joinContests ? contests : [],
+    games: joinGames ? games : [],
+    boating: boating === true,
+    boating_slot: boating === true ? boatSlot : null,
+    boating_persons: boating === true ? boatPersons : 0,
+    payment_mode: paymentMode,
+  });
+
   const pay = async () => {
     if (!validate() || phase !== "idle") return;
     setPhase("processing");
     try {
-      const payload = {
-        name: form.name.trim(),
-        phone: form.phone.trim(),
-        email: form.email.trim(),
-        adults,
-        kids_5_12: kids512,
-        kids_below_5: kidsU5,
-        veg_adults: vegAdults,
-        veg_kids_5_12: vegKids512,
-        veg_kids_below_5: vegKidsU5,
-        contests: joinContests ? contests : [],
-        games: joinGames ? games : [],
-        boating: boating === true,
-        boating_slot: boating === true ? boatSlot : null,
-        boating_persons: boating === true ? boatPersons : 0,
-      };
       const [res] = await Promise.all([
-        axios.post(`${API}/bookings`, payload),
+        axios.post(`${API}/bookings`, buildPayload("Pay at Venue")),
         new Promise((r) => setTimeout(r, 1600)),
       ]);
       setBooking(res.data);
@@ -154,7 +166,48 @@ export default function BookingPanel({ event, onBooked }) {
     } catch (err) {
       setPhase("idle");
       const detail = err.response?.data?.detail;
-      setErrors({ form: typeof detail === "string" ? detail : "Payment failed — try again" });
+      setErrors({ form: typeof detail === "string" ? detail : "Booking failed — try again" });
+    }
+  };
+
+  const payOnline = async () => {
+    if (!validate() || phase !== "idle") return;
+    setPhase("processing");
+    try {
+      const sdkReady = await loadRazorpay();
+      if (!sdkReady) throw new Error("sdk");
+      const { data: order } = await axios.post(`${API}/payments/order`, buildPayload("Online (Razorpay)"));
+      const rzp = new window.Razorpay({
+        key: order.key_id,
+        amount: order.amount,
+        currency: order.currency,
+        name: "RAJAONAM 2026",
+        description: "Oru Kottara Sadhya · Bolgatty Palace",
+        order_id: order.order_id,
+        prefill: { name: form.name.trim(), email: form.email.trim(), contact: form.phone.trim() },
+        theme: { color: "#1b5812" },
+        handler: async (resp) => {
+          try {
+            const { data: booking } = await axios.post(`${API}/payments/verify`, resp);
+            setBooking(booking);
+            setPhase("done");
+            onBooked?.();
+          } catch (e) {
+            setPhase("idle");
+            setErrors({ form: "Payment verification failed — contact us with your payment ID" });
+          }
+        },
+        modal: { ondismiss: () => setPhase("idle") },
+      });
+      rzp.on("payment.failed", () => {
+        setPhase("idle");
+        setErrors({ form: "Payment failed — try again" });
+      });
+      rzp.open();
+    } catch (err) {
+      setPhase("idle");
+      const detail = err.response?.data?.detail;
+      setErrors({ form: typeof detail === "string" ? detail : "Could not start payment — try again" });
     }
   };
 
@@ -226,6 +279,7 @@ export default function BookingPanel({ event, onBooked }) {
                 {booking.contests?.length > 0 && <Row label="Contests" value={booking.contests.join(", ")} testid="confirmation-contests" />}
                 {booking.games?.length > 0 && <Row label="Games" value={booking.games.join(", ")} testid="confirmation-games" />}
                 {booking.boating && <Row label="Boating" value={`${booking.boating_slot} · ${booking.boating_persons} persons`} testid="confirmation-boating" />}
+                <Row label="Payment" value={booking.payment_mode || "Pay at Venue"} testid="confirmation-payment" />
                 <div className="border-t border-[#D8C7A5] pt-3 flex justify-between items-baseline">
                   <span className="text-xs tracking-[0.2em] uppercase text-ash">Total Amount</span>
                   <span className="font-display text-2xl text-leaf" data-testid="confirmation-total">
@@ -376,20 +430,28 @@ export default function BookingPanel({ event, onBooked }) {
               </section>
 
               <button
-                data-testid="pay-button"
-                onClick={pay}
+                data-testid="pay-online-btn"
+                onClick={payOnline}
                 disabled={phase === "processing"}
                 className="w-full py-4 rounded-full bg-leaf text-cream text-sm font-bold tracking-[0.2em] uppercase hover:bg-[#14523A] transition-colors disabled:opacity-80 flex items-center justify-center gap-3 shadow-[0_15px_35px_rgba(30,107,74,0.3)]"
               >
                 {phase === "processing" ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Submitting…
+                    <Loader2 className="w-4 h-4 animate-spin" /> Processing…
                   </>
                 ) : (
-                  <>Submit Booking</>
+                  <>Pay Online {fmt(total, sym)}</>
                 )}
               </button>
-              <p className="text-[10px] text-ash text-center tracking-wider">No payment needed now — pay at the venue</p>
+              <button
+                data-testid="pay-button"
+                onClick={pay}
+                disabled={phase === "processing"}
+                className="w-full py-3.5 rounded-full border-2 border-leaf text-leaf text-sm font-bold tracking-[0.2em] uppercase hover:bg-leaf hover:text-cream transition-colors disabled:opacity-80"
+              >
+                Pay at Venue
+              </button>
+              <p className="text-[10px] text-ash text-center tracking-wider">UPI, cards, net banking & wallets via Razorpay · or pay at the venue</p>
               {errors.form && <p className="text-xs text-maroon text-center" data-testid="form-error">{errors.form}</p>}
             </motion.div>
           )}

@@ -16,6 +16,7 @@ import asyncio
 import base64
 import httpx
 import qrcode
+import razorpay
 from fpdf import FPDF
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
@@ -69,7 +70,9 @@ class BookingCreate(BaseModel):
     payment_mode: str = "Pending"
 
 
-PAYMENT_MODES = ["Pending", "UPI", "Card", "Net Banking", "Pay at Venue"]
+PAYMENT_MODES = ["Pending", "UPI", "Card", "Net Banking", "Pay at Venue", "Online (Razorpay)"]
+
+rz_client = razorpay.Client(auth=(os.environ["RAZORPAY_KEY_ID"], os.environ["RAZORPAY_KEY_SECRET"]))
 
 
 @api_router.get("/")
@@ -80,6 +83,124 @@ async def root():
 @api_router.get("/event")
 async def get_event():
     return EVENT
+
+
+def validate_booking(input: BookingCreate):
+    if input.boating:
+        if not input.boating_slot or input.boating_slot not in EVENT["boating_slots"]:
+            raise HTTPException(status_code=400, detail="Choose a valid boating time slot")
+        if input.boating_persons < 1:
+            raise HTTPException(status_code=400, detail="Boating needs at least 1 person")
+    if input.adults + input.veg_adults < 1:
+        raise HTTPException(status_code=400, detail="At least 1 adult required")
+    if input.payment_mode not in PAYMENT_MODES:
+        raise HTTPException(status_code=400, detail="Invalid payment mode")
+
+
+def booking_total(input: BookingCreate) -> int:
+    return (
+        input.adults * EVENT["sea_price_adult"]
+        + input.kids_5_12 * EVENT["sea_price_kid"]
+        + input.veg_adults * EVENT["veg_price_adult"]
+        + input.veg_kids_5_12 * EVENT["veg_price_kid"]
+    )
+
+
+def new_reference() -> str:
+    return "EO-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+
+def build_booking_doc(input: BookingCreate, reference: str, total: int, status: str, payment: str) -> dict:
+    total_participants = (
+        input.adults + input.kids_5_12 + input.kids_below_5
+        + input.veg_adults + input.veg_kids_5_12 + input.veg_kids_below_5
+    )
+    return {
+        "id": str(uuid.uuid4()),
+        "reference": reference,
+        "name": input.name,
+        "phone": input.phone,
+        "email": input.email,
+        "adults": input.adults,
+        "kids_5_12": input.kids_5_12,
+        "kids_below_5": input.kids_below_5,
+        "veg_adults": input.veg_adults,
+        "veg_kids_5_12": input.veg_kids_5_12,
+        "veg_kids_below_5": input.veg_kids_below_5,
+        "total_participants": total_participants,
+        "contests": input.contests,
+        "games": input.games,
+        "boating": input.boating,
+        "boating_slot": input.boating_slot if input.boating else None,
+        "boating_persons": input.boating_persons if input.boating else 0,
+        "sea_price_adult": EVENT["sea_price_adult"],
+        "sea_price_kid": EVENT["sea_price_kid"],
+        "veg_price_adult": EVENT["veg_price_adult"],
+        "veg_price_kid": EVENT["veg_price_kid"],
+        "total": total,
+        "currency_symbol": EVENT["currency_symbol"],
+        "status": status,
+        "payment": payment,
+        "payment_mode": input.payment_mode,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+class PaymentVerify(BaseModel):
+    razorpay_order_id: str
+    razorpay_payment_id: str
+    razorpay_signature: str
+
+
+@api_router.post("/payments/order")
+async def create_payment_order(input: BookingCreate):
+    validate_booking(input)
+    total = booking_total(input)
+    reference = new_reference()
+    doc = build_booking_doc(input, reference, total, "pending_payment", "razorpay")
+    order = rz_client.order.create({
+        "amount": total * 100,
+        "currency": "INR",
+        "payment_capture": 1,
+        "receipt": reference,
+        "notes": {"reference": reference, "event": "RAJAONAM 2026"},
+    })
+    doc["razorpay_order_id"] = order["id"]
+    await db.bookings.insert_one(doc)
+    return {
+        "order_id": order["id"],
+        "amount": total * 100,
+        "currency": "INR",
+        "key_id": os.environ["RAZORPAY_KEY_ID"],
+        "reference": reference,
+    }
+
+
+@api_router.post("/payments/verify")
+async def verify_payment(input: PaymentVerify, request: Request):
+    try:
+        rz_client.utility.verify_payment_signature(input.dict())
+    except razorpay.errors.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Payment verification failed")
+
+    doc = await db.bookings.find_one({"razorpay_order_id": input.razorpay_order_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Booking not found for this order")
+
+    if doc["status"] != "confirmed":
+        await db.bookings.update_one(
+            {"razorpay_order_id": input.razorpay_order_id},
+            {"$set": {
+                "status": "confirmed",
+                "razorpay_payment_id": input.razorpay_payment_id,
+                "paid_at": datetime.now(timezone.utc).isoformat(),
+            }},
+        )
+        doc["status"] = "confirmed"
+        doc["razorpay_payment_id"] = input.razorpay_payment_id
+        asyncio.create_task(send_confirmation_email(doc, public_base(request)))
+        asyncio.create_task(send_whatsapp_confirmation(doc, public_base(request)))
+    return doc
 
 
 @api_router.post("/bookings")
@@ -430,7 +551,7 @@ async def auth_me(admin: str = Depends(get_current_admin)):
 
 @api_router.get("/admin/bookings")
 async def list_bookings(admin: str = Depends(get_current_admin)):
-    return await db.bookings.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
+    return await db.bookings.find({"status": "confirmed"}, {"_id": 0}).sort("created_at", -1).to_list(2000)
 
 
 class CheckinUpdate(BaseModel):
@@ -479,7 +600,7 @@ async def checkin_booking(reference: str, input: CheckinUpdate, admin: str = Dep
 
 @api_router.get("/admin/bookings/export")
 async def export_bookings(admin: str = Depends(get_current_admin)):
-    rows = await db.bookings.find({}, {"_id": 0}).sort("created_at", -1).to_list(10000)
+    rows = await db.bookings.find({"status": "confirmed"}, {"_id": 0}).sort("created_at", -1).to_list(10000)
     output = io.StringIO()
     output.write("\ufeff")
     writer = csv.writer(output)
