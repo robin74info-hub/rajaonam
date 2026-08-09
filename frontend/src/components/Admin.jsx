@@ -113,6 +113,7 @@ export default function Admin() {
   };
 
   const [wa, setWa] = useState(null);
+  const [slotReport, setSlotReport] = useState(null);
   const [waQr, setWaQr] = useState(null);
   const [siteQr, setSiteQr] = useState(null);
 
@@ -124,6 +125,17 @@ export default function Admin() {
       .get(`${API}/admin/website-qr`, { headers, responseType: "blob" })
       .then((r) => setSiteQr(URL.createObjectURL(r.data)))
       .catch(() => setSiteQr(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
+  const fetchSlotReport = () =>
+    axios.get(`${API}/admin/slot-report`, { headers }).then((r) => setSlotReport(r.data)).catch(() => setSlotReport(null));
+
+  useEffect(() => {
+    if (!token) return;
+    fetchSlotReport();
+    const t = setInterval(fetchSlotReport, 30000);
+    return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
@@ -459,6 +471,35 @@ export default function Admin() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-[#D8C7A5] bg-[#F1E3C6]/80 p-5 mb-8" data-testid="slot-report-card">
+        <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon mb-4">Time Slot Report — Booked Counts</p>
+        {slotReport ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              ["Sea Food Sadhya", slotReport.sea, slotReport.capacity, "sea-slot-report"],
+              ["Veg Onam Sadhya", slotReport.veg, slotReport.capacity, "veg-slot-report"],
+              ["Boating", slotReport.boating, null, "boating-slot-report"],
+            ].map(([title, data, cap, tid]) => (
+              <div key={tid} className="bg-white rounded-xl border border-[#E4D6BC] p-4" data-testid={tid}>
+                <p className="text-xs tracking-[0.2em] uppercase font-bold text-ink mb-3">{title}</p>
+                <div className="space-y-2">
+                  {Object.entries(data || {}).map(([slot, count]) => (
+                    <div key={slot} className="flex items-center justify-between text-sm" data-testid={`${tid}-${slot}`}>
+                      <span className="text-ash">{slot}</span>
+                      <span className={`font-bold ${cap && count >= cap ? "text-maroon" : "text-leaf"}`}>
+                        {count}{cap ? ` / ${cap}` : " pax"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-ash">Loading slot report…</p>
+        )}
       </div>
 
       <div className="rounded-xl border border-[#D8C7A5] bg-[#F1E3C6]/80 p-5 mb-8" data-testid="whatsapp-card">

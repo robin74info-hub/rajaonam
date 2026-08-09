@@ -108,6 +108,7 @@ export default function BookingPanel({ event, onBooked }) {
   const [boating, setBoating] = useState(null);
   const [boatSlot, setBoatSlot] = useState(null);
   const [boatPersons, setBoatPersons] = useState(1);
+  const [slotInfo, setSlotInfo] = useState(null);
   const [errors, setErrors] = useState({});
   const [phase, setPhase] = useState("idle");
   const [booking, setBooking] = useState(null);
@@ -275,7 +276,9 @@ export default function BookingPanel({ event, onBooked }) {
                 <Row label="Booking ID" value={booking.reference} testid="confirmation-reference" mono />
                 <Row label="Name" value={booking.name} testid="confirmation-name" />
                 <Row label="Sea Food" value={`${booking.adults} Adults · ${booking.kids_5_12} Kids (5–12) · ${booking.kids_below_5} Below 5`} testid="confirmation-seafood" />
+                {booking.sea_slot && <Row label="Sea Food Time Slot" value={booking.sea_slot} testid="confirmation-sea-slot" />}
                 <Row label="Veg" value={`${booking.veg_adults} Adults · ${booking.veg_kids_5_12} Kids (5–12) · ${booking.veg_kids_below_5} Below 5`} testid="confirmation-veg" />
+                {booking.veg_slot && <Row label="Veg Time Slot" value={booking.veg_slot} testid="confirmation-veg-slot" />}
                 {booking.contests?.length > 0 && <Row label="Contests" value={booking.contests.join(", ")} testid="confirmation-contests" />}
                 {booking.games?.length > 0 && <Row label="Games" value={booking.games.join(", ")} testid="confirmation-games" />}
                 {booking.boating && <Row label="Boating" value={`${booking.boating_slot} · ${booking.boating_persons} persons`} testid="confirmation-boating" />}

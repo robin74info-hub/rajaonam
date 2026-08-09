@@ -246,6 +246,15 @@
 - Admin.jsx: Action column now on ALL tabs; billed delete = confirm dialog + passcode prompt (ONAM26)
 - Verified: billed blocked w/o passcode, blocked with PRIME26 (wrong), works with onam26 (case-insensitive)
 
+## Auto Sadhya Time Slots v34 (2026-08-09)
+- User revised: NO frontend slot picker — backend AUTO-ASSIGNS slots. Removed all slot UI/state from BookingPanel.jsx
+- server.py assign_sadhya_slots(): earliest slot with capacity wins; each slot max 250 per sadhya type (confirmed + pending count); sea+veg in one booking get the SAME slot; overflow rolls to next slot; all full → 400 error. Applied to /api/bookings, /api/payments/order, /api/admin/manual-booking
+- Slots: 11:30–12:30, 12:30–1:30, 1:30–2:30, 2:30–3:30 (EVENT["sadhya_slots"], capacity EVENT["sadhya_slot_capacity"]=250)
+- Email + PDF ticket include Sea Food Time Slot, Veg Time Slot, Boating slot (verified in generated PDF/email HTML)
+- Admin: GET /api/admin/slot-report + "Time Slot Report" card (sea/veg per-slot x/250, boating pax per slot) below bookings table, auto-refresh 30s
+- Verified: slot1 sea=244 + 10-pax booking → assigned slot 2; mixed sea+veg → same slot; veg-only → slot1; test data cleaned after
+- Note: fixed BookingPanel.jsx corruption (duplicated lines at EOF) that blanked the landing page
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

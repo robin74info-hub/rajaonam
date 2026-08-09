@@ -50,6 +50,8 @@ EVENT = {
     "contests": ["Malayali Manka", "Sreeman", "Kids Contest", "Best Couple"],
     "games": ["Uriyadi", "Vadamvali (Tug of War)", "Sack Race", "Bun Eating Competition", "Sundarikku Pottu Thodal", "Lemon & Spoon Race"],
     "boating_slots": ["12:00 PM – 1:00 PM", "2:30 PM – 3:30 PM", "3:30 PM – 4:30 PM", "4:30 PM – 5:30 PM"],
+    "sadhya_slots": ["11:30 AM – 12:30 PM", "12:30 PM – 1:30 PM", "1:30 PM – 2:30 PM", "2:30 PM – 3:30 PM"],
+    "sadhya_slot_capacity": 250,
 }
 
 
@@ -68,6 +70,8 @@ class BookingCreate(BaseModel):
     boating: bool = False
     boating_slot: Optional[str] = None
     boating_persons: int = Field(ge=0, le=30, default=0)
+    sea_slot: Optional[str] = None
+    veg_slot: Optional[str] = None
     payment_mode: str = "Pending"
     ticket_type: str = "Guest"
     passcode: Optional[str] = None
@@ -99,6 +103,50 @@ def validate_booking(input: BookingCreate):
         raise HTTPException(status_code=400, detail="At least 1 adult required")
     if input.payment_mode not in PAYMENT_MODES:
         raise HTTPException(status_code=400, detail="Invalid payment mode")
+
+
+async def assign_sadhya_slots(input: BookingCreate):
+    """Auto-assign the earliest sadhya slot that fits the party.
+    If a booking has both Sea Food and Veg participants, both get the SAME slot.
+    Each slot holds max 250 persons per sadhya type (confirmed + pending count)."""
+    cap = EVENT["sadhya_slot_capacity"]
+    sea_pax = input.adults + input.kids_5_12 + input.kids_below_5
+    veg_pax = input.veg_adults + input.veg_kids_5_12 + input.veg_kids_below_5
+    input.sea_slot = None
+    input.veg_slot = None
+    if sea_pax == 0 and veg_pax == 0:
+        return
+    sea_booked = {s: 0 for s in EVENT["sadhya_slots"]}
+    veg_booked = {s: 0 for s in EVENT["sadhya_slots"]}
+    async for b in db.bookings.find({"status": {"$in": ["confirmed", "pending_payment"]}}):
+        if b.get("sea_slot") in sea_booked:
+            sea_booked[b["sea_slot"]] += b.get("adults", 0) + b.get("kids_5_12", 0) + b.get("kids_below_5", 0)
+        if b.get("veg_slot") in veg_booked:
+            veg_booked[b["veg_slot"]] += b.get("veg_adults", 0) + b.get("veg_kids_5_12", 0) + b.get("veg_kids_below_5", 0)
+    for slot in EVENT["sadhya_slots"]:
+        if sea_pax > 0 and sea_booked[slot] + sea_pax > cap:
+            continue
+        if veg_pax > 0 and veg_booked[slot] + veg_pax > cap:
+            continue
+        if sea_pax > 0:
+            input.sea_slot = slot
+        if veg_pax > 0:
+            input.veg_slot = slot
+        return
+    raise HTTPException(status_code=400, detail="All Sadhya time slots are full for your group size — please reduce the number of guests or contact the organiser")
+
+
+@api_router.get("/slots/availability")
+async def slots_availability():
+    cap = EVENT["sadhya_slot_capacity"]
+    sea = {s: 0 for s in EVENT["sadhya_slots"]}
+    veg = {s: 0 for s in EVENT["sadhya_slots"]}
+    async for b in db.bookings.find({"status": {"$in": ["confirmed", "pending_payment"]}}):
+        if b.get("sea_slot") in sea:
+            sea[b["sea_slot"]] += b.get("adults", 0) + b.get("kids_5_12", 0) + b.get("kids_below_5", 0)
+        if b.get("veg_slot") in veg:
+            veg[b["veg_slot"]] += b.get("veg_adults", 0) + b.get("veg_kids_5_12", 0) + b.get("veg_kids_below_5", 0)
+    return {"capacity": cap, "sea": sea, "veg": veg}
 
 
 def booking_total(input: BookingCreate) -> int:
@@ -137,6 +185,8 @@ def build_booking_doc(input: BookingCreate, reference: str, total: int, status: 
         "boating": input.boating,
         "boating_slot": input.boating_slot if input.boating else None,
         "boating_persons": input.boating_persons if input.boating else 0,
+        "sea_slot": input.sea_slot,
+        "veg_slot": input.veg_slot,
         "sea_price_adult": EVENT["sea_price_adult"],
         "sea_price_kid": EVENT["sea_price_kid"],
         "veg_price_adult": EVENT["veg_price_adult"],
@@ -160,6 +210,7 @@ class PaymentVerify(BaseModel):
 @api_router.post("/payments/order")
 async def create_payment_order(input: BookingCreate):
     validate_booking(input)
+    await assign_sadhya_slots(input)
     total = booking_total(input)
     reference = new_reference()
     doc = build_booking_doc(input, reference, total, "pending_payment", "razorpay")
@@ -220,6 +271,7 @@ async def create_booking(input: BookingCreate, request: Request):
         raise HTTPException(status_code=400, detail="At least 1 adult required")
     if input.payment_mode not in PAYMENT_MODES:
         raise HTTPException(status_code=400, detail="Invalid payment mode")
+    await assign_sadhya_slots(input)
 
     total_participants = (
         input.adults + input.kids_5_12 + input.kids_below_5
@@ -250,6 +302,8 @@ async def create_booking(input: BookingCreate, request: Request):
         "boating": input.boating,
         "boating_slot": input.boating_slot if input.boating else None,
         "boating_persons": input.boating_persons if input.boating else 0,
+        "sea_slot": input.sea_slot,
+        "veg_slot": input.veg_slot,
         "sea_price_adult": EVENT["sea_price_adult"],
         "sea_price_kid": EVENT["sea_price_kid"],
         "veg_price_adult": EVENT["veg_price_adult"],
@@ -325,7 +379,9 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
         ("Phone", doc["phone"]),
         ("Email", doc["email"]),
         ("Sea Food Sadhya", f"{doc['adults']} Adults, {doc['kids_5_12']} Kids (5-12), {doc['kids_below_5']} Below 5"),
+        ("Sea Food Time Slot", doc.get("sea_slot") or "-"),
         ("Veg Onam Sadhya", f"{doc['veg_adults']} Adults, {doc['veg_kids_5_12']} Kids (5-12), {doc['veg_kids_below_5']} Below 5"),
+        ("Veg Time Slot", doc.get("veg_slot") or "-"),
         ("Contests", ", ".join(doc["contests"]) or "-"),
         ("Games", ", ".join(doc["games"]) or "-"),
         ("Boating", f"{doc['boating_slot']} ({doc['boating_persons']} persons)" if doc["boating"] else "-"),
@@ -370,7 +426,9 @@ def booking_email_html(doc, qr_url, ticket_url):
             ("Booking ID", doc["reference"]),
             ("Name", doc["name"]),
             ("Sea Food Sadhya", f"{doc['adults']} Adults · {doc['kids_5_12']} Kids (5-12) · {doc['kids_below_5']} Below 5"),
+            ("Sea Food Time Slot", doc.get("sea_slot") or "—"),
             ("Veg Onam Sadhya", f"{doc['veg_adults']} Adults · {doc['veg_kids_5_12']} Kids (5-12) · {doc['veg_kids_below_5']} Below 5"),
+            ("Veg Time Slot", doc.get("veg_slot") or "—"),
             ("Contests", ", ".join(doc["contests"]) or "—"),
             ("Games", ", ".join(doc["games"]) or "—"),
             ("Boating", f"{doc['boating_slot']} · {doc['boating_persons']} persons" if doc["boating"] else "—"),
@@ -536,6 +594,22 @@ async def website_qr(request: Request, admin: str = Depends(get_current_admin)):
     return Response(content=buf.getvalue(), media_type="image/png")
 
 
+@api_router.get("/admin/slot-report")
+async def admin_slot_report(admin: str = Depends(get_current_admin)):
+    cap = EVENT["sadhya_slot_capacity"]
+    sea = {s: 0 for s in EVENT["sadhya_slots"]}
+    veg = {s: 0 for s in EVENT["sadhya_slots"]}
+    boating = {s: 0 for s in EVENT["boating_slots"]}
+    async for b in db.bookings.find({"status": {"$in": ["confirmed", "pending_payment"]}}):
+        if b.get("sea_slot") in sea:
+            sea[b["sea_slot"]] += b.get("adults", 0) + b.get("kids_5_12", 0) + b.get("kids_below_5", 0)
+        if b.get("veg_slot") in veg:
+            veg[b["veg_slot"]] += b.get("veg_adults", 0) + b.get("veg_kids_5_12", 0) + b.get("veg_kids_below_5", 0)
+        if b.get("boating_slot") in boating:
+            boating[b["boating_slot"]] += b.get("boating_persons", 0)
+    return {"capacity": cap, "sea": sea, "veg": veg, "boating": boating}
+
+
 class DeleteBookingRequest(BaseModel):
     passcode: Optional[str] = None
 
@@ -570,6 +644,7 @@ async def create_manual_booking(input: BookingCreate, request: Request, admin: s
         raise HTTPException(status_code=403, detail="Invalid passcode — complimentary tickets require the organiser passcode")
     if input.ticket_type not in TICKET_TYPES:
         raise HTTPException(status_code=400, detail="Invalid ticket type")
+    await assign_sadhya_slots(input)
     if input.adults + input.veg_adults < 1:
         raise HTTPException(status_code=400, detail="At least 1 adult required")
     input.payment_mode = "COMP"
