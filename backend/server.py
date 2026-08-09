@@ -21,7 +21,7 @@ from fpdf import FPDF
 from twilio.rest import Client as TwilioClient
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime, timezone, timedelta
 
 ROOT_DIR = Path(__file__).parent
@@ -578,6 +578,93 @@ async def get_current_staff(request: Request):
     return payload["sub"]
 
 
+async def get_current_sponsor(request: Request):
+    payload = await _decode_token(request)
+    if payload.get("role") not in ("admin", "sponsor"):
+        raise HTTPException(status_code=403, detail="Sponsor access required")
+    return payload["sub"]
+
+
+SPONSOR_ITEMS = [
+    ("adults", "Sea Food Adult", "sea_price_adult"),
+    ("kids_5_12", "Sea Food Kid (5-12)", "sea_price_kid"),
+    ("veg_adults", "Veg Adult", "veg_price_adult"),
+    ("veg_kids_5_12", "Veg Kid (5-12)", "veg_price_kid"),
+]
+SPONSOR_ITEM_LABELS = {k: l for k, l, _ in SPONSOR_ITEMS}
+
+
+def sponsor_items(doc):
+    redeemed = {}
+    for r in doc.get("redemptions", []):
+        redeemed[r["item"]] = redeemed.get(r["item"], 0) + r.get("qty", 0)
+    items = []
+    for key, label, price_key in SPONSOR_ITEMS:
+        qty = doc.get(key, 0)
+        if qty < 1:
+            continue
+        items.append({"key": key, "label": label, "qty": qty, "price": doc.get(price_key, 0), "redeemed": redeemed.get(key, 0)})
+    return items
+
+
+@api_router.get("/sponsor/booking/{reference}")
+async def sponsor_get_booking(reference: str, staff: str = Depends(get_current_sponsor)):
+    doc = await db.bookings.find_one({"reference": reference.upper()})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    if doc.get("status") != "confirmed":
+        raise HTTPException(status_code=400, detail="Booking is not confirmed/paid yet")
+    return {"reference": doc["reference"], "name": doc["name"], "phone": doc["phone"], "items": sponsor_items(doc)}
+
+
+class RedeemRequest(BaseModel):
+    reference: str
+    items: Dict[str, int]
+
+
+@api_router.post("/sponsor/redeem")
+async def sponsor_redeem(input: RedeemRequest, staff: str = Depends(get_current_sponsor)):
+    doc = await db.bookings.find_one({"reference": input.reference.upper()})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    items = sponsor_items(doc)
+    by_key = {i["key"]: i for i in items}
+    now = datetime.now(timezone.utc).isoformat()
+    for key, qty in input.items.items():
+        if qty < 1:
+            continue
+        item = by_key.get(key)
+        if not item:
+            raise HTTPException(status_code=400, detail=f"Item {key} not on this ticket")
+        if item["redeemed"] + qty > item["qty"]:
+            raise HTTPException(status_code=400, detail=f"{item['label']} has only {item['qty'] - item['redeemed']} left to redeem")
+        await db.bookings.update_one(
+            {"reference": doc["reference"]},
+            {"$push": {"redemptions": {"item": key, "label": item["label"], "qty": qty, "price": item["price"], "at": now, "by": staff}}},
+        )
+    updated = await db.bookings.find_one({"reference": doc["reference"]})
+    return {"ok": True, "items": sponsor_items(updated)}
+
+
+@api_router.get("/admin/sponsor-redemptions")
+async def admin_sponsor_redemptions(admin: str = Depends(get_current_admin)):
+    rows = []
+    async for b in db.bookings.find({"redemptions": {"$exists": True, "$ne": []}}):
+        for r in b.get("redemptions", []):
+            rows.append({
+                "reference": b["reference"],
+                "name": b.get("name"),
+                "phone": b.get("phone"),
+                "item": r.get("label") or SPONSOR_ITEM_LABELS.get(r.get("item"), r.get("item")),
+                "qty": r.get("qty", 0),
+                "price": r.get("price", 0),
+                "at": r.get("at"),
+                "by": r.get("by"),
+            })
+    rows.sort(key=lambda r: r.get("at") or "", reverse=True)
+    return rows
+
+
 @api_router.get("/admin/whatsapp/status")
 async def whatsapp_status(admin: str = Depends(get_current_admin)):
     return {"connected": True, "provider": "twilio", "sender": TWILIO_FROM.replace("whatsapp:", "")}
@@ -677,7 +764,7 @@ class AdminLogin(BaseModel):
 @api_router.post("/auth/login")
 async def admin_login(input: AdminLogin):
     email = input.email.lower()
-    user = await db.users.find_one({"email": email, "role": {"$in": ["admin", "gate"]}})
+    user = await db.users.find_one({"email": email, "role": {"$in": ["admin", "gate", "sponsor"]}})
     if not user or not bcrypt.checkpw(input.password.encode("utf-8"), user["password_hash"].encode("utf-8")):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     role = user.get("role", "admin")
@@ -793,7 +880,7 @@ logger = logging.getLogger(__name__)
 @app.on_event("startup")
 async def seed_admin():
     await db.users.create_index("email", unique=True)
-    for env_email, env_pass, role in [("ADMIN_EMAIL", "ADMIN_PASSWORD", "admin"), ("GATE_EMAIL", "GATE_PASSWORD", "gate")]:
+    for env_email, env_pass, role in [("ADMIN_EMAIL", "ADMIN_PASSWORD", "admin"), ("GATE_EMAIL", "GATE_PASSWORD", "gate"), ("SPONSOR_EMAIL", "SPONSOR_PASSWORD", "sponsor")]:
         email = os.environ[env_email].lower()
         password = os.environ[env_pass]
         existing = await db.users.find_one({"email": email})

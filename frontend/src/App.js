@@ -11,6 +11,7 @@ import Organiser from "@/components/Organiser";
 import BrochureButton from "@/components/BrochureButton";
 import Admin from "@/components/Admin";
 import Scanner from "@/components/Scanner";
+import Sponsor from "@/components/Sponsor";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -66,6 +67,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/scanner" element={<Scanner />} />
+          <Route path="/sponsor" element={<Sponsor />} />
         </Routes>
       </BrowserRouter>
     </div>

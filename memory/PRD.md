@@ -290,6 +290,13 @@
 - Moved the managed-by logo from the left column to the RIGHT column, directly beneath the RajaOnam logo (w-56/64)
 - Verified via screenshot: logo sits under RajaOnam logo, left column now Presented By festivals logo + tagline + description + contacts
 
+## Sponsor QR Scanner v42 (2026-08-09)
+- New role "sponsor" (sponsor@rajaonam.com / Sponsor@2026, env SPONSOR_EMAIL/SPONSOR_PASSWORD, seeded); login allows roles admin/gate/sponsor
+- Frontend: /sponsor route (Sponsor.jsx) — own login, camera QR scan + manual booking-ID entry, item picker with per-unit checkboxes (Sea Food Adult/Kid, Veg Adult/Kid with unit prices), already-redeemed units disabled, Confirm Purchase
+- Backend: GET /api/sponsor/booking/{ref} (sponsor role only, confirmed bookings only), POST /api/sponsor/redeem {reference, items{key:qty}} — server validates remaining count per item (double-redemption impossible), appends to booking.redemptions [{item,label,qty,price,at,by}]
+- Admin: GET /api/admin/sponsor-redemptions + "Sponsor Redemptions" card (Booking ID, customer, item, qty, price, shop, redeemed at), auto-refresh 30s
+- Verified end-to-end: login, fetch 4 items with prices, redeem 1 adult, re-redeem blocked ("only 1 left"), sponsor token blocked from admin APIs (403), UI flow Purchase Confirmed, admin card shows rows; test booking deleted afterwards
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

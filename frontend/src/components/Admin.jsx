@@ -114,6 +114,7 @@ export default function Admin() {
 
   const [wa, setWa] = useState(null);
   const [slotReport, setSlotReport] = useState(null);
+  const [redemptions, setRedemptions] = useState(null);
   const [waQr, setWaQr] = useState(null);
   const [siteQr, setSiteQr] = useState(null);
 
@@ -131,10 +132,14 @@ export default function Admin() {
   const fetchSlotReport = () =>
     axios.get(`${API}/admin/slot-report`, { headers }).then((r) => setSlotReport(r.data)).catch(() => setSlotReport(null));
 
+  const fetchRedemptions = () =>
+    axios.get(`${API}/admin/sponsor-redemptions`, { headers }).then((r) => setRedemptions(r.data)).catch(() => setRedemptions(null));
+
   useEffect(() => {
     if (!token) return;
     fetchSlotReport();
-    const t = setInterval(fetchSlotReport, 30000);
+    fetchRedemptions();
+    const t = setInterval(() => { fetchSlotReport(); fetchRedemptions(); }, 30000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
@@ -505,6 +510,42 @@ export default function Admin() {
           </div>
         ) : (
           <p className="text-sm text-ash">Loading slot report…</p>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-[#D8C7A5] bg-[#F1E3C6]/80 p-5 mb-8" data-testid="sponsor-redemptions-card">
+        <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon mb-4">Sponsor Redemptions</p>
+        {redemptions && redemptions.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-[10px] tracking-[0.15em] uppercase text-ash border-b border-[#D8C7A5]">
+                  <th className="px-3 py-2">Booking ID</th>
+                  <th className="px-3 py-2">Customer</th>
+                  <th className="px-3 py-2">Item</th>
+                  <th className="px-3 py-2 text-right">Qty</th>
+                  <th className="px-3 py-2 text-right">Price</th>
+                  <th className="px-3 py-2">Shop</th>
+                  <th className="px-3 py-2">Redeemed At</th>
+                </tr>
+              </thead>
+              <tbody>
+                {redemptions.map((r, i) => (
+                  <tr key={`${r.reference}-${i}`} className="border-b border-[#F1E3C6]" data-testid={`redemption-row-${r.reference}`}>
+                    <td className="px-3 py-2.5 font-bold text-ink">{r.reference}</td>
+                    <td className="px-3 py-2.5 text-ink">{r.name}<span className="block text-[11px] text-ash">{r.phone}</span></td>
+                    <td className="px-3 py-2.5 text-ink">{r.item}</td>
+                    <td className="px-3 py-2.5 text-right font-semibold text-ink">{r.qty}</td>
+                    <td className="px-3 py-2.5 text-right text-leaf font-bold">{fmt(r.price)}</td>
+                    <td className="px-3 py-2.5 text-ash text-xs">{r.by}</td>
+                    <td className="px-3 py-2.5 text-ash text-xs whitespace-nowrap">{r.at ? new Date(r.at).toLocaleString("en-IN") : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-sm text-ash" data-testid="no-redemptions">No sponsor redemptions yet</p>
         )}
       </div>
 
