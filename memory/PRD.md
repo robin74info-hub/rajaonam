@@ -263,6 +263,11 @@
 ## TEMP: Sea Adult Price ₹1 (2026-08-09)
 - EVENT["sea_price_adult"] changed 2999 → 1 for live payment testing. REVERT TO 2999 after user finishes testing (user confirmed "later we will change")
 
+## Single Slot Display + Comp Form Polish v36 (2026-08-09)
+- Email + PDF ticket now show ONE "Sadhya Time Slot" row (sea/veg always share a slot — dual rows removed); confirmation screen also shows single "Sadhya Time Slot" row; boating time still shown in both
+- Admin manual booking form: passcode input moved to last position (right above Generate button); labels renamed "Sea Food Adult" and "Sea Food Kid"
+- Verified: mixed booking gets identical sea/veg slot, PDF & email contain exactly one slot row + boating time, form order correct in UI
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

@@ -585,8 +585,7 @@ export default function Admin() {
           <input data-testid="manual-name-input" value={manual.name} onChange={setM("name")} placeholder="Full name" className="bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf" />
           <input data-testid="manual-phone-input" value={manual.phone} onChange={setM("phone")} placeholder="Phone / WhatsApp" type="tel" className="bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf" />
           <input data-testid="manual-email-input" value={manual.email} onChange={setM("email")} placeholder="Email" type="email" className="bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf" />
-          <input data-testid="manual-passcode-input" value={manual.passcode} onChange={setM("passcode")} placeholder="Passcode" type="password" className="bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf" />
-          {[["adults", "Sea Adults"], ["kids_5_12", "Sea Kids 5-12"], ["kids_below_5", "Sea Kids <5"], ["veg_adults", "Veg Adults"], ["veg_kids_5_12", "Veg Kids 5-12"], ["veg_kids_below_5", "Veg Kids <5"]].map(([k, label]) => (
+          {[["adults", "Sea Food Adult"], ["kids_5_12", "Sea Food Kid"], ["kids_below_5", "Sea Kids <5"], ["veg_adults", "Veg Adults"], ["veg_kids_5_12", "Veg Kids 5-12"], ["veg_kids_below_5", "Veg Kids <5"]].map(([k, label]) => (
             <label key={k} className="flex items-center gap-2 bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5">
               <span className="text-[10px] tracking-wider uppercase text-ash whitespace-nowrap">{label}</span>
               <input
@@ -600,6 +599,7 @@ export default function Admin() {
               />
             </label>
           ))}
+          <input data-testid="manual-passcode-input" value={manual.passcode} onChange={setM("passcode")} placeholder="Passcode" type="password" className="col-span-2 bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf" />
           <button
             data-testid="manual-generate-btn"
             type="submit"
