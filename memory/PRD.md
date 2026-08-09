@@ -271,6 +271,10 @@
 ## Price Restored v37 (2026-08-09)
 - sea_price_adult restored 1 → 2999 after user's ₹1 live payment test. All prices back to normal: Sea 2999/1399, Veg 2699/1199. Remember: redeploy needed for production.
 
+## UI/Email Copy Polish v38 (2026-08-09)
+- Email greeting changed: "Your banana leaf is reserved" → "Your RajaOnam Celebration is Confirmed" (verified in generated HTML)
+- Admin: "Manual Booking (Complimentary)" heading → "Complimentary Tickets"; passcode input now dark brown (#2B2118) with cream text to stand out, sits right above Generate
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

@@ -443,7 +443,7 @@ def booking_email_html(doc, qr_url, ticket_url):
 </td></tr>
 <tr><td style="padding:32px;">
   <p style="margin:0 0 8px;color:#8A2A1B;font-size:11px;letter-spacing:3px;text-transform:uppercase;">Booking Confirmed</p>
-  <p style="margin:0 0 24px;color:#2B2118;font-size:24px;">Your banana leaf is reserved, {doc['name'].split()[0]}!</p>
+  <p style="margin:0 0 24px;color:#2B2118;font-size:24px;">Your RajaOnam Celebration is Confirmed, {doc['name'].split()[0]}!</p>
   <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #E4D6BC;">{rows}</table>
   <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr><td align="center" style="background:#FFFBF2;border:1px solid #E4D6BC;border-radius:12px;padding:24px;">
     <img src="{qr_url}" width="180" height="180" alt="Booking QR code" style="display:block;" />

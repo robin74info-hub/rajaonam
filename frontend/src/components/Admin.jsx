@@ -570,7 +570,7 @@ export default function Admin() {
 
       <div className="rounded-xl border border-[#D8C7A5] bg-[#F1E3C6]/80 p-5 mb-8" data-testid="manual-booking-card">
         <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon mb-4 flex items-center gap-2">
-          <Ticket className="w-4 h-4" /> Manual Booking (Complimentary)
+          <Ticket className="w-4 h-4" /> Complimentary Tickets
         </p>
         <form onSubmit={generateManual} className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <select
@@ -599,7 +599,7 @@ export default function Admin() {
               />
             </label>
           ))}
-          <input data-testid="manual-passcode-input" value={manual.passcode} onChange={setM("passcode")} placeholder="Passcode" type="password" className="col-span-2 bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf" />
+          <input data-testid="manual-passcode-input" value={manual.passcode} onChange={setM("passcode")} placeholder="Passcode" type="password" className="col-span-2 bg-[#2B2118] border border-[#2B2118] rounded-full px-4 py-2.5 text-sm text-[#fabd8f] placeholder:text-[#fabd8f]/40 focus:outline-none focus:border-leaf" />
           <button
             data-testid="manual-generate-btn"
             type="submit"
