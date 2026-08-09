@@ -285,6 +285,11 @@
 - Event Managed By logo replaced with crop from user's attached footer.jpg (extracted "Event Managed By PRIME TIME EVENTS" region → /assets/event-managed-by.webp, 258x84)
 - Verified via screenshot: headline renders green, new logo displays, yellow copyright bar intact
 
+## PTE Logo Move v41 (2026-08-09)
+- Replaced event-managed-by.webp with the user's new attached logo (2000x523, white bg, black "Event Managed By" header)
+- Moved the managed-by logo from the left column to the RIGHT column, directly beneath the RajaOnam logo (w-56/64)
+- Verified via screenshot: logo sits under RajaOnam logo, left column now Presented By festivals logo + tagline + description + contacts
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

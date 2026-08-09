@@ -21,12 +21,6 @@ export default function Organiser() {
               data-testid="prime-logo"
             />
           </a>
-          <img
-            src="/assets/event-managed-by.webp"
-            alt="Event managed by Prime Time Events"
-            className="h-9 sm:h-10 w-auto mb-6 mix-blend-multiply"
-            data-testid="managed-by-logo"
-          />
           <p className="font-serif text-xl text-[#1b5812] mb-3" data-testid="prime-tagline">Creating celebrations worth remembering.</p>
           <p className="text-base text-ash leading-relaxed mb-8 max-w-md" data-testid="prime-description">
             Prime Time Festivals is an event and experiences company focused on creating premium, culturally rooted and seasonal celebrations. From the flagship RajaOnam 2026 to future festive experiences, we bring together food, entertainment, traditions and hospitality to create memorable moments for families, communities and brands.
@@ -52,12 +46,18 @@ export default function Organiser() {
             <MapPin className="w-4 h-4" /> Get Directions
           </a>
         </div>
-        <div className="flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center gap-6">
           <img
             src="/assets/logo.webp"
             alt="RajaoNam — Oru Kottara Sadhya 2026 official logo"
             className="w-full max-w-lg drop-shadow-[0_20px_40px_rgba(201,162,39,0.25)]"
             data-testid="organiser-logo"
+          />
+          <img
+            src="/assets/event-managed-by.webp"
+            alt="Event managed by Prime Time Events"
+            className="w-56 sm:w-64 h-auto mix-blend-multiply"
+            data-testid="managed-by-logo"
           />
         </div>
       </motion.div>
