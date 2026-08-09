@@ -260,6 +260,9 @@
 - Admin slot report redesigned: one "Sadhya Time Slots (combined · max 250)" panel showing per-slot "Sea x · Veg y" breakdown + total/250, plus Boating pax panel
 - Verified: 244 combined + 10 → slot 2; 244 + 6 (exactly 250) → fits slot 1 with same slot for sea+veg; 250 full → next booking to slot 2; report API returns sea/veg/total per slot. Test data cleaned.
 
+## TEMP: Sea Adult Price ₹1 (2026-08-09)
+- EVENT["sea_price_adult"] changed 2999 → 1 for live payment testing. REVERT TO 2999 after user finishes testing (user confirmed "later we will change")
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
