@@ -50,14 +50,8 @@ function Home() {
       </main>
       <Organiser />
       <footer className="px-8 sm:px-14 py-10 bg-[#1b5812]">
-        <div className="flex flex-col sm:flex-row justify-between gap-4">
-          <p className="font-serif text-2xl text-[#fabd8f]">RAJAONAM <span className="text-[#C9A227]">2026</span></p>
-          <p className="text-xs tracking-[0.2em] uppercase text-[#fabd8f]/75" data-testid="footer-note">
-            26 August 2026 · 11 AM – 5 PM · Bolgatty Palace &amp; Island Resort, Kochi
-          </p>
-        </div>
-        <p className="text-[11px] tracking-[0.15em] uppercase text-[#fabd8f]/70 text-center mt-8 pt-6 border-t border-[#fabd8f]/25" data-testid="footer-copyright">
-          Copyright 2026 RajaOnam · Powered by <a href="https://berrysysglobal.com/" target="_blank" rel="noreferrer" className="underline decoration-[#C9A227]/60 underline-offset-2 hover:text-[#fabd8f] transition-colors" data-testid="berrysys-link">Berrysys Media Global LLC</a>
+        <p className="text-[11px] tracking-[0.15em] uppercase text-center font-bold" data-testid="footer-copyright">
+          <span className="text-[#FFD700]">Copyright 2026 RajaOnam · Powered by <a href="https://berrysysglobal.com/" target="_blank" rel="noreferrer" className="underline decoration-[#FFD700]/60 underline-offset-2 hover:text-white transition-colors" data-testid="berrysys-link">Berrysys Media Global LLC</a></span>
         </p>
       </footer>
     </>

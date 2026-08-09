@@ -275,6 +275,11 @@
 - Email greeting changed: "Your banana leaf is reserved" → "Your RajaOnam Celebration is Confirmed" (verified in generated HTML)
 - Admin: "Manual Booking (Complimentary)" heading → "Complimentary Tickets"; passcode input now dark brown (#2B2118) with cream text to stand out, sits right above Generate
 
+## Footer Text + Bottom Bar v39 (2026-08-09)
+- Organiser.jsx: description below Prime Time Festivals logo replaced with "Creating celebrations worth remembering..." company profile text
+- App.js footer: removed RAJAONAM 2026 wordmark + date/location line; bottom bar now only "Copyright 2026 RajaOnam · Powered by Berrysys Media Global LLC" in bright yellow (#FFD700) on green
+- PENDING: user asked to change Prime Time Events logo "as per image attached" but no logo image came through — awaiting re-upload
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

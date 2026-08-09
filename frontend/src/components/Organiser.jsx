@@ -27,8 +27,8 @@ export default function Organiser() {
             className="h-9 sm:h-10 w-auto mb-6 mix-blend-multiply"
             data-testid="managed-by-logo"
           />
-          <p className="text-base text-ash leading-relaxed mb-8 max-w-md">
-            The Kochi-based event house behind RajaOnam 2026 — crafting large-scale cultural celebrations that bring Kerala's traditions alive, from the royal welcome to the grand sadhya at Bolgatty Palace.
+          <p className="text-base text-ash leading-relaxed mb-8 max-w-md" data-testid="prime-description">
+            Creating celebrations worth remembering. Prime Time Festivals is an event and experiences company focused on creating premium, culturally rooted and seasonal celebrations. From the flagship RajaOnam 2026 to future festive experiences, we bring together food, entertainment, traditions and hospitality to create memorable moments for families, communities and brands.
           </p>
           <ul className="space-y-3">
             <li className="flex items-center gap-3 text-sm text-ink" data-testid="organiser-phone">
