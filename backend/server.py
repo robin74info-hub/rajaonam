@@ -107,26 +107,26 @@ def validate_booking(input: BookingCreate):
 
 async def assign_sadhya_slots(input: BookingCreate):
     """Auto-assign the earliest sadhya slot that fits the party.
-    If a booking has both Sea Food and Veg participants, both get the SAME slot.
-    Each slot holds max 250 persons per sadhya type (confirmed + pending count)."""
+    Slot capacity is COMBINED: Sea Food + Veg guests together, max 250 per slot.
+    Sea and Veg on the same booking always get the SAME slot."""
     cap = EVENT["sadhya_slot_capacity"]
     sea_pax = input.adults + input.kids_5_12 + input.kids_below_5
     veg_pax = input.veg_adults + input.veg_kids_5_12 + input.veg_kids_below_5
     input.sea_slot = None
     input.veg_slot = None
-    if sea_pax == 0 and veg_pax == 0:
+    party = sea_pax + veg_pax
+    if party == 0:
         return
-    sea_booked = {s: 0 for s in EVENT["sadhya_slots"]}
-    veg_booked = {s: 0 for s in EVENT["sadhya_slots"]}
+    booked = {s: 0 for s in EVENT["sadhya_slots"]}
     async for b in db.bookings.find({"status": {"$in": ["confirmed", "pending_payment"]}}):
-        if b.get("sea_slot") in sea_booked:
-            sea_booked[b["sea_slot"]] += b.get("adults", 0) + b.get("kids_5_12", 0) + b.get("kids_below_5", 0)
-        if b.get("veg_slot") in veg_booked:
-            veg_booked[b["veg_slot"]] += b.get("veg_adults", 0) + b.get("veg_kids_5_12", 0) + b.get("veg_kids_below_5", 0)
+        slot = b.get("sea_slot") or b.get("veg_slot")
+        if slot in booked:
+            booked[slot] += (
+                b.get("adults", 0) + b.get("kids_5_12", 0) + b.get("kids_below_5", 0)
+                + b.get("veg_adults", 0) + b.get("veg_kids_5_12", 0) + b.get("veg_kids_below_5", 0)
+            )
     for slot in EVENT["sadhya_slots"]:
-        if sea_pax > 0 and sea_booked[slot] + sea_pax > cap:
-            continue
-        if veg_pax > 0 and veg_booked[slot] + veg_pax > cap:
+        if booked[slot] + party > cap:
             continue
         if sea_pax > 0:
             input.sea_slot = slot
@@ -597,17 +597,19 @@ async def website_qr(request: Request, admin: str = Depends(get_current_admin)):
 @api_router.get("/admin/slot-report")
 async def admin_slot_report(admin: str = Depends(get_current_admin)):
     cap = EVENT["sadhya_slot_capacity"]
-    sea = {s: 0 for s in EVENT["sadhya_slots"]}
-    veg = {s: 0 for s in EVENT["sadhya_slots"]}
+    slots = {s: {"sea": 0, "veg": 0, "total": 0} for s in EVENT["sadhya_slots"]}
     boating = {s: 0 for s in EVENT["boating_slots"]}
     async for b in db.bookings.find({"status": {"$in": ["confirmed", "pending_payment"]}}):
-        if b.get("sea_slot") in sea:
-            sea[b["sea_slot"]] += b.get("adults", 0) + b.get("kids_5_12", 0) + b.get("kids_below_5", 0)
-        if b.get("veg_slot") in veg:
-            veg[b["veg_slot"]] += b.get("veg_adults", 0) + b.get("veg_kids_5_12", 0) + b.get("veg_kids_below_5", 0)
+        slot = b.get("sea_slot") or b.get("veg_slot")
+        if slot in slots:
+            sea = b.get("adults", 0) + b.get("kids_5_12", 0) + b.get("kids_below_5", 0)
+            veg = b.get("veg_adults", 0) + b.get("veg_kids_5_12", 0) + b.get("veg_kids_below_5", 0)
+            slots[slot]["sea"] += sea
+            slots[slot]["veg"] += veg
+            slots[slot]["total"] += sea + veg
         if b.get("boating_slot") in boating:
             boating[b["boating_slot"]] += b.get("boating_persons", 0)
-    return {"capacity": cap, "sea": sea, "veg": veg, "boating": boating}
+    return {"capacity": cap, "slots": slots, "boating": boating}
 
 
 class DeleteBookingRequest(BaseModel):

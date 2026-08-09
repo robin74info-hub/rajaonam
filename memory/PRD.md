@@ -255,6 +255,11 @@
 - Verified: slot1 sea=244 + 10-pax booking → assigned slot 2; mixed sea+veg → same slot; veg-only → slot1; test data cleaned after
 - Note: fixed BookingPanel.jsx corruption (duplicated lines at EOF) that blanked the landing page
 
+## Combined Slot Capacity v35 (2026-08-09)
+- User clarified: 250 limit is COMBINED (Sea Food + Veg together) per slot, not per type. assign_sadhya_slots() rewritten: per-slot combined count, earliest fitting slot wins, sea+veg same booking always same slot
+- Admin slot report redesigned: one "Sadhya Time Slots (combined · max 250)" panel showing per-slot "Sea x · Veg y" breakdown + total/250, plus Boating pax panel
+- Verified: 244 combined + 10 → slot 2; 244 + 6 (exactly 250) → fits slot 1 with same slot for sea+veg; 250 full → next booking to slot 2; report API returns sea/veg/total per slot. Test data cleaned.
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

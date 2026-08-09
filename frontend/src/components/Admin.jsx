@@ -476,26 +476,32 @@ export default function Admin() {
       <div className="rounded-xl border border-[#D8C7A5] bg-[#F1E3C6]/80 p-5 mb-8" data-testid="slot-report-card">
         <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon mb-4">Time Slot Report — Booked Counts</p>
         {slotReport ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {[
-              ["Sea Food Sadhya", slotReport.sea, slotReport.capacity, "sea-slot-report"],
-              ["Veg Onam Sadhya", slotReport.veg, slotReport.capacity, "veg-slot-report"],
-              ["Boating", slotReport.boating, null, "boating-slot-report"],
-            ].map(([title, data, cap, tid]) => (
-              <div key={tid} className="bg-white rounded-xl border border-[#E4D6BC] p-4" data-testid={tid}>
-                <p className="text-xs tracking-[0.2em] uppercase font-bold text-ink mb-3">{title}</p>
-                <div className="space-y-2">
-                  {Object.entries(data || {}).map(([slot, count]) => (
-                    <div key={slot} className="flex items-center justify-between text-sm" data-testid={`${tid}-${slot}`}>
-                      <span className="text-ash">{slot}</span>
-                      <span className={`font-bold ${cap && count >= cap ? "text-maroon" : "text-leaf"}`}>
-                        {count}{cap ? ` / ${cap}` : " pax"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="bg-white rounded-xl border border-[#E4D6BC] p-4" data-testid="sadhya-slot-report">
+              <p className="text-xs tracking-[0.2em] uppercase font-bold text-ink mb-3">Sadhya Time Slots (Sea Food + Veg combined · max {slotReport.capacity})</p>
+              <div className="space-y-2.5">
+                {Object.entries(slotReport.slots || {}).map(([slot, d]) => (
+                  <div key={slot} className="flex items-center justify-between text-sm border-b border-[#F1E3C6] pb-2 last:border-0 last:pb-0" data-testid={`sadhya-slot-${slot}`}>
+                    <span className="text-ash">{slot}</span>
+                    <span className="text-xs text-ash mr-auto ml-4">Sea {d.sea} · Veg {d.veg}</span>
+                    <span className={`font-bold ${d.total >= slotReport.capacity ? "text-maroon" : "text-leaf"}`}>
+                      {d.total} / {slotReport.capacity}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+            <div className="bg-white rounded-xl border border-[#E4D6BC] p-4" data-testid="boating-slot-report">
+              <p className="text-xs tracking-[0.2em] uppercase font-bold text-ink mb-3">Boating Time Slots</p>
+              <div className="space-y-2.5">
+                {Object.entries(slotReport.boating || {}).map(([slot, count]) => (
+                  <div key={slot} className="flex items-center justify-between text-sm border-b border-[#F1E3C6] pb-2 last:border-0 last:pb-0" data-testid={`boating-slot-${slot}`}>
+                    <span className="text-ash">{slot}</span>
+                    <span className="font-bold text-leaf">{count} pax</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
           <p className="text-sm text-ash">Loading slot report…</p>
