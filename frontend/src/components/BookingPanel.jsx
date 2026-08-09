@@ -110,6 +110,7 @@ export default function BookingPanel({ event, onBooked }) {
   const [boatPersons, setBoatPersons] = useState(1);
   const [slotInfo, setSlotInfo] = useState(null);
   const [errors, setErrors] = useState({});
+  const [missingFields, setMissingFields] = useState(null);
   const [phase, setPhase] = useState("idle");
   const [booking, setBooking] = useState(null);
 
@@ -132,7 +133,10 @@ export default function BookingPanel({ event, onBooked }) {
     if (adults + vegAdults < 1) e.adults = "At least 1 adult required";
     if (boating === true && !boatSlot) e.boating = "Choose a boating time slot";
     setErrors(e);
-    return Object.keys(e).length === 0;
+    const FIELD_LABELS = { name: "Full Name", phone: "WhatsApp Number", email: "Email", adults: "Participants", boating: "Boating Time Slot" };
+    const missing = Object.keys(e).map((k) => ({ key: k, label: FIELD_LABELS[k] || k, message: e[k] }));
+    setMissingFields(missing.length > 0 ? missing : null);
+    return missing.length === 0;
   };
 
   const buildPayload = (paymentMode) => ({
@@ -238,6 +242,30 @@ export default function BookingPanel({ event, onBooked }) {
   };
 
   return (
+    <>
+    {missingFields && (
+      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-ink/50 backdrop-blur-sm px-4" data-testid="missing-fields-popup" onClick={() => setMissingFields(null)}>
+        <div className="w-full max-w-sm rounded-2xl border border-[#D8C7A5] bg-[#F1E3C6] p-6 shadow-[0_25px_60px_rgba(43,33,24,0.4)]" onClick={(e) => e.stopPropagation()}>
+          <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon mb-1">Almost there</p>
+          <p className="font-serif text-2xl text-ink mb-4">Please fill in these fields</p>
+          <ul className="space-y-2 mb-5">
+            {missingFields.map((f) => (
+              <li key={f.key} className="flex items-start gap-2.5 text-sm text-ink bg-white/70 border border-[#E4D6BC] rounded-xl px-3.5 py-2.5" data-testid={`missing-field-${f.key}`}>
+                <span className="w-1.5 h-1.5 rounded-full bg-maroon mt-1.5 shrink-0" />
+                <span><span className="font-bold">{f.label}</span> — <span className="text-ash">{f.message}</span></span>
+              </li>
+            ))}
+          </ul>
+          <button
+            data-testid="missing-fields-close"
+            onClick={() => setMissingFields(null)}
+            className="w-full py-3 rounded-full bg-[#1b5812] text-[#fabd8f] text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#12400c] transition-colors"
+          >
+            OK, Let Me Fill It
+          </button>
+        </div>
+      </div>
+    )}
     <aside
       data-testid="booking-panel"
       className="w-full rounded-2xl border border-[#D8C7A5] bg-[#F1E3C6]/90 backdrop-blur-xl shadow-[0_25px_60px_rgba(138,106,42,0.28)] overflow-hidden"
@@ -452,6 +480,7 @@ export default function BookingPanel({ event, onBooked }) {
         </AnimatePresence>
       </div>
     </aside>
+    </>
   );
 }
 

@@ -297,6 +297,10 @@
 - Admin: GET /api/admin/sponsor-redemptions + "Sponsor Redemptions" card (Booking ID, customer, item, qty, price, shop, redeemed at), auto-refresh 30s
 - Verified end-to-end: login, fetch 4 items with prices, redeem 1 adult, re-redeem blocked ("only 1 left"), sponsor token blocked from admin APIs (403), UI flow Purchase Confirmed, admin card shows rows; test booking deleted afterwards
 
+## Required-Fields Popup v43 (2026-08-09)
+- BookingPanel.jsx: clicking Pay with incomplete form now opens a centered popup listing each missing field (label + reason) with "OK, Let Me Fill It" close; rendered outside the backdrop-blur aside so fixed positioning works
+- Verified via UI test: empty form → popup lists Full Name/WhatsApp Number/Email, closes correctly
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
