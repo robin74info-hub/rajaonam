@@ -42,7 +42,7 @@ EVENT = {
     "date": "26 August 2026",
     "time": "11:00 AM – 5:00 PM",
     "venue": "Bolgatty Palace & Island Resort, Kochi",
-    "sea_price_adult": 1,
+    "sea_price_adult": 2999,
     "sea_price_kid": 1399,
     "veg_price_adult": 2699,
     "veg_price_kid": 1199,

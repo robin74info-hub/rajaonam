@@ -268,6 +268,9 @@
 - Admin manual booking form: passcode input moved to last position (right above Generate button); labels renamed "Sea Food Adult" and "Sea Food Kid"
 - Verified: mixed booking gets identical sea/veg slot, PDF & email contain exactly one slot row + boating time, form order correct in UI
 
+## Price Restored v37 (2026-08-09)
+- sea_price_adult restored 1 → 2999 after user's ₹1 live payment test. All prices back to normal: Sea 2999/1399, Veg 2699/1199. Remember: redeploy needed for production.
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
