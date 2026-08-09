@@ -280,6 +280,11 @@
 - App.js footer: removed RAJAONAM 2026 wordmark + date/location line; bottom bar now only "Copyright 2026 RajaOnam · Powered by Berrysys Media Global LLC" in bright yellow (#FFD700) on green
 - PENDING: user asked to change Prime Time Events logo "as per image attached" but no logo image came through — awaiting re-upload
 
+## Footer Headline + New PTE Logo v40 (2026-08-09)
+- "Creating celebrations worth remembering." now a dark green (#1b5812) serif headline above the description
+- Event Managed By logo replaced with crop from user's attached footer.jpg (extracted "Event Managed By PRIME TIME EVENTS" region → /assets/event-managed-by.webp, 258x84)
+- Verified via screenshot: headline renders green, new logo displays, yellow copyright bar intact
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
