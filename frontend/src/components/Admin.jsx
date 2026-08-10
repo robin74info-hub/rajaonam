@@ -216,7 +216,7 @@ export default function Admin() {
       localStorage.setItem("admin_token", data.token);
       localStorage.setItem("admin_role", data.role || "admin");
       if (data.role === "gate") {
-        navigate("/scanner");
+        navigate("/entry");
         return;
       }
       setToken(data.token);
@@ -308,7 +308,7 @@ export default function Admin() {
     );
   }
 
-  if (localStorage.getItem("admin_role") === "gate") return <Navigate to="/scanner" replace />;
+  if (localStorage.getItem("admin_role") === "gate") return <Navigate to="/entry" replace />;
 
   const billed = (bookings || []).filter((b) => b.status === "confirmed" && b.payment_mode !== "COMP");
   const unbilled = (bookings || []).filter((b) => b.status === "pending_payment");
@@ -350,7 +350,7 @@ export default function Admin() {
         </div>
         <div className="flex gap-3">
           <Link
-            to="/scanner"
+            to="/entry"
             data-testid="gate-scanner-link"
             className="flex items-center gap-2 px-6 py-3 rounded-full border border-[#1b5812] text-[#1b5812] text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#1b5812] hover:text-[#fabd8f] transition-colors"
           >

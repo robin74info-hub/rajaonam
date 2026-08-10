@@ -308,6 +308,10 @@
 - Admin.jsx: green "WhatsApp" button per booking row (Action column) opens wa.me/{phone} (91 auto-prefixed for 10-digit numbers) with pre-filled message: greeting, Booking ID, guest counts (sea/veg split), Sadhya Time Slot, Boating slot+pax, amount + payment mode, ticket PDF link ({BACKEND_URL}/api/bookings/{ref}/ticket.pdf), event date/venue + maps link
 - Verified via UI test: captured wa.me URL, message fully populated; test booking cleaned
 
+## Route Rename v46 (2026-08-10)
+- /scanner → /entry (gate scanner); /sponsor → /sponsors. Updated App.js routes + Admin.jsx navigations/redirects (gate login lands on /entry). Backend API paths unchanged (/api/sponsor/* stays).
+- Verified: /entry loads scanner login flow, /sponsors loads Sponsor Login
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

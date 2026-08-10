@@ -66,8 +66,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/admin" element={<Admin />} />
-          <Route path="/scanner" element={<Scanner />} />
-          <Route path="/sponsor" element={<Sponsor />} />
+          <Route path="/entry" element={<Scanner />} />
+          <Route path="/sponsors" element={<Sponsor />} />
         </Routes>
       </BrowserRouter>
     </div>
