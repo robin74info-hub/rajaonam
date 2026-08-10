@@ -426,7 +426,7 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
         ("Games", ", ".join(doc["games"]) or "-"),
         ("Boating", f"{doc['boating_slot']} ({doc['boating_persons']} persons)" if doc["boating"] else "-"),
         ("Ticket Type", doc.get("ticket_type", "Guest")),
-        ("Total Amount", "COMPLIMENTARY" if doc.get("payment_mode") == "COMP" else f"Rs. {doc['total']:,}  (pay at venue)"),
+        ("Ticket", "VIP Ticket" if doc.get("payment_mode") == "COMP" else f"Rs. {doc['total']:,}  (pay at venue)"),
     ]
     for k, v in rows:
         pdf.set_font("helvetica", "B", 11)
@@ -472,7 +472,7 @@ def booking_email_html(doc, qr_url, ticket_url):
             ("Games", ", ".join(doc["games"]) or "—"),
             ("Boating", f"{doc['boating_slot']} · {doc['boating_persons']} persons" if doc["boating"] else "—"),
             ("Ticket Type", doc.get("ticket_type", "Guest")),
-            ("Total Amount", "Complimentary (COMP)" if doc.get("payment_mode") == "COMP" else f"₹{doc['total']:,}"),
+            ("Ticket", "VIP Ticket" if doc.get("payment_mode") == "COMP" else f"₹{doc['total']:,}"),
         ]
     ])
     return f"""<!DOCTYPE html><html><body style="margin:0;padding:0;background:#EFE3CB;font-family:Georgia,serif;">

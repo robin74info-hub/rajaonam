@@ -323,6 +323,9 @@
 - booking_email_html fully redesigned — royal maroon (#6B1A0F) + gold (#C9A227/#F5D47E) theme: "Prime Time Festivals Presents" header, gold divider, "Royal Booking Confirmed" greeting, gold-bordered details card, double-framed QR "Royal Entry Pass" with booking ID, maroon/gold PDF button, maroon footer
 - Verified: comp booking works with VIP Guest, email HTML renders grand (screenshot reviewed); test booking cleaned
 
+## VIP Ticket Label v49 (2026-08-10)
+- Email + PDF: comp bookings no longer show "Total Amount — Complimentary (COMP)"; row now reads "Ticket: VIP Ticket". Paid bookings still show amount (label "Ticket"). Verified in generated email HTML and PDF text.
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
