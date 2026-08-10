@@ -72,6 +72,7 @@ class BookingCreate(BaseModel):
     boating_persons: int = Field(ge=0, le=30, default=0)
     sea_slot: Optional[str] = None
     veg_slot: Optional[str] = None
+    referral_code: Optional[str] = None
     payment_mode: str = "Pending"
     ticket_type: str = "VIP Guest"
     passcode: Optional[str] = None
@@ -150,12 +151,19 @@ async def slots_availability():
 
 
 def booking_total(input: BookingCreate) -> int:
-    return (
+    base = (
         input.adults * EVENT["sea_price_adult"]
         + input.kids_5_12 * EVENT["sea_price_kid"]
         + input.veg_adults * EVENT["veg_price_adult"]
         + input.veg_kids_5_12 * EVENT["veg_price_kid"]
     )
+    total_participants = (
+        input.adults + input.kids_5_12 + input.kids_below_5
+        + input.veg_adults + input.veg_kids_5_12 + input.veg_kids_below_5
+    )
+    if input.referral_code and input.referral_code.strip().upper() == os.environ.get("REFERRAL_CODE") and total_participants >= 10:
+        return round(base * 0.95)
+    return base
 
 
 def new_reference() -> str:
@@ -170,6 +178,7 @@ def build_booking_doc(input: BookingCreate, reference: str, total: int, status: 
     return {
         "id": str(uuid.uuid4()),
         "reference": reference,
+        "referral_code": input.referral_code.strip().upper() if input.referral_code else None,
         "name": input.name,
         "phone": input.phone,
         "email": input.email,
@@ -229,6 +238,7 @@ async def create_payment_order(input: BookingCreate):
         "currency": "INR",
         "key_id": os.environ["RAZORPAY_KEY_ID"],
         "reference": reference,
+        "referral_code": input.referral_code.strip().upper() if input.referral_code else None,
     }
 
 
@@ -328,6 +338,7 @@ async def create_booking(input: BookingCreate, request: Request):
     doc = {
         "id": str(uuid.uuid4()),
         "reference": reference,
+        "referral_code": input.referral_code.strip().upper() if input.referral_code else None,
         "name": input.name,
         "phone": input.phone,
         "email": input.email,

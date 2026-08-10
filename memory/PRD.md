@@ -329,6 +329,12 @@
 ## Comp Blocked in Sponsor Scanner v50 (2026-08-10)
 - GET /api/sponsor/booking/{ref} and POST /api/sponsor/redeem now reject COMP bookings: "Complimentary VIP tickets are not eligible for sponsor offers" (both lookup and direct redeem attempt blocked — verified via API)
 
+## Referral Code RAJA05 v51 (2026-08-10)
+- Groups of 10+ guests (adults+kids combined, both sadhya types) see an optional "Have a Referral Code?" box right above the Pay button; hidden below 10. Code RAJA05 (env REFERRAL_CODE) → 5% off total. Not mandatory — payment continues without it
+- Backend booking_total applies 5% (round) only if referral_code matches AND total_participants >= 10 — tamper-proof; doc stores referral_code
+- Frontend: apply/remove, invalid-code error, summary shows strikethrough original + discounted total + "you save ₹X" banner
+- Verified: 10 pax+RAJA05 → ₹28,490 (5% off 29,990); 9 pax+code → full price; wrong code → full price; UI show/hide/apply/remove all pass
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
