@@ -326,6 +326,9 @@
 ## VIP Ticket Label v49 (2026-08-10)
 - Email + PDF: comp bookings no longer show "Total Amount — Complimentary (COMP)"; row now reads "Ticket: VIP Ticket". Paid bookings still show amount (label "Ticket"). Verified in generated email HTML and PDF text.
 
+## Comp Blocked in Sponsor Scanner v50 (2026-08-10)
+- GET /api/sponsor/booking/{ref} and POST /api/sponsor/redeem now reject COMP bookings: "Complimentary VIP tickets are not eligible for sponsor offers" (both lookup and direct redeem attempt blocked — verified via API)
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

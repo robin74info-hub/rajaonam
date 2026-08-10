@@ -686,6 +686,8 @@ async def sponsor_get_booking(reference: str, staff: str = Depends(get_current_s
     doc = await db.bookings.find_one({"reference": reference.upper()})
     if not doc:
         raise HTTPException(status_code=404, detail="Booking not found")
+    if doc.get("payment_mode") == "COMP":
+        raise HTTPException(status_code=400, detail="Complimentary VIP tickets are not eligible for sponsor offers")
     if doc.get("status") != "confirmed":
         raise HTTPException(status_code=400, detail="Booking is not confirmed/paid yet")
     return {"reference": doc["reference"], "name": doc["name"], "phone": doc["phone"], "items": sponsor_items(doc)}
@@ -701,6 +703,8 @@ async def sponsor_redeem(input: RedeemRequest, staff: str = Depends(get_current_
     doc = await db.bookings.find_one({"reference": input.reference.upper()})
     if not doc:
         raise HTTPException(status_code=404, detail="Booking not found")
+    if doc.get("payment_mode") == "COMP":
+        raise HTTPException(status_code=400, detail="Complimentary VIP tickets are not eligible for sponsor offers")
     items = sponsor_items(doc)
     by_key = {i["key"]: i for i in items}
     now = datetime.now(timezone.utc).isoformat()
