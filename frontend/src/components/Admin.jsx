@@ -116,20 +116,37 @@ export default function Admin() {
     const digits = String(b.phone || "").replace(/\D/g, "");
     const phone = digits.length === 10 ? `91${digits}` : digits;
     const sadhyaSlot = b.sea_slot || b.veg_slot;
-    const lines = [
-      `Namaste ${b.name}! Your RajaOnam 2026 ticket is confirmed.`,
-      ``,
-      `Booking ID: ${b.reference}`,
-      `Guests: ${(b.adults || 0) + (b.kids_5_12 || 0) + (b.kids_below_5 || 0) + (b.veg_adults || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0)} (Sea Food: ${(b.adults || 0) + (b.kids_5_12 || 0) + (b.kids_below_5 || 0)}, Veg: ${(b.veg_adults || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0)})`,
-      sadhyaSlot ? `Sadhya Time Slot: ${sadhyaSlot}` : null,
-      b.boating_slot ? `Boating: ${b.boating_slot} (${b.boating_persons} pax)` : null,
-      `Amount: ₹${Number(b.total || 0).toLocaleString("en-IN")} (${b.payment_mode})`,
-      ``,
-      `Download your ticket (PDF): ${process.env.REACT_APP_BACKEND_URL}/api/bookings/${b.reference}/ticket.pdf`,
-      ``,
-      `26 August 2026 · 11 AM - 5 PM · Bolgatty Palace & Island Resort, Kochi`,
-      `Venue directions: https://maps.app.goo.gl/q6ZminHj9X8hBhBa6`,
-    ].filter((l) => l !== null).join("\n");
+    const payLink = `${window.location.origin}/pay/${b.reference}`;
+    const lines = b.status === "pending_payment"
+      ? [
+          `Payment Pending — RajaOnam 2026`,
+          ``,
+          `Namaste ${b.name}, your booking ${b.reference} is reserved but the payment is not completed yet.`,
+          ``,
+          `Guests: ${(b.adults || 0) + (b.kids_5_12 || 0) + (b.kids_below_5 || 0) + (b.veg_adults || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0)} (Sea Food: ${(b.adults || 0) + (b.kids_5_12 || 0) + (b.kids_below_5 || 0)}, Veg: ${(b.veg_adults || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0)})`,
+          sadhyaSlot ? `Sadhya Time Slot: ${sadhyaSlot}` : null,
+          b.boating_slot ? `Boating: ${b.boating_slot} (${b.boating_persons} pax)` : null,
+          `Amount to Pay: ₹${Number(b.total || 0).toLocaleString("en-IN")}`,
+          ``,
+          `Complete your payment with the SAME Booking ID (${b.reference}) here:`,
+          payLink,
+          ``,
+          `26 August 2026 · 11 AM - 5 PM · Bolgatty Palace & Island Resort, Kochi`,
+        ].filter((l) => l !== null).join("\n")
+      : [
+          `Namaste ${b.name}! Your RajaOnam 2026 ticket is confirmed.`,
+          ``,
+          `Booking ID: ${b.reference}`,
+          `Guests: ${(b.adults || 0) + (b.kids_5_12 || 0) + (b.kids_below_5 || 0) + (b.veg_adults || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0)} (Sea Food: ${(b.adults || 0) + (b.kids_5_12 || 0) + (b.kids_below_5 || 0)}, Veg: ${(b.veg_adults || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0)})`,
+          sadhyaSlot ? `Sadhya Time Slot: ${sadhyaSlot}` : null,
+          b.boating_slot ? `Boating: ${b.boating_slot} (${b.boating_persons} pax)` : null,
+          `Amount: ₹${Number(b.total || 0).toLocaleString("en-IN")} (${b.payment_mode})`,
+          ``,
+          `Download your ticket (PDF): ${process.env.REACT_APP_BACKEND_URL}/api/bookings/${b.reference}/ticket.pdf`,
+          ``,
+          `26 August 2026 · 11 AM - 5 PM · Bolgatty Palace & Island Resort, Kochi`,
+          `Venue directions: https://maps.app.goo.gl/q6ZminHj9X8hBhBa6`,
+        ].filter((l) => l !== null).join("\n");
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(lines)}`, "_blank");
   };
 

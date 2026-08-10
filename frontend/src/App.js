@@ -12,6 +12,7 @@ import BrochureButton from "@/components/BrochureButton";
 import Admin from "@/components/Admin";
 import Scanner from "@/components/Scanner";
 import Sponsor from "@/components/Sponsor";
+import PayPage from "@/components/PayPage";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -68,6 +69,7 @@ function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/entry" element={<Scanner />} />
           <Route path="/sponsors" element={<Sponsor />} />
+          <Route path="/pay/:reference" element={<PayPage />} />
         </Routes>
       </BrowserRouter>
     </div>

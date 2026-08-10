@@ -118,7 +118,7 @@ async def assign_sadhya_slots(input: BookingCreate):
     if party == 0:
         return
     booked = {s: 0 for s in EVENT["sadhya_slots"]}
-    async for b in db.bookings.find({"status": {"$in": ["confirmed", "pending_payment"]}}):
+    async for b in db.bookings.find({"status": "confirmed"}):
         slot = b.get("sea_slot") or b.get("veg_slot")
         if slot in booked:
             booked[slot] += (
@@ -229,6 +229,47 @@ async def create_payment_order(input: BookingCreate):
         "currency": "INR",
         "key_id": os.environ["RAZORPAY_KEY_ID"],
         "reference": reference,
+    }
+
+
+@api_router.get("/bookings/{reference}/public")
+async def booking_public(reference: str):
+    doc = await db.bookings.find_one({"reference": reference.upper()}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    return {
+        "reference": doc["reference"],
+        "name": doc["name"],
+        "total": doc.get("total", 0),
+        "status": doc.get("status"),
+        "payment_mode": doc.get("payment_mode"),
+    }
+
+
+@api_router.post("/payments/resume/{reference}")
+async def resume_payment(reference: str):
+    doc = await db.bookings.find_one({"reference": reference.upper()})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    if doc.get("status") != "pending_payment":
+        raise HTTPException(status_code=400, detail="This booking is already paid")
+    order = rz_client.order.create({
+        "amount": doc["total"] * 100,
+        "currency": "INR",
+        "payment_capture": 1,
+        "receipt": doc["reference"],
+        "notes": {"reference": doc["reference"], "event": "RAJAONAM 2026", "resume": "true"},
+    })
+    await db.bookings.update_one({"reference": doc["reference"]}, {"$set": {"razorpay_order_id": order["id"]}})
+    return {
+        "order_id": order["id"],
+        "amount": doc["total"] * 100,
+        "currency": "INR",
+        "key_id": os.environ["RAZORPAY_KEY_ID"],
+        "reference": doc["reference"],
+        "name": doc["name"],
+        "email": doc.get("email"),
+        "phone": doc.get("phone"),
     }
 
 
@@ -684,7 +725,7 @@ async def admin_slot_report(admin: str = Depends(get_current_admin)):
     cap = EVENT["sadhya_slot_capacity"]
     slots = {s: {"sea": 0, "veg": 0, "total": 0} for s in EVENT["sadhya_slots"]}
     boating = {s: 0 for s in EVENT["boating_slots"]}
-    async for b in db.bookings.find({"status": {"$in": ["confirmed", "pending_payment"]}}):
+    async for b in db.bookings.find({"status": "confirmed"}):
         slot = b.get("sea_slot") or b.get("veg_slot")
         if slot in slots:
             sea = b.get("adults", 0) + b.get("kids_5_12", 0) + b.get("kids_below_5", 0)

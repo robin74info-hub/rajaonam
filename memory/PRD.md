@@ -312,6 +312,12 @@
 - /scanner → /entry (gate scanner); /sponsor → /sponsors. Updated App.js routes + Admin.jsx navigations/redirects (gate login lands on /entry). Backend API paths unchanged (/api/sponsor/* stays).
 - Verified: /entry loads scanner login flow, /sponsors loads Sponsor Login
 
+## Slot Report Confirmed-Only + Payment Resume v47 (2026-08-10)
+- Slot assignment (assign_sadhya_slots) and /api/admin/slot-report now count ONLY confirmed bookings (billed + complimentary) — unbilled/pending no longer occupy or display slot seats
+- New guest-facing resume-payment page /pay/:reference (PayPage.jsx): GET /api/bookings/{ref}/public shows summary; POST /api/payments/resume/{ref} creates a FRESH Razorpay order for the SAME booking (updates razorpay_order_id); existing /payments/verify confirms it and fires email/WhatsApp
+- Admin WhatsApp button: unbilled rows now send "Payment Pending — RajaOnam 2026" message with Amount to Pay and the /pay/{ref} link ("Complete your payment with the SAME Booking ID"); billed rows keep the confirmed-ticket message
+- Verified: pending booking didn't appear in slot report, resume created live order for same ref (404 on bad ref), /pay page rendered with amount + pay button, pending WA message captured with correct heading and link; test booking cleaned
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
