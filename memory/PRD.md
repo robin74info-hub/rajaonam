@@ -335,6 +335,10 @@
 - Frontend: apply/remove, invalid-code error, summary shows strikethrough original + discounted total + "you save ₹X" banner
 - Verified: 10 pax+RAJA05 → ₹28,490 (5% off 29,990); 9 pax+code → full price; wrong code → full price; UI show/hide/apply/remove all pass
 
+## VIP Display in Sponsor Scanner v52 (2026-08-10)
+- Scanning a VIP/comp ticket in the sponsor scanner now shows a gold "Complimentary — VIP Ticket" screen with the guest's name and booking ID (not an error). Backend returns {vip:true,...} from sponsor booking lookup; redeem endpoint still blocks COMP
+- Verified via UI: heading "VIP Ticket", guest name below, "not eligible for sponsor offers" note
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

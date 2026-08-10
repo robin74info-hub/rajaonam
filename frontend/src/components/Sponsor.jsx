@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Html5Qrcode } from "html5-qrcode";
-import { QrCode, Check, AlertTriangle, XCircle, Loader2, Keyboard, Square, CheckSquare, Store, LogOut } from "lucide-react";
+import { QrCode, Check, AlertTriangle, XCircle, Loader2, Keyboard, Square, CheckSquare, Store, LogOut, Ticket } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -98,6 +98,11 @@ export default function Sponsor() {
     setResult(null);
     try {
       const { data } = await axios.get(`${API}/sponsor/booking/${ref}`, { headers });
+      if (data.vip) {
+        setResult({ type: "vip", ref: data.reference, name: data.name });
+        setStage("done");
+        return;
+      }
       setBooking(data);
       setTicks({});
       setStage("select");
@@ -317,15 +322,23 @@ export default function Sponsor() {
           <div
             data-testid="sponsor-result"
             className={`rounded-2xl border overflow-hidden shadow-[0_25px_60px_rgba(138,106,42,0.28)] ${
-              result.type === "ok" ? "border-leaf bg-leaf/10" : "border-maroon bg-maroon/10"
+              result.type === "ok" ? "border-leaf bg-leaf/10" : result.type === "vip" ? "border-[#C9A227] bg-[#FFFBF2]" : "border-maroon bg-maroon/10"
             }`}
           >
             <div className="p-8 flex flex-col items-center text-center gap-4">
               <span className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                result.type === "ok" ? "bg-leaf/15 border border-leaf/40" : "bg-maroon/15 border border-maroon/40"
+                result.type === "ok" ? "bg-leaf/15 border border-leaf/40" : result.type === "vip" ? "bg-[#C9A227]/15 border border-[#C9A227]/50" : "bg-maroon/15 border border-maroon/40"
               }`}>
-                {result.type === "ok" ? <Check className="w-8 h-8 text-leaf" /> : result.type === "notfound" ? <XCircle className="w-8 h-8 text-maroon" /> : <AlertTriangle className="w-8 h-8 text-maroon" />}
+                {result.type === "ok" ? <Check className="w-8 h-8 text-leaf" /> : result.type === "vip" ? <Ticket className="w-8 h-8 text-[#8A6A2A]" /> : result.type === "notfound" ? <XCircle className="w-8 h-8 text-maroon" /> : <AlertTriangle className="w-8 h-8 text-maroon" />}
               </span>
+              {result.type === "vip" && (
+                <>
+                  <p className="text-xs tracking-[0.35em] uppercase font-bold text-[#8A6A2A]">Complimentary</p>
+                  <p className="font-serif text-4xl text-ink" data-testid="sponsor-result-title">VIP Ticket</p>
+                  <p className="font-serif text-2xl text-leaf" data-testid="sponsor-vip-name">{result.name}</p>
+                  <p className="text-xs text-ash tracking-wider" data-testid="sponsor-result-detail">{result.ref} · Not eligible for sponsor offers</p>
+                </>
+              )}
               {result.type === "ok" && (
                 <>
                   <p className="font-serif text-3xl text-ink" data-testid="sponsor-result-title">Purchase Confirmed</p>

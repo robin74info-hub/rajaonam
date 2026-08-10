@@ -698,10 +698,10 @@ async def sponsor_get_booking(reference: str, staff: str = Depends(get_current_s
     if not doc:
         raise HTTPException(status_code=404, detail="Booking not found")
     if doc.get("payment_mode") == "COMP":
-        raise HTTPException(status_code=400, detail="Complimentary VIP tickets are not eligible for sponsor offers")
+        return {"vip": True, "reference": doc["reference"], "name": doc["name"], "phone": doc["phone"], "items": []}
     if doc.get("status") != "confirmed":
         raise HTTPException(status_code=400, detail="Booking is not confirmed/paid yet")
-    return {"reference": doc["reference"], "name": doc["name"], "phone": doc["phone"], "items": sponsor_items(doc)}
+    return {"vip": False, "reference": doc["reference"], "name": doc["name"], "phone": doc["phone"], "items": sponsor_items(doc)}
 
 
 class RedeemRequest(BaseModel):
