@@ -112,6 +112,27 @@ export default function Admin() {
     }
   };
 
+  const sendToWhatsApp = (b) => {
+    const digits = String(b.phone || "").replace(/\D/g, "");
+    const phone = digits.length === 10 ? `91${digits}` : digits;
+    const sadhyaSlot = b.sea_slot || b.veg_slot;
+    const lines = [
+      `Namaste ${b.name}! Your RajaOnam 2026 ticket is confirmed.`,
+      ``,
+      `Booking ID: ${b.reference}`,
+      `Guests: ${(b.adults || 0) + (b.kids_5_12 || 0) + (b.kids_below_5 || 0) + (b.veg_adults || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0)} (Sea Food: ${(b.adults || 0) + (b.kids_5_12 || 0) + (b.kids_below_5 || 0)}, Veg: ${(b.veg_adults || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0)})`,
+      sadhyaSlot ? `Sadhya Time Slot: ${sadhyaSlot}` : null,
+      b.boating_slot ? `Boating: ${b.boating_slot} (${b.boating_persons} pax)` : null,
+      `Amount: ₹${Number(b.total || 0).toLocaleString("en-IN")} (${b.payment_mode})`,
+      ``,
+      `Download your ticket (PDF): ${process.env.REACT_APP_BACKEND_URL}/api/bookings/${b.reference}/ticket.pdf`,
+      ``,
+      `26 August 2026 · 11 AM - 5 PM · Bolgatty Palace & Island Resort, Kochi`,
+      `Venue directions: https://maps.app.goo.gl/q6ZminHj9X8hBhBa6`,
+    ].filter((l) => l !== null).join("\n");
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(lines)}`, "_blank");
+  };
+
   const [wa, setWa] = useState(null);
   const [slotReport, setSlotReport] = useState(null);
   const [redemptions, setRedemptions] = useState(null);
@@ -459,14 +480,24 @@ export default function Admin() {
                   </td>
                   <td className="px-4 py-3 text-right font-bold text-leaf whitespace-nowrap">{fmt(b.total)}</td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
-                    <button
-                      data-testid={`delete-${b.reference}`}
-                      onClick={() => (view === "unbilled" ? deleteUnbilled(b.reference) : view === "complimentary" ? deleteComp(b.reference) : deleteBilled(b.reference))}
-                      disabled={deleting === b.reference}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-maroon/40 text-maroon text-[10px] font-bold tracking-wider uppercase hover:bg-maroon hover:text-cream transition-colors disabled:opacity-60"
-                    >
-                      {deleting === b.reference ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />} Delete
-                    </button>
+                    <div className="inline-flex items-center gap-2">
+                      <button
+                        data-testid={`wa-${b.reference}`}
+                        onClick={() => sendToWhatsApp(b)}
+                        title="Send ticket on WhatsApp"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#25D366]/50 text-[#128C4B] text-[10px] font-bold tracking-wider uppercase hover:bg-[#25D366] hover:text-white transition-colors"
+                      >
+                        <MessageCircle className="w-3 h-3" /> WhatsApp
+                      </button>
+                      <button
+                        data-testid={`delete-${b.reference}`}
+                        onClick={() => (view === "unbilled" ? deleteUnbilled(b.reference) : view === "complimentary" ? deleteComp(b.reference) : deleteBilled(b.reference))}
+                        disabled={deleting === b.reference}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-maroon/40 text-maroon text-[10px] font-bold tracking-wider uppercase hover:bg-maroon hover:text-cream transition-colors disabled:opacity-60"
+                      >
+                        {deleting === b.reference ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />} Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
