@@ -301,6 +301,9 @@
 - BookingPanel.jsx: clicking Pay with incomplete form now opens a centered popup listing each missing field (label + reason) with "OK, Let Me Fill It" close; rendered outside the backdrop-blur aside so fixed positioning works
 - Verified via UI test: empty form → popup lists Full Name/WhatsApp Number/Email, closes correctly
 
+## Favicon v44 (2026-08-09)
+- Prime Time "PT" logo set as site favicon: favicon.ico (64px), favicon-32.png, apple-touch-icon.png generated from primetime logo_fav.png; linked in index.html head; verified all serve 200
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
