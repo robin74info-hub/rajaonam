@@ -73,12 +73,12 @@ class BookingCreate(BaseModel):
     sea_slot: Optional[str] = None
     veg_slot: Optional[str] = None
     payment_mode: str = "Pending"
-    ticket_type: str = "Guest"
+    ticket_type: str = "VIP Guest"
     passcode: Optional[str] = None
 
 
 PAYMENT_MODES = ["Pending", "UPI", "Card", "Net Banking", "Pay at Venue", "Online (Razorpay)", "COMP"]
-TICKET_TYPES = ["Guest", "VIP Guest"]
+TICKET_TYPES = ["VIP Guest"]
 
 rz_client = razorpay.Client(auth=(os.environ["RAZORPAY_KEY_ID"], os.environ["RAZORPAY_KEY_SECRET"]))
 
@@ -475,29 +475,62 @@ def booking_email_html(doc, qr_url, ticket_url):
             ("Total Amount", "Complimentary (COMP)" if doc.get("payment_mode") == "COMP" else f"₹{doc['total']:,}"),
         ]
     ])
-    return f"""<!DOCTYPE html><html><body style="margin:0;padding:0;background:#FFFBF2;font-family:Georgia,serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#FFFBF2;padding:32px 16px;"><tr><td align="center">
-<table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #E4D6BC;border-radius:12px;overflow:hidden;">
-<tr><td style="background:#1b5812;padding:24px 32px;">
-  <p style="margin:0;color:#fabd8f;font-size:22px;letter-spacing:1px;">RajaOnam 2026</p>
-  <p style="margin:4px 0 0;color:#fabd8f;opacity:0.75;font-size:11px;letter-spacing:3px;text-transform:uppercase;">Oru Kottara Sadhya · Bolgatty Palace &amp; Island Resort, Kochi</p>
+    return f"""<!DOCTYPE html><html><body style="margin:0;padding:0;background:#EFE3CB;font-family:Georgia,serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#EFE3CB;padding:36px 14px;"><tr><td align="center">
+<table width="580" cellpadding="0" cellspacing="0" style="background:#6B1A0F;border-radius:16px;padding:3px;">
+<tr><td style="background:#FFFBF2;border-radius:13px;overflow:hidden;">
+<table width="100%" cellpadding="0" cellspacing="0">
+<!-- Royal header -->
+<tr><td align="center" style="background:#6B1A0F;padding:34px 32px 26px;">
+  <p style="margin:0;color:#E8B54A;font-size:13px;letter-spacing:6px;text-transform:uppercase;">&#10022; Prime Time Festivals Presents &#10022;</p>
+  <p style="margin:12px 0 0;color:#F5D47E;font-size:34px;letter-spacing:3px;font-weight:bold;">RAJAONAM 2026</p>
+  <p style="margin:8px 0 0;color:#FABD8F;font-size:12px;letter-spacing:3px;text-transform:uppercase;">A Royal Onam Celebration &middot; Bolgatty Palace, Kochi</p>
+  <table cellpadding="0" cellspacing="0" style="margin:18px auto 0;"><tr>
+    <td style="width:70px;height:1px;background:#C9A227;"></td>
+    <td style="color:#E8B54A;font-size:14px;padding:0 12px;">&#10022;</td>
+    <td style="width:70px;height:1px;background:#C9A227;"></td>
+  </tr></table>
 </td></tr>
-<tr><td style="padding:32px;">
-  <p style="margin:0 0 8px;color:#8A2A1B;font-size:11px;letter-spacing:3px;text-transform:uppercase;">Booking Confirmed</p>
-  <p style="margin:0 0 24px;color:#2B2118;font-size:24px;">Your RajaOnam Celebration is Confirmed, {doc['name'].split()[0]}!</p>
-  <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #E4D6BC;">{rows}</table>
-  <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr><td align="center" style="background:#FFFBF2;border:1px solid #E4D6BC;border-radius:12px;padding:24px;">
-    <img src="{qr_url}" width="180" height="180" alt="Booking QR code" style="display:block;" />
-    <p style="margin:12px 0 0;color:#7A6A58;font-size:11px;letter-spacing:2px;text-transform:uppercase;">Show this QR at the gate</p>
-    <p style="margin:16px 0 0;"><a href="https://maps.app.goo.gl/q6ZminHj9X8hBhBa6" style="color:#1b5812;font-size:13px;font-weight:bold;text-decoration:none;">&#128205; Venue Location — Open in Google Maps</a></p>
-  </td></tr></table>
-  <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;"><tr><td align="center">
-    <a href="{ticket_url}" style="display:inline-block;background:#1b5812;color:#fabd8f;font-size:13px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;padding:14px 36px;border-radius:30px;">Download Ticket (PDF)</a>
-  </td></tr></table>
-  <p style="margin:24px 0 0;color:#7A6A58;font-size:13px;line-height:1.6;">26 August 2026 · 11:00 AM – 5:00 PM · Bolgatty Palace &amp; Island Resort, Kochi.<br/>Present your Booking ID <b style="color:#8A2A1B;">{doc['reference']}</b> or the QR code at the entrance.</p>
+<!-- Greeting -->
+<tr><td align="center" style="padding:34px 36px 8px;">
+  <p style="margin:0;color:#8A2A1B;font-size:12px;letter-spacing:5px;text-transform:uppercase;">Royal Booking Confirmed</p>
+  <p style="margin:14px 0 6px;color:#2B2118;font-size:27px;line-height:1.35;">Your RajaOnam Celebration<br/>is Confirmed, {doc['name'].split()[0]}!</p>
+  <p style="margin:0;color:#7A6A58;font-size:13px;font-style:italic;">Mahabali awaits you at the palace</p>
 </td></tr>
-<tr><td style="background:#F5EBD8;padding:16px 32px;"><p style="margin:0;color:#7A6A58;font-size:11px;letter-spacing:1px;text-align:center;">Copyright 2026 RajaOnam · Powered by Berrysys Media Global LLC</p></td></tr>
-</table></td></tr></table></body></html>"""
+<!-- Details card -->
+<tr><td style="padding:22px 36px 0;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="border:2px solid #C9A227;border-radius:12px;background:#FFFDF7;">
+    <tr><td style="padding:6px 22px;">
+      <table width="100%" cellpadding="0" cellspacing="0">{rows}</table>
+    </td></tr>
+  </table>
+</td></tr>
+<!-- QR royal frame -->
+<tr><td align="center" style="padding:28px 36px 0;">
+  <table cellpadding="0" cellspacing="0"><tr><td style="border:2px solid #C9A227;border-radius:16px;padding:6px;">
+    <table cellpadding="0" cellspacing="0"><tr><td align="center" style="border:1px solid #E4D6BC;border-radius:11px;background:#FFFBF2;padding:26px 40px;">
+      <p style="margin:0 0 14px;color:#8A2A1B;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Your Royal Entry Pass</p>
+      <img src="{qr_url}" width="180" height="180" alt="Booking QR code" style="display:block;border:4px solid #F5EBD8;border-radius:8px;" />
+      <p style="margin:14px 0 0;color:#2B2118;font-size:15px;font-weight:bold;letter-spacing:2px;">{doc['reference']}</p>
+      <p style="margin:6px 0 0;color:#7A6A58;font-size:11px;letter-spacing:2px;text-transform:uppercase;">Show this QR at the gate</p>
+      <p style="margin:14px 0 0;"><a href="https://maps.app.goo.gl/q6ZminHj9X8hBhBa6" style="color:#1b5812;font-size:13px;font-weight:bold;text-decoration:none;">&#128205; Venue Location — Open in Google Maps</a></p>
+    </td></tr></table>
+  </td></tr></table>
+</td></tr>
+<!-- CTA -->
+<tr><td align="center" style="padding:26px 36px 8px;">
+  <a href="{ticket_url}" style="display:inline-block;background:#6B1A0F;color:#F5D47E;font-size:13px;letter-spacing:3px;text-transform:uppercase;text-decoration:none;padding:15px 42px;border-radius:30px;border:1px solid #C9A227;">Download Royal Ticket (PDF)</a>
+</td></tr>
+<tr><td align="center" style="padding:18px 36px 34px;">
+  <p style="margin:0;color:#7A6A58;font-size:13px;line-height:1.7;">26 August 2026 &middot; 11:00 AM – 5:00 PM<br/>Bolgatty Palace &amp; Island Resort, Kochi<br/>Present Booking ID <b style="color:#8A2A1B;">{doc['reference']}</b> or the QR code at the entrance.</p>
+</td></tr>
+<!-- Footer -->
+<tr><td align="center" style="background:#6B1A0F;padding:18px 32px;">
+  <p style="margin:0;color:#E8B54A;font-size:11px;letter-spacing:2px;text-transform:uppercase;">Copyright 2026 RajaOnam &middot; Powered by Berrysys Media Global LLC</p>
+</td></tr>
+</table>
+</td></tr></table>
+</td></tr></table></body></html>"""
 
 
 async def send_confirmation_email(doc, base_url):

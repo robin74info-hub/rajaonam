@@ -318,6 +318,11 @@
 - Admin WhatsApp button: unbilled rows now send "Payment Pending — RajaOnam 2026" message with Amount to Pay and the /pay/{ref} link ("Complete your payment with the SAME Booking ID"); billed rows keep the confirmed-ticket message
 - Verified: pending booking didn't appear in slot report, resume created live order for same ref (404 on bad ref), /pay page rendered with amount + pay button, pending WA message captured with correct heading and link; test booking cleaned
 
+## VIP-Only Comp + Grand Email v48 (2026-08-10)
+- Complimentary tickets: TICKET_TYPES now ["VIP Guest"] only; Admin comp form select has only VIP Guest; BookingCreate default ticket_type "VIP Guest"
+- booking_email_html fully redesigned — royal maroon (#6B1A0F) + gold (#C9A227/#F5D47E) theme: "Prime Time Festivals Presents" header, gold divider, "Royal Booking Confirmed" greeting, gold-bordered details card, double-framed QR "Royal Entry Pass" with booking ID, maroon/gold PDF button, maroon footer
+- Verified: comp booking works with VIP Guest, email HTML renders grand (screenshot reviewed); test booking cleaned
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

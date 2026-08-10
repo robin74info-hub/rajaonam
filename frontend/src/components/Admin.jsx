@@ -18,7 +18,7 @@ export default function Admin() {
   const [exporting, setExporting] = useState(false);
   const [filter, setFilter] = useState("all");
   const [view, setView] = useState("billed");
-  const emptyManual = { ticket_type: "Guest", name: "", phone: "", email: "", passcode: "", adults: 1, kids_5_12: 0, kids_below_5: 0, veg_adults: 0, veg_kids_5_12: 0, veg_kids_below_5: 0 };
+  const emptyManual = { ticket_type: "VIP Guest", name: "", phone: "", email: "", passcode: "", adults: 1, kids_5_12: 0, kids_below_5: 0, veg_adults: 0, veg_kids_5_12: 0, veg_kids_below_5: 0 };
   const [manual, setManual] = useState(emptyManual);
   const [manualBusy, setManualBusy] = useState(false);
   const [manualDone, setManualDone] = useState(null);
@@ -668,7 +668,6 @@ export default function Admin() {
             onChange={setM("ticket_type")}
             className="bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink focus:outline-none focus:border-leaf"
           >
-            <option>Guest</option>
             <option>VIP Guest</option>
           </select>
           <input data-testid="manual-name-input" value={manual.name} onChange={setM("name")} placeholder="Full name" className="bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf" />
