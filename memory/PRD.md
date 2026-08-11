@@ -401,6 +401,12 @@
 ## Gift Value in Sponsor Scanner v65 (2026-08-11)
 - Each item checkbox in the sponsor scanner now shows a gold "Gift Value ₹X" chip = 50% of the item price (₹2,999 → ₹1,499.50, ₹1,399 → ₹699.50), formatted with paise
 
+## New Logos + Mobile Banner v66 (2026-08-11)
+- Jingalala banner image replaced with "Jingalala NEW.png" (red/gold banner) in both fixed corner + after-form marquee
+- Hero: new combined RajaOnam+Chungath logo (ENGLISH CHUNGATH LOGO PNG.png → rajaonam-chungath.png, also updated backend/assets for email), "Oru Kottara Sadhya 2026" tagline text removed, logo moved up (-mt-4)
+- Mobile (<640px): fixed banner hidden on hero, appears after hero top-right; desktop unchanged (shows on hero, fades after)
+- Verified: desktop hero + mobile scroll behavior via screenshots
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

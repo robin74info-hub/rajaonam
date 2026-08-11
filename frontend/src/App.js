@@ -32,8 +32,13 @@ function Home() {
     };
     frame = requestAnimationFrame(raf);
     fetchEvent();
-    const onScroll = () => setBannerVisible(window.scrollY < window.innerHeight * 0.7);
+    const onScroll = () => {
+      const pastHero = window.scrollY > window.innerHeight * 0.7;
+      // Mobile: banner appears only after the hero; desktop: shows on hero, fades after
+      setBannerVisible(window.innerWidth < 640 ? pastHero : !pastHero);
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
     return () => {
       cancelAnimationFrame(frame);
       lenis.destroy();
@@ -45,8 +50,8 @@ function Home() {
     <>
       <BrochureButton />
       <img
-        src="/assets/jingalala.webp"
-        alt="Jingalala! Redeem 50% of your RajaOnam ticket value on Gold, Platinum & Silver Jewellery at Chungath Jewellery — valid till 30 Sept 2026"
+        src="/assets/jingalala-new.png"
+        alt="Jingalala! There is GOLD in your RajaOnam Ticket — Redeem 50% at Chungath Jewellery, MG Road — valid till 30 Sept 2026"
         data-testid="jingalala-banner"
         className={`fixed top-3 right-3 z-50 w-44 sm:w-64 drop-shadow-[0_10px_25px_rgba(107,26,15,0.4)] pointer-events-none select-none transition-opacity duration-500 ${bannerVisible ? "opacity-100" : "opacity-0"}`}
       />
@@ -63,7 +68,7 @@ function Home() {
               {[0, 1, 2].map((i) => (
                 <img
                   key={`${half}-${i}`}
-                  src="/assets/jingalala.webp"
+                  src="/assets/jingalala-new.png"
                   alt="Jingalala! Redeem 50% of your RajaOnam ticket value at Chungath Jewellery — valid till 30 Sept 2026"
                   className="w-56 sm:w-80 mx-8 drop-shadow-[0_15px_35px_rgba(107,26,15,0.35)]"
                 />
