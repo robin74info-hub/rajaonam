@@ -40,6 +40,12 @@ function Home() {
   return (
     <>
       <BrochureButton />
+      <img
+        src="/assets/jingalala.webp"
+        alt="Jingalala! Redeem 50% of your RajaOnam ticket value on Gold, Platinum & Silver Jewellery at Chungath Jewellery — valid till 30 Sept 2026"
+        data-testid="jingalala-banner"
+        className="fixed top-3 right-3 z-50 w-20 sm:w-28 drop-shadow-[0_10px_25px_rgba(107,26,15,0.4)] pointer-events-none select-none"
+      />
       <Hero event={event} />
       <section id="booking-section" className="px-4 sm:px-12 xl:px-20 py-16 sm:py-24" data-testid="booking-section">
         <div className="w-full">

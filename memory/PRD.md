@@ -383,6 +383,9 @@
 ## Email Footer Text v60 (2026-08-11)
 - Email footer now: "Copyright 2026 RajaOnam · Powered by Event Ticketing Solutions by Berrysys Media Global LLC" (Berrysys name is a link to berrysysglobal.com)
 
+## Jingalala Fixed Banner v61 (2026-08-11)
+- Jingalala.webp (Chungath 50% redemption offer banner) pinned fixed top-right corner on the landing page (w-20 sm:w-28, pointer-events-none, z-50) — stays visible while scrolling; verified position unchanged after scroll
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
