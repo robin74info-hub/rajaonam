@@ -386,6 +386,11 @@
 ## Jingalala Fixed Banner v61 (2026-08-11)
 - Jingalala.webp (Chungath 50% redemption offer banner) pinned fixed top-right corner on the landing page (w-20 sm:w-28, pointer-events-none, z-50) — stays visible while scrolling; verified position unchanged after scroll
 
+## Jingalala Banner Behavior v62 (2026-08-11)
+- Fixed banner enlarged (w-36 sm:w-52, readable) and now FADES OUT after the hero (opacity 0 beyond 70% viewport scroll)
+- Large static Jingalala banner (w-64 sm:w-96) added centered right after the booking form
+- Verified via screenshots: visible on hero, gone after scroll, centered banner below form
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
