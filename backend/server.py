@@ -681,7 +681,7 @@ def booking_email_html(doc, qr_url, ticket_url):
 </td></tr>
 <!-- Footer -->
 <tr><td align="center" style="background:#6B1A0F;padding:18px 32px;">
-  <p style="margin:0;color:#E8B54A;font-size:11px;letter-spacing:2px;text-transform:uppercase;">Copyright 2026 RajaOnam &middot; Powered by Berrysys Media Global LLC</p>
+  <p style="margin:0;color:#E8B54A;font-size:11px;letter-spacing:2px;text-transform:uppercase;">Copyright 2026 RajaOnam &middot; Powered by Event Ticketing Solutions by <a href="https://berrysysglobal.com/" style="color:#F5D47E;text-decoration:underline;">Berrysys Media Global LLC</a></p>
 </td></tr>
 </table>
 </td></tr></table>

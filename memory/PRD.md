@@ -380,6 +380,9 @@
 - Backend: GET /api/sponsor/redemptions (sponsor role) returns bookings with redemptions + computed remaining items
 - Verified end-to-end: paid booking + 1 redemption → dashboard shows ticked item + 2 balance items; test data cleaned
 
+## Email Footer Text v60 (2026-08-11)
+- Email footer now: "Copyright 2026 RajaOnam · Powered by Event Ticketing Solutions by Berrysys Media Global LLC" (Berrysys name is a link to berrysysglobal.com)
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
