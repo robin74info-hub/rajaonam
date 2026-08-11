@@ -1,0 +1,41 @@
+{
+  "summary": "Backend-only verification of RajaOnam 2026 dummy VIP complimentary booking EO-GAASYU. Created pytest suite /app/backend/tests/test_rajaonam_ticket.py covering (a) 2-page PDF ticket structure, (b) redesigned email HTML content via direct booking_email_html() call, and (c) admin bookings API visibility. All 11 tests passed.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_rajaonam_ticket.py",
+    "/app/test_reports/pytest/rajaonam_ticket.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is 1096 lines — recommend splitting into modules (pdf, email, admin, bookings) for maintainability.",
+    "WhatsApp caption in send_whatsapp_confirmation still shows 'Complimentary (COMP)' for COMP bookings while the redesigned email and PDF use 'VIP Ticket'. Not in scope of this test request but inconsistent branding — flag for main agent if WhatsApp should also say 'VIP Ticket'.",
+    "FastAPI on_event('startup'/'shutdown') is deprecated — migrate to lifespan handlers.",
+    "booking_email_html derives asset_base via qr_url.split('api/')[0] — fragile if base URL ever contains 'api/' elsewhere; use REACT_APP_BACKEND_URL / explicit base."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_rajaonam_ticket.py (new)"
+  ],
+  "success_rate": {"backend": "100% (11/11)", "frontend": "skipped"},
+  "test_credentials": "admin@rajaonam.com / RajaOnam@2026 (verified working via /api/auth/login)",
+  "seed_data_creation": "None — used pre-existing dummy booking EO-GAASYU as instructed (not created, not deleted).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Booking EO-GAASYU is a preserved dummy VIP COMP booking. Test file at /app/backend/tests/test_rajaonam_ticket.py validates: PDF is 2 pages with 3+ images on page 1 (2 logos + QR), page 2 has both T&C sections and 0 images; email HTML contains rajaonam-chungath.png + primetime-logo.png, green #1b5812 WELCOME heading, single 'Sadhya Time Slot' row, 'VIP Ticket' label, entry+redemption terms, no chungath-logo.png. Run: cd /app/backend && python -m pytest tests/test_rajaonam_ticket.py -v -o addopts=''.",
+  "verification_details": {
+    "pdf_pages": 2,
+    "page1_images": ">=3 (2 logos + QR verified)",
+    "page2_images": 0,
+    "welcome_heading_present": true,
+    "welcome_color": "#1b5812 (green)",
+    "single_sadhya_slot_row": true,
+    "sea_food_time_slot_row_absent": true,
+    "veg_time_slot_row_absent": true,
+    "ticket_label": "VIP Ticket (COMP)",
+    "complimentary_text_absent_in_email": true,
+    "chungath_logo_absent_in_email": true,
+    "entry_terms_count": 13,
+    "redemption_terms_count": 12,
+    "admin_api_status": "confirmed / payment_mode=COMP"
+  }
+}

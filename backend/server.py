@@ -701,7 +701,7 @@ async def send_whatsapp_confirmation(doc, base_url):
         f"*Contests:* {', '.join(doc['contests']) or '—'}\n"
         f"*Games:* {', '.join(doc['games']) or '—'}\n"
         f"*Boating:* {doc['boating_slot'] + ' · ' + str(doc['boating_persons']) + ' persons' if doc['boating'] else '—'}\n"
-        f"*Total:* {'Complimentary (COMP)' if doc.get('payment_mode') == 'COMP' else '₹' + format(doc['total'], ',')}\n\n"
+        f"*Ticket:* {'VIP Ticket' if doc.get('payment_mode') == 'COMP' else '₹' + format(doc['total'], ',')}\n\n"
         f"26 Aug 2026 · 11 AM – 5 PM\nBolgatty Palace & Island Resort, Kochi\n\n"
         f"Show this QR at the gate."
     )

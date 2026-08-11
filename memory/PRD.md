@@ -353,6 +353,11 @@
 ## TEMP: Adult Prices ₹1 (2026-08-11)
 - sea_price_adult 2999→1 AND veg_price_adult 2699→1 for user's dummy/live test bookings. REVERT both after testing (kids prices unchanged: 1399/1199)
 
+## Dummy Mail Sent to User v55 (2026-08-11)
+- Sent real confirmation email for dummy VIP comp booking EO-GAASYU to robin74info@gmail.com (HTTP 202 accepted) — showcases grand email, corner logos, welcome text, T&C
+- testing_agent iteration_1.json: 11/11 backend tests passed (PDF structure, email content, admin visibility). Booking EO-GAASYU PRESERVED for user review
+- Also fixed per test review: WhatsApp caption now shows "VIP Ticket" for comp bookings (was "Complimentary (COMP)")
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
