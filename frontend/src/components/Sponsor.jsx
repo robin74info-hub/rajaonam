@@ -15,6 +15,7 @@ const extractRef = (text) => {
 };
 
 const fmt = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
+const fmtHalf = (n) => `₹${Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })}`;
 
 export default function Sponsor() {
   const [token, setToken] = useState(localStorage.getItem("sponsor_token"));
@@ -364,6 +365,7 @@ export default function Sponsor() {
                       {isRedeemed || isTicked ? <CheckSquare className="w-5 h-5 shrink-0" /> : <Square className="w-5 h-5 shrink-0" />}
                       <span className="text-sm font-semibold">{item.label} {i + 1}</span>
                       <span className="text-xs opacity-75">{fmt(item.price)}</span>
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#C9A227]/20 text-[#8A6A2A]" data-testid={`gift-value-${item.key}-${i}`}>Gift Value {fmtHalf(item.price / 2)}</span>
                       {isRedeemed && <span className="ml-auto text-[10px] tracking-[0.2em] uppercase text-leaf font-bold">Redeemed</span>}
                     </button>
                   );

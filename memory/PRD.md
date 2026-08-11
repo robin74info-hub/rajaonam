@@ -398,6 +398,9 @@
 ## Sponsor Report Shop Column v64 (2026-08-11)
 - Admin Sponsor Redemptions: Shop column now displays "Chungath Jewellery" (was sponsor email)
 
+## Gift Value in Sponsor Scanner v65 (2026-08-11)
+- Each item checkbox in the sponsor scanner now shows a gold "Gift Value ₹X" chip = 50% of the item price (₹2,999 → ₹1,499.50, ₹1,399 → ₹699.50), formatted with paise
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
