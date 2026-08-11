@@ -571,7 +571,7 @@ async def booking_ticket_pdf(reference: str):
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f"inline; filename=RajaOnam-Ticket-{reference}.pdf"},
+        headers={"Content-Disposition": f"attachment; filename=RajaOnam-Ticket-{reference}.pdf"},
     )
 
 
@@ -626,7 +626,7 @@ def booking_email_html(doc, qr_url, ticket_url):
     <td align="center">
       <p style="margin:0;color:#8A2A1B;font-size:11px;letter-spacing:5px;text-transform:uppercase;">&#10022; Prime Time Festivals Presents &#10022;</p>
       <p style="margin:12px 0 0;color:#2B2118;font-size:26px;line-height:1.35;">Your RajaOnam Celebration<br/>is Confirmed, {doc['name'].split()[0]}!</p>
-      <p style="margin:10px 0 0;color:#7A6A58;font-size:11px;letter-spacing:2px;text-transform:uppercase;">A Royal Onam Celebration &middot; Bolgatty Palace, Kochi</p>
+      <p style="margin:10px 0 0;color:#7A6A58;font-size:11px;letter-spacing:2px;text-transform:uppercase;">A Grand Onam Celebration &middot; Bolgatty Palace, Kochi</p>
     </td>
     <td align="right" style="width:100px;"><img src="{right_logo_url}" width="96" alt="Prime Time Events" style="display:block;margin-left:auto;" /></td>
   </tr></table>
@@ -649,11 +649,11 @@ def booking_email_html(doc, qr_url, ticket_url):
     </td></tr>
   </table>
 </td></tr>
-<!-- QR royal frame -->
+<!-- QR frame -->
 <tr><td align="center" style="padding:28px 36px 0;">
   <table cellpadding="0" cellspacing="0"><tr><td style="border:2px solid #C9A227;border-radius:16px;padding:6px;">
     <table cellpadding="0" cellspacing="0"><tr><td align="center" style="border:1px solid #E4D6BC;border-radius:11px;background:#FFFBF2;padding:26px 40px;">
-      <p style="margin:0 0 14px;color:#8A2A1B;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Your Royal Entry Pass</p>
+      <p style="margin:0 0 14px;color:#8A2A1B;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Your Entry Pass</p>
       <img src="{qr_url}" width="180" height="180" alt="Booking QR code" style="display:block;border:4px solid #F5EBD8;border-radius:8px;" />
       <p style="margin:14px 0 0;color:#2B2118;font-size:15px;font-weight:bold;letter-spacing:2px;">{doc['reference']}</p>
       <p style="margin:6px 0 0;color:#7A6A58;font-size:11px;letter-spacing:2px;text-transform:uppercase;">Show this QR at the gate</p>
@@ -663,7 +663,7 @@ def booking_email_html(doc, qr_url, ticket_url):
 </td></tr>
 <!-- CTA -->
 <tr><td align="center" style="padding:26px 36px 8px;">
-  <a href="{ticket_url}" style="display:inline-block;background:#6B1A0F;color:#F5D47E;font-size:13px;letter-spacing:3px;text-transform:uppercase;text-decoration:none;padding:15px 42px;border-radius:30px;border:1px solid #C9A227;">Download Royal Ticket (PDF)</a>
+  <a href="{ticket_url}" style="display:inline-block;background:#6B1A0F;color:#F5D47E;font-size:13px;letter-spacing:3px;text-transform:uppercase;text-decoration:none;padding:15px 42px;border-radius:30px;border:1px solid #C9A227;">Download Ticket (PDF)</a>
 </td></tr>
 <tr><td align="center" style="padding:18px 36px 34px;">
   <p style="margin:0;color:#7A6A58;font-size:13px;line-height:1.7;">26 August 2026 &middot; 11:00 AM – 5:00 PM<br/>Bolgatty Palace &amp; Island Resort, Kochi<br/>Present Booking ID <b style="color:#8A2A1B;">{doc['reference']}</b> or the QR code at the entrance.</p>

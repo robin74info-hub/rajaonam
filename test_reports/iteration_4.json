@@ -1,0 +1,22 @@
+{
+  "summary": "Final confirmation for RAJAONAM 2026 booking app iteration_4. Ran /app/backend/tests/test_ticket_download_fix.py and test_comp_tc.py: 13/13 passed. Directly generated booking_email_html for booking EO-MIACEJ via pymongo and verified 'Royal' occurrences = 0 (both case-sensitive and case-insensitive). Both leftover 'Royal' strings flagged in iteration_3 are fixed.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_ticket_download_fix.py",
+    "/app/backend/tests/test_comp_tc.py"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py uses deprecated FastAPI @app.on_event; migrate to lifespan handlers (non-blocking)",
+    "Class-scoped fixtures defined as instance methods trigger PytestRemovedIn10Warning; convert with @classmethod for future pytest compatibility"
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "skipped"},
+  "test_credentials": "Admin: admin@rajaonam.com / RajaOnam@2026 (not exercised in this iteration)",
+  "seed_data_creation": "None. Existing bookings EO-GAASYU and EO-MIACEJ preserved as instructed.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration_4 confirmed zero 'Royal' occurrences in booking_email_html for EO-MIACEJ and 13/13 backend tests pass. booking_email_html signature: booking_email_html(doc, qr_url, ticket_url). Booking lookup key is 'reference' (e.g. 'EO-MIACEJ'), not 'booking_id'. No further backend action needed.",
+  "rca of the issue": "N/A — both remaining 'Royal' strings ('A Royal Onam Celebration' -> 'A Grand Onam Celebration', HTML comment '<!-- QR royal frame -->' -> '<!-- QR frame -->') were fixed by main agent and verified here."
+}

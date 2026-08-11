@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="13" time="2.434" timestamp="2026-08-11T07:27:50.520043+00:00" hostname="agent-env-5378a345-d3b7-4fb8-948e-566277a4ae0a"><testcase classname="tests.test_comp_tc.TestCompEmailHTML" name="test_payment_mode_is_comp" time="0.495" /><testcase classname="tests.test_comp_tc.TestCompEmailHTML" name="test_entry_pass_terms_heading" time="0.000" /><testcase classname="tests.test_comp_tc.TestCompEmailHTML" name="test_comp_specific_line_one_time_entry" time="0.000" /><testcase classname="tests.test_comp_tc.TestCompEmailHTML" name="test_no_monetary_or_redemption_value" time="0.000" /><testcase classname="tests.test_comp_tc.TestCompEmailHTML" name="test_no_chungath_redemption_block" time="0.000" /><testcase classname="tests.test_comp_tc.TestCompPDF" name="test_page2_has_entry_pass_heading" time="0.285" /><testcase classname="tests.test_comp_tc.TestCompPDF" name="test_page2_has_no_redemption_50pct" time="0.003" /><testcase classname="tests.test_comp_tc.TestCompEmailImages" name="test_all_img_src_urls_return_png" time="0.391" /><testcase classname="tests.test_comp_tc.TestPaidBookingTerms" name="test_paid_email_html_has_both_sections" time="0.421" /><testcase classname="tests.test_comp_tc.TestPaidBookingTerms" name="test_paid_pdf_page2_has_redemption" time="0.470" /><testcase classname="tests.test_ticket_download_fix.TestTicketPdfEndpoint" name="test_pdf_status_and_headers" time="0.217" /><testcase classname="tests.test_ticket_download_fix.TestBookingEmailHtml" name="test_anchor_text_and_url" time="0.005" /><testcase classname="tests.test_ticket_download_fix.TestBookingEmailHtml" name="test_no_royal_in_html" time="0.001"><failure message="AssertionError: 'Royal' appears at positions [1233, 5029]. Context: ['pacing:2px;text-transform:uppercase;&quot;&gt;A Royal Onam Celebration &amp;middot; Bolgatty', '/td&gt;&lt;/tr&gt;\n  &lt;/table&gt;\n&lt;/td&gt;&lt;/tr&gt;\n&lt;!-- QR royal frame --&gt;\n&lt;tr&gt;&lt;td align=&quot;center&quot; s']&#10;assert not [1233, 5029]">self = &lt;test_ticket_download_fix.TestBookingEmailHtml object at 0xf8290a775450&gt;
+
+    def test_no_royal_in_html(self):
+        ticket_url = f"{BASE_URL}/api/bookings/{REF}/ticket.pdf"
+        qr_url = f"{BASE_URL}/api/qr/xyz.png"
+        html = self.booking_email_html(self.doc, qr_url, ticket_url)
+        # Case-insensitive search for 'royal'
+        occurrences = [
+            m.start() for m in re.finditer(r"royal", html, re.IGNORECASE)
+        ]
+&gt;       assert not occurrences, (
+            f"'Royal' appears at positions {occurrences}. "
+            f"Context: {[html[max(0,p-40):p+40] for p in occurrences]}"
+        )
+E       AssertionError: 'Royal' appears at positions [1233, 5029]. Context: ['pacing:2px;text-transform:uppercase;"&gt;A Royal Onam Celebration &amp;middot; Bolgatty', '/td&gt;&lt;/tr&gt;\n  &lt;/table&gt;\n&lt;/td&gt;&lt;/tr&gt;\n&lt;!-- QR royal frame --&gt;\n&lt;tr&gt;&lt;td align="center" s']
+E       assert not [1233, 5029]
+
+tests/test_ticket_download_fix.py:69: AssertionError</failure></testcase></testsuite></testsuites>

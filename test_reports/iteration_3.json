@@ -1,0 +1,30 @@
+{
+  "summary": "Verification run for ticket-download fix on booking EO-MIACEJ. PDF endpoint now correctly returns attachment (application/pdf, %PDF magic, filename RajaOnam-Ticket-EO-MIACEJ.pdf). Email HTML anchor for ticket.pdf uses exact text 'Download Ticket (PDF)' and correct URL. However, the string 'Royal' STILL appears twice in the generated email HTML — the fix removed 'Your Royal Entry Pass' but missed two other occurrences. Regression suite (tests/test_comp_tc.py) still 10/10 green. Bookings EO-GAASYU and EO-MIACEJ were not modified.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "booking_email_html (server.py)", "issue": "String 'Royal' still present in email HTML at two locations: (1) line 629 tagline 'A Royal Onam Celebration · Bolgatty Palace, Kochi' rendered under greeting; (2) line 652 HTML comment '<!-- QR royal frame -->'. The task explicitly requires 'Royal' to NOT appear anywhere in the email HTML."}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_ticket_download_fix.py",
+    "/app/backend/tests/test_comp_tc.py",
+    "/app/test_reports/pytest/iter3.xml"
+  ],
+  "action_items": [
+    "Remove remaining 'Royal' occurrences in booking_email_html: change 'A Royal Onam Celebration' (line ~629) to something like 'An Onam Celebration' (or per copy guidance), and remove/rename the HTML comment '<!-- QR royal frame -->' (line ~652) — e.g. '<!-- QR frame -->'."
+  ],
+  "critical_code_review_comments": [
+    "server.py is 1138 lines — should be split into routers/services modules for maintainability.",
+    "Uses deprecated FastAPI @app.on_event('startup'/'shutdown'); migrate to lifespan handlers.",
+    "booking_email_html renders large inline HTML strings; consider Jinja2 templates for testability and to avoid missed literal replacements like the 'Royal' case."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "92% (12/13 new+regression combined; regression 10/10, new 2/3)", "frontend": "n/a"},
+  "seed_data_creation": "None. Used existing booking EO-MIACEJ.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Regression file: tests/test_comp_tc.py (10/10). New verification file tests/test_ticket_download_fix.py has 3 tests — PDF headers + email anchor pass; email 'no Royal' test fails until main agent removes remaining 'Royal' strings at lines ~629 and ~652 of server.py. Use pymongo (see setup_class) — motor's async db.find_one across event loops fails in pytest.",
+  "rca of the issue": "Main agent only replaced 'Your Royal Entry Pass' → 'Your Entry Pass' but a grep for 'royal' in server.py still returns two hits (visible tagline 'A Royal Onam Celebration' and HTML comment '<!-- QR royal frame -->'). Fix: strip both. PDF download bug itself is fully fixed — Content-Disposition changed from inline to attachment and browsers now download the file."
+}

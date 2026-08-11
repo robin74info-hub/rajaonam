@@ -369,6 +369,11 @@
 - "Ticket Type: VIP Guest" row now shows ONLY for COMP bookings — removed from email, PDF, and WhatsApp caption for paid tickets
 - Verified: all 3 images decode in browser (nw 600/1288/296), comp shows ticket type, paid doesn't; test suite 10/10 green
 
+## Ticket Download Fix v58 (2026-08-11)
+- ticket.pdf endpoint now Content-Disposition: attachment (was inline) — clicking the email button downloads the PDF directly
+- Email button "Download Royal Ticket (PDF)" → "Download Ticket (PDF)"; ALL "Royal" strings removed from email HTML (tagline now "A Grand Onam Celebration", "Royal Entry Pass" → "Entry Pass")
+- Verified by testing_agent iteration_3 + iteration_4: attachment headers, button text/URL, zero 'Royal' in email, suites 13/13 green
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
