@@ -363,6 +363,12 @@
 - User: NO more test emails — email testing stopped
 - Dummy bookings EO-GAASYU + EO-MIACEJ (robin74info@gmail.com) remain in DB for user to delete via ONAM26
 
+## Email Header Restructure + Logo Fix v57 (2026-08-11)
+- ROOT CAUSE of "broken logo in email": frontend /assets/* responses carry Cross-Origin-Resource-Policy: same-origin (blocks all cross-origin embedding incl. email clients). FIXED: new GET /api/email-assets/{filename} serves the 3 logos from backend/assets with no CORP header; email now uses /api/email-assets/ URLs
+- Email: maroon header band removed; left (RajaOnam+Chungath) and right (Prime Time Events) logos now flank the "Your RajaOnam Celebration is Confirmed" greeting on cream background
+- "Ticket Type: VIP Guest" row now shows ONLY for COMP bookings — removed from email, PDF, and WhatsApp caption for paid tickets
+- Verified: all 3 images decode in browser (nw 600/1288/296), comp shows ticket type, paid doesn't; test suite 10/10 green
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

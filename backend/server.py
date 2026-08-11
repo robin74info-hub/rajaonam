@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Depends
-from fastapi.responses import StreamingResponse, Response
+from fastapi.responses import StreamingResponse, Response, FileResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -443,6 +443,16 @@ def make_qr_png(data: str) -> bytes:
     return buf.getvalue()
 
 
+@api_router.get("/email-assets/{filename}")
+async def email_asset(filename: str):
+    if filename not in ("rajaonam-chungath.png", "primetime-logo.png", "chungath-logo.png"):
+        raise HTTPException(status_code=404, detail="Not found")
+    path = os.path.join(os.path.dirname(__file__), "assets", filename)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="Not found")
+    return FileResponse(path, media_type="image/png", headers={"Cache-Control": "public, max-age=86400"})
+
+
 @api_router.get("/bookings/{reference}/qr")
 async def booking_qr(reference: str):
     doc = await db.bookings.find_one({"reference": reference}, {"_id": 0})
@@ -500,7 +510,7 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
         ("Contests", ", ".join(doc["contests"]) or "-"),
         ("Games", ", ".join(doc["games"]) or "-"),
         ("Boating", f"{doc['boating_slot']} ({doc['boating_persons']} persons)" if doc["boating"] else "-"),
-        ("Ticket Type", doc.get("ticket_type", "Guest")),
+        *([("Ticket Type", doc.get("ticket_type", "VIP Guest"))] if doc.get("payment_mode") == "COMP" else []),
         ("Ticket", "VIP Ticket" if doc.get("payment_mode") == "COMP" else f"Rs. {doc['total']:,}  (pay at venue)"),
     ]
     for k, v in rows:
@@ -578,13 +588,13 @@ def booking_email_html(doc, qr_url, ticket_url):
             ("Contests", ", ".join(doc["contests"]) or "—"),
             ("Games", ", ".join(doc["games"]) or "—"),
             ("Boating", f"{doc['boating_slot']} · {doc['boating_persons']} persons" if doc["boating"] else "—"),
-            ("Ticket Type", doc.get("ticket_type", "Guest")),
+            *([("Ticket Type", doc.get("ticket_type", "VIP Guest"))] if doc.get("payment_mode") == "COMP" else []),
             ("Ticket", "VIP Ticket" if doc.get("payment_mode") == "COMP" else f"₹{doc['total']:,}"),
         ]
     ])
     asset_base = qr_url.split("api/")[0]
-    left_logo_url = f"{asset_base}assets/rajaonam-chungath.png"
-    right_logo_url = f"{asset_base}assets/primetime-logo.png"
+    left_logo_url = f"{asset_base}api/email-assets/rajaonam-chungath.png"
+    right_logo_url = f"{asset_base}api/email-assets/primetime-logo.png"
     is_comp = doc.get("payment_mode") == "COMP"
     if is_comp:
         entry_terms = "".join(
@@ -609,27 +619,22 @@ def booking_email_html(doc, qr_url, ticket_url):
 <table width="580" cellpadding="0" cellspacing="0" style="background:#6B1A0F;border-radius:16px;padding:3px;">
 <tr><td style="background:#FFFBF2;border-radius:13px;overflow:hidden;">
 <table width="100%" cellpadding="0" cellspacing="0">
-<!-- Royal header -->
-<tr><td style="background:#6B1A0F;padding:22px 28px 26px;">
+<!-- Greeting with corner logos -->
+<tr><td align="center" style="padding:30px 28px 8px;">
   <table width="100%" cellpadding="0" cellspacing="0"><tr>
-    <td align="left" style="width:110px;"><img src="{left_logo_url}" width="100" alt="RajaOnam 2026" style="display:block;" /></td>
+    <td align="left" style="width:100px;"><img src="{left_logo_url}" width="92" alt="RajaOnam 2026" style="display:block;" /></td>
     <td align="center">
-      <p style="margin:0;color:#E8B54A;font-size:12px;letter-spacing:5px;text-transform:uppercase;">&#10022; Prime Time Festivals Presents &#10022;</p>
-      <p style="margin:10px 0 0;color:#F5D47E;font-size:30px;letter-spacing:2px;font-weight:bold;">RAJAONAM 2026</p>
-      <p style="margin:8px 0 0;color:#FABD8F;font-size:11px;letter-spacing:3px;text-transform:uppercase;">A Royal Onam Celebration &middot; Bolgatty Palace, Kochi</p>
+      <p style="margin:0;color:#8A2A1B;font-size:11px;letter-spacing:5px;text-transform:uppercase;">&#10022; Prime Time Festivals Presents &#10022;</p>
+      <p style="margin:12px 0 0;color:#2B2118;font-size:26px;line-height:1.35;">Your RajaOnam Celebration<br/>is Confirmed, {doc['name'].split()[0]}!</p>
+      <p style="margin:10px 0 0;color:#7A6A58;font-size:11px;letter-spacing:2px;text-transform:uppercase;">A Royal Onam Celebration &middot; Bolgatty Palace, Kochi</p>
     </td>
-    <td align="right" style="width:110px;"><img src="{right_logo_url}" width="105" alt="Prime Time Events" style="display:block;margin-left:auto;" /></td>
+    <td align="right" style="width:100px;"><img src="{right_logo_url}" width="96" alt="Prime Time Events" style="display:block;margin-left:auto;" /></td>
   </tr></table>
-  <table cellpadding="0" cellspacing="0" style="margin:18px auto 0;"><tr>
+  <table cellpadding="0" cellspacing="0" style="margin:16px auto 0;"><tr>
     <td style="width:70px;height:1px;background:#C9A227;"></td>
-    <td style="color:#E8B54A;font-size:14px;padding:0 12px;">&#10022;</td>
+    <td style="color:#8A2A1B;font-size:12px;padding:0 10px;">&#10022;</td>
     <td style="width:70px;height:1px;background:#C9A227;"></td>
   </tr></table>
-</td></tr>
-<!-- Greeting -->
-<tr><td align="center" style="padding:34px 36px 8px;">
-  <p style="margin:0;color:#8A2A1B;font-size:12px;letter-spacing:5px;text-transform:uppercase;">Royal Booking Confirmed</p>
-  <p style="margin:14px 0 6px;color:#2B2118;font-size:27px;line-height:1.35;">Your RajaOnam Celebration<br/>is Confirmed, {doc['name'].split()[0]}!</p>
 </td></tr>
 <!-- Welcome -->
 <tr><td align="center" style="padding:14px 40px 6px;">
@@ -732,8 +737,8 @@ async def send_whatsapp_confirmation(doc, base_url):
         f"🌸 *RAJAONAM 2026 — Booking Confirmed* 🌸\n\n"
         f"*Booking ID:* {doc['reference']}\n"
         f"*Name:* {doc['name']}\n"
-        f"*Ticket Type:* {doc.get('ticket_type', 'Guest')}\n"
-        f"*Sea Food Sadhya:* {doc['adults']} Adults · {doc['kids_5_12']} Kids (5-12) · {doc['kids_below_5']} Below 5\n"
+        + (f"*Ticket Type:* {doc.get('ticket_type', 'VIP Guest')}\n" if doc.get("payment_mode") == "COMP" else "")
+        + f"*Sea Food Sadhya:* {doc['adults']} Adults · {doc['kids_5_12']} Kids (5-12) · {doc['kids_below_5']} Below 5\n"
         f"*Veg Onam Sadhya:* {doc['veg_adults']} Adults · {doc['veg_kids_5_12']} Kids (5-12) · {doc['veg_kids_below_5']} Below 5\n"
         f"*Contests:* {', '.join(doc['contests']) or '—'}\n"
         f"*Games:* {', '.join(doc['games']) or '—'}\n"
