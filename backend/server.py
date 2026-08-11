@@ -79,6 +79,37 @@ class BookingCreate(BaseModel):
 
 
 PAYMENT_MODES = ["Pending", "UPI", "Card", "Net Banking", "Pay at Venue", "Online (Razorpay)", "COMP"]
+
+ENTRY_TERMS = [
+    "Entry is permitted only with a valid Rajaonam 2026 ticket with QR code.",
+    "Guests are subject to security checks at the venue.",
+    "Weapons, sharp objects, explosives, inflammable or hazardous materials are strictly prohibited.",
+    "Possession or use of narcotic drugs and illegal substances is strictly prohibited.",
+    "Outside food and beverages are not permitted.",
+    "Children must be accompanied and supervised by a parent/guardian.",
+    "Guests must maintain appropriate conduct and follow all venue, safety and security instructions.",
+    "The organiser is not responsible for loss or damage of personal belongings.",
+    "The organiser reserves the right of admission and may remove anyone violating event or safety regulations.",
+    "Event schedules and activities may change due to operational or unforeseen circumstances.",
+    "Photography and videography will take place during the event.",
+    "Guests are required to comply with all applicable laws and regulations while attending Rajaonam 2026.",
+    "Purchase/use of the ticket confirms acceptance of the Rajaonam 2026 Entry Ticket Terms & Conditions.",
+]
+
+REDEMPTION_TERMS = [
+    "Each paid ticket is eligible for 50% redemption of the value of the ticket at ONLY Chungath Jewellery, M.G. Road, Ernakulam, and redeemable until 30 September 2026.",
+    "Only PAID ticket with QR code issued for Rajaonam 2026 must be presented at Chungath Jewellery, M.G. Road, Ernakulam for redemption.",
+    "A single QR code may contain multiple tickets. Each ticket within the QR code will have its own individual 50% redemption eligibility based on the value of each ticket.",
+    "If a QR code contains multiple tickets, each ticket must be redeemed individually against individual invoice until all eligible tickets under the QR code are redeemed.",
+    "At the time of redemption, the name and mobile number of the person redeeming the benefit must be provided at Chungath Jewellery, M.G. Road, Ernakulam.",
+    "For example, an Adult Seafood Non-Veg Ticket worth Rs. 2,999/- carries a redemption value of 50% of the ticket value which is Rs. 1,499.50/- and can be redeemed against one single invoice only.",
+    "Redemption values of multiple tickets cannot be clubbed or combined into a single invoice.",
+    "The redemption is a one-time benefit and must be fully utilised in a single invoice. Any unutilised balance will lapse and cannot be refunded, transferred, carried forward or clubbed with another ticket.",
+    "Redemption is applicable ONLY towards the purchase of Gold, Silver and Platinum Ornaments.",
+    "The redemption benefit cannot be exchanged for cash, transferred or refunded, and can be redeemed only once.",
+    "Any purchase amount exceeding the eligible redemption value must be paid by the customer.",
+    "Rajaonam 2026 Organiser and Chungath Jewellery, M.G. Road, Ernakulam reserve the right to verify ticket and redemption details before processing the benefit.",
+]
 TICKET_TYPES = ["VIP Guest"]
 
 rz_client = razorpay.Client(auth=(os.environ["RAZORPAY_KEY_ID"], os.environ["RAZORPAY_KEY_SECRET"]))
@@ -453,6 +484,35 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
     pdf.ln(8)
     pdf.set_font("helvetica", "I", 9)
     pdf.cell(0, 6, "Copyright 2026 RajaOnam - Powered by Berrysys Media Global LLC", new_x="LMARGIN", new_y="NEXT", align="C")
+
+    # Terms & Conditions page with Chungath Jewellery logo
+    pdf.add_page()
+    logo_path = os.path.join(os.path.dirname(__file__), "assets", "chungath-logo.png")
+    if os.path.exists(logo_path):
+        logo_w = 55
+        pdf.image(logo_path, x=(210 - logo_w) / 2, y=pdf.get_y(), w=logo_w)
+        pdf.set_y(pdf.get_y() + 24)
+    pdf.ln(2)
+    pdf.set_font("helvetica", "B", 11)
+    pdf.set_text_color(138, 42, 27)
+    pdf.cell(0, 7, "RAJAONAM 2026 - ENTRY TICKET TERMS & CONDITIONS", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.ln(2)
+    pdf.set_font("helvetica", "", 8.5)
+    pdf.set_text_color(60, 50, 40)
+    for i, term in enumerate(ENTRY_TERMS, 1):
+        pdf.multi_cell(0, 4.5, pdf_safe(f"{i}. {term}"), new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(1)
+    pdf.ln(3)
+    pdf.set_font("helvetica", "B", 11)
+    pdf.set_text_color(138, 42, 27)
+    pdf.cell(0, 7, "TERMS & CONDITIONS - REDEMPTION OF TICKET AT CHUNGATH JEWELLERY,", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 7, "M.G. ROAD, ERNAKULAM", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.ln(2)
+    pdf.set_font("helvetica", "", 8.5)
+    pdf.set_text_color(60, 50, 40)
+    for i, term in enumerate(REDEMPTION_TERMS, 1):
+        pdf.multi_cell(0, 4.5, pdf_safe(f"{i}. {term}"), new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(1)
     return bytes(pdf.output())
 
 
@@ -486,6 +546,14 @@ def booking_email_html(doc, qr_url, ticket_url):
             ("Ticket", "VIP Ticket" if doc.get("payment_mode") == "COMP" else f"₹{doc['total']:,}"),
         ]
     ])
+    asset_base = qr_url.split("api/")[0]
+    chungath_url = f"{asset_base}assets/chungath-logo.png"
+    entry_terms = "".join(
+        f'<li style="margin:0 0 5px;color:#5A4A38;font-size:11px;line-height:1.5;">{t}</li>' for t in ENTRY_TERMS
+    )
+    redemption_terms = "".join(
+        f'<li style="margin:0 0 5px;color:#5A4A38;font-size:11px;line-height:1.5;">{t}</li>' for t in REDEMPTION_TERMS
+    )
     return f"""<!DOCTYPE html><html><body style="margin:0;padding:0;background:#EFE3CB;font-family:Georgia,serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#EFE3CB;padding:36px 14px;"><tr><td align="center">
 <table width="580" cellpadding="0" cellspacing="0" style="background:#6B1A0F;border-radius:16px;padding:3px;">
@@ -534,6 +602,23 @@ def booking_email_html(doc, qr_url, ticket_url):
 </td></tr>
 <tr><td align="center" style="padding:18px 36px 34px;">
   <p style="margin:0;color:#7A6A58;font-size:13px;line-height:1.7;">26 August 2026 &middot; 11:00 AM – 5:00 PM<br/>Bolgatty Palace &amp; Island Resort, Kochi<br/>Present Booking ID <b style="color:#8A2A1B;">{doc['reference']}</b> or the QR code at the entrance.</p>
+</td></tr>
+<!-- Terms & Conditions -->
+<tr><td style="padding:10px 36px 0;">
+  <table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr>
+    <td style="width:50px;height:1px;background:#C9A227;"></td>
+    <td style="color:#8A2A1B;font-size:12px;padding:0 10px;">&#10022;</td>
+    <td style="width:50px;height:1px;background:#C9A227;"></td>
+  </tr></table>
+</td></tr>
+<tr><td align="center" style="padding:16px 36px 0;">
+  <img src="{chungath_url}" width="170" alt="Chungath Jewellery, MG Road, Ernakulam" style="display:block;margin:0 auto;" />
+</td></tr>
+<tr><td style="padding:18px 36px 26px;">
+  <p style="margin:0 0 10px;color:#8A2A1B;font-size:11px;letter-spacing:2px;text-transform:uppercase;text-align:center;font-weight:bold;">Rajaonam 2026 — Entry Ticket Terms &amp; Conditions</p>
+  <ol style="margin:0;padding-left:18px;">{entry_terms}</ol>
+  <p style="margin:14px 0 10px;color:#8A2A1B;font-size:11px;letter-spacing:2px;text-transform:uppercase;text-align:center;font-weight:bold;">Terms &amp; Conditions — Redemption of Ticket at Chungath Jewellery, M.G. Road, Ernakulam</p>
+  <ol style="margin:0;padding-left:18px;">{redemption_terms}</ol>
 </td></tr>
 <!-- Footer -->
 <tr><td align="center" style="background:#6B1A0F;padding:18px 32px;">
