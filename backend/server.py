@@ -848,6 +848,23 @@ async def sponsor_get_booking(reference: str, staff: str = Depends(get_current_s
     return {"vip": False, "reference": doc["reference"], "name": doc["name"], "phone": doc["phone"], "items": sponsor_items(doc)}
 
 
+@api_router.get("/sponsor/redemptions")
+async def sponsor_redemptions(staff: str = Depends(get_current_sponsor)):
+    out = []
+    async for b in db.bookings.find({"redemptions": {"$exists": True, "$ne": []}}):
+        items = sponsor_items(b)
+        remaining = [{"label": i["label"], "qty": i["qty"] - i["redeemed"]} for i in items if i["qty"] - i["redeemed"] > 0]
+        out.append({
+            "reference": b["reference"],
+            "name": b.get("name"),
+            "phone": b.get("phone"),
+            "redemptions": b.get("redemptions", []),
+            "remaining": remaining,
+        })
+    out.sort(key=lambda r: max((x.get("at") or "" for x in r["redemptions"]), default=""), reverse=True)
+    return out
+
+
 class RedeemRequest(BaseModel):
     reference: str
     items: Dict[str, int]

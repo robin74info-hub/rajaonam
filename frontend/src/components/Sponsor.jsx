@@ -21,10 +21,11 @@ export default function Sponsor() {
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [loginError, setLoginError] = useState("");
   const [loginBusy, setLoginBusy] = useState(false);
-  const [stage, setStage] = useState("scan");
+  const [stage, setStage] = useState("dashboard");
   const [booking, setBooking] = useState(null);
   const [ticks, setTicks] = useState({});
   const [result, setResult] = useState(null);
+  const [redemptionList, setRedemptionList] = useState(null);
   const [manual, setManual] = useState("");
   const [busy, setBusy] = useState(false);
   const [cameraError, setCameraError] = useState("");
@@ -87,11 +88,22 @@ export default function Sponsor() {
     }
   };
 
+  const fetchRedemptions = () =>
+    axios.get(`${API}/sponsor/redemptions`, { headers }).then((r) => setRedemptionList(r.data)).catch(() => setRedemptionList([]));
+
   useEffect(() => {
-    if (token) startScanner();
-    return () => { stopScanner(); };
+    if (!token) return;
+    fetchRedemptions();
+    const t = setInterval(fetchRedemptions, 30000);
+    return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  useEffect(() => {
+    if (token && stage === "scan") startScanner();
+    else stopScanner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, stage]);
 
   const fetchBooking = async (ref) => {
     setBusy(true);
@@ -149,8 +161,8 @@ export default function Sponsor() {
     setBooking(null);
     setTicks({});
     setManual("");
-    setStage("scan");
-    startScanner();
+    fetchRedemptions();
+    setStage("dashboard");
   };
 
   if (!token) {
@@ -213,11 +225,71 @@ export default function Sponsor() {
           </button>
         </div>
 
+        {stage !== "scan" && (
+          <button
+            data-testid="open-scanner-btn"
+            onClick={() => setStage("scan")}
+            className="w-full mb-5 py-4 rounded-2xl bg-[#1b5812] text-[#fabd8f] text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#12400c] transition-colors flex items-center justify-center gap-2.5 shadow-[0_12px_30px_rgba(27,88,18,0.35)]"
+          >
+            <QrCode className="w-5 h-5" /> Scan Customer QR Code
+          </button>
+        )}
+
+        {stage === "dashboard" && (
+          <div className="rounded-2xl border border-[#D8C7A5] bg-[#F1E3C6]/90 overflow-hidden shadow-[0_25px_60px_rgba(138,106,42,0.28)]" data-testid="sponsor-dashboard">
+            <div className="flex items-center gap-3 px-6 py-4 bg-[#6B1A0F]">
+              <Store className="w-5 h-5 text-[#F5D47E]" />
+              <p className="text-[#F5D47E] text-sm font-bold tracking-[0.2em] uppercase">Purchase Details — Chungath Jewellery</p>
+            </div>
+            <div className="p-5 space-y-4">
+              {redemptionList === null && <p className="text-sm text-ash flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</p>}
+              {redemptionList && redemptionList.length === 0 && (
+                <p className="text-sm text-ash text-center py-6" data-testid="no-purchases">No customers have redeemed at the shop yet</p>
+              )}
+              {(redemptionList || []).map((r) => (
+                <div key={r.reference} className="bg-white rounded-xl border border-[#E4D6BC] p-4" data-testid={`purchase-card-${r.reference}`}>
+                  <div className="flex items-center justify-between mb-2.5">
+                    <div>
+                      <p className="font-serif text-lg text-ink leading-tight">{r.name}</p>
+                      <p className="text-xs text-ash">{r.phone} · {r.reference}</p>
+                    </div>
+                    <span className="text-[9px] tracking-[0.2em] uppercase font-bold text-leaf bg-leaf/10 border border-leaf/30 rounded-full px-3 py-1">Discount Availed</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {r.redemptions.map((x, i) => (
+                      <div key={i} className="flex items-center gap-2.5 text-sm" data-testid={`redeemed-${r.reference}-${i}`}>
+                        <CheckSquare className="w-4 h-4 text-leaf shrink-0" />
+                        <span className="text-ink font-semibold">{x.label}</span>
+                        <span className="text-ash text-xs">×{x.qty} · {fmt(x.price)}</span>
+                        <span className="ml-auto text-[10px] text-ash">{x.at ? new Date(x.at).toLocaleString("en-IN") : ""}</span>
+                      </div>
+                    ))}
+                    {r.remaining.map((x, i) => (
+                      <div key={`b${i}`} className="flex items-center gap-2.5 text-sm opacity-60" data-testid={`balance-${r.reference}-${i}`}>
+                        <Square className="w-4 h-4 text-ash shrink-0" />
+                        <span className="text-ash">{x.label}</span>
+                        <span className="text-ash text-xs">×{x.qty} left</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {stage === "scan" && (
           <div className="rounded-2xl border border-[#D8C7A5] bg-[#F1E3C6]/90 overflow-hidden shadow-[0_25px_60px_rgba(138,106,42,0.28)]">
             <div className="flex items-center gap-3 px-6 py-4 bg-[#1b5812]">
               <QrCode className="w-5 h-5 text-[#fabd8f]" />
               <p className="text-[#fabd8f] text-sm font-bold tracking-[0.2em] uppercase">Scan Customer Ticket QR</p>
+              <button
+                data-testid="close-scanner-btn"
+                onClick={() => setStage("dashboard")}
+                className="ml-auto text-[#fabd8f]/70 hover:text-[#fabd8f] text-[10px] tracking-[0.2em] uppercase font-bold"
+              >
+                Back
+              </button>
             </div>
             <div className="p-6">
               <div id="sponsor-qr-reader" data-testid="sponsor-qr-reader" className="w-full rounded-xl overflow-hidden bg-white border border-[#D8C7A5]" />
@@ -363,7 +435,7 @@ export default function Sponsor() {
                 onClick={scanNext}
                 className="mt-2 px-8 py-3 rounded-full bg-[#1b5812] text-[#fabd8f] text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#12400c] transition-colors"
               >
-                Scan Next Customer
+                Done — Back to Purchases
               </button>
             </div>
           </div>

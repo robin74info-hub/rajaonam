@@ -374,6 +374,12 @@
 - Email button "Download Royal Ticket (PDF)" → "Download Ticket (PDF)"; ALL "Royal" strings removed from email HTML (tagline now "A Grand Onam Celebration", "Royal Entry Pass" → "Entry Pass")
 - Verified by testing_agent iteration_3 + iteration_4: attachment headers, button text/URL, zero 'Royal' in email, suites 13/13 green
 
+## Sponsor Purchase Dashboard v59 (2026-08-11)
+- Sponsor page after login now lands on "Purchase Details — Chungath Jewellery" dashboard: per customer card with name, phone, booking ID, ticked (redeemed) items with price/time, and unchecked balance items left
+- QR scanning moved behind a green "Scan Customer QR Code" button on top; scan view has a Back button; after redeem, "Done — Back to Purchases" returns to refreshed list (auto-refresh 30s)
+- Backend: GET /api/sponsor/redemptions (sponsor role) returns bookings with redemptions + computed remaining items
+- Verified end-to-end: paid booking + 1 redemption → dashboard shows ticked item + 2 balance items; test data cleaned
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
