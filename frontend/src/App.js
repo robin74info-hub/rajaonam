@@ -33,9 +33,16 @@ function Home() {
     frame = requestAnimationFrame(raf);
     fetchEvent();
     const onScroll = () => {
+      const isMobile = window.innerWidth < 640;
       const pastHero = window.scrollY > window.innerHeight * 0.7;
-      // Mobile: banner appears only after the hero; desktop: shows on hero, fades after
-      setBannerVisible(window.innerWidth < 640 ? pastHero : !pastHero);
+      if (!isMobile) {
+        setBannerVisible(!pastHero);
+        return;
+      }
+      // Mobile: show after hero, hide when it reaches the booking form header
+      const form = document.querySelector('[data-testid="booking-section"]');
+      const nearForm = form ? window.scrollY + 230 > form.offsetTop : false;
+      setBannerVisible(window.scrollY > window.innerHeight * 0.55 && !nearForm);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();

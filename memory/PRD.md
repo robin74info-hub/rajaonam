@@ -407,6 +407,9 @@
 - Mobile (<640px): fixed banner hidden on hero, appears after hero top-right; desktop unchanged (shows on hero, fades after)
 - Verified: desktop hero + mobile scroll behavior via screenshots
 
+## Mobile Banner Window v67 (2026-08-11)
+- Mobile fixed banner now visible ONLY in the gap between hero and booking form (shows after 55% viewport scroll, hides 230px before the form header) — verified opacity 0 → 1 → 0 across scroll positions
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
