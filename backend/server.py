@@ -42,9 +42,9 @@ EVENT = {
     "date": "26 August 2026",
     "time": "11:00 AM – 5:00 PM",
     "venue": "Bolgatty Palace & Island Resort, Kochi",
-    "sea_price_adult": 1,
+    "sea_price_adult": 2999,
     "sea_price_kid": 1399,
-    "veg_price_adult": 1,
+    "veg_price_adult": 2699,
     "veg_price_kid": 1199,
     "currency_symbol": "₹",
     "contests": ["Malayali Manka", "Sreeman", "Kids Contest", "Best Couple"],
@@ -94,6 +94,24 @@ ENTRY_TERMS = [
     "Photography and videography will take place during the event.",
     "Guests are required to comply with all applicable laws and regulations while attending Rajaonam 2026.",
     "Purchase/use of the ticket confirms acceptance of the Rajaonam 2026 Entry Ticket Terms & Conditions.",
+]
+
+COMP_TERMS = [
+    "This pass is valid for entry to Rajaonam 2026 only.",
+    "Entry is subject to QR code scanning and verification at the venue.",
+    "This pass is valid only for the date and venue mentioned on the pass.",
+    "The pass must be presented at the entrance and is valid for one-time entry only.",
+    "Guests are subject to security checks at the venue.",
+    "Weapons, sharp objects, explosives, inflammable or hazardous materials are strictly prohibited.",
+    "Possession or use of narcotic drugs or illegal substances is strictly prohibited.",
+    "Outside food and beverages are not permitted.",
+    "Children must be accompanied and supervised by a parent or guardian.",
+    "Guests must follow all venue, safety and security instructions.",
+    "The organiser is not responsible for the loss or damage of personal belongings.",
+    "The organiser reserves the right of admission and may deny entry or remove anyone violating event or safety regulations.",
+    "Photography and videography may take place during the event.",
+    "This Entry Pass carries no monetary or redemption value and cannot be used to avail the redemption offer at Chungath Jewellery, M.G. Road, Ernakulam.",
+    "Use of this pass constitutes acceptance of the Rajaonam 2026 Terms & Conditions.",
 ]
 
 REDEMPTION_TERMS = [
@@ -504,6 +522,15 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
     pdf.add_page()
     pdf.set_font("helvetica", "B", 11)
     pdf.set_text_color(138, 42, 27)
+    if doc.get("payment_mode") == "COMP":
+        pdf.cell(0, 7, "RAJAONAM 2026 - ENTRY PASS TERMS & CONDITIONS", new_x="LMARGIN", new_y="NEXT", align="C")
+        pdf.ln(2)
+        pdf.set_font("helvetica", "", 8.5)
+        pdf.set_text_color(60, 50, 40)
+        for i, term in enumerate(COMP_TERMS, 1):
+            pdf.multi_cell(0, 4.5, pdf_safe(f"{i}. {term}"), new_x="LMARGIN", new_y="NEXT")
+            pdf.ln(1)
+        return bytes(pdf.output())
     pdf.cell(0, 7, "RAJAONAM 2026 - ENTRY TICKET TERMS & CONDITIONS", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(2)
     pdf.set_font("helvetica", "", 8.5)
@@ -558,12 +585,25 @@ def booking_email_html(doc, qr_url, ticket_url):
     asset_base = qr_url.split("api/")[0]
     left_logo_url = f"{asset_base}assets/rajaonam-chungath.png"
     right_logo_url = f"{asset_base}assets/primetime-logo.png"
-    entry_terms = "".join(
-        f'<li style="margin:0 0 5px;color:#5A4A38;font-size:11px;line-height:1.5;">{t}</li>' for t in ENTRY_TERMS
-    )
-    redemption_terms = "".join(
-        f'<li style="margin:0 0 5px;color:#5A4A38;font-size:11px;line-height:1.5;">{t}</li>' for t in REDEMPTION_TERMS
-    )
+    is_comp = doc.get("payment_mode") == "COMP"
+    if is_comp:
+        entry_terms = "".join(
+            f'<li style="margin:0 0 5px;color:#5A4A38;font-size:11px;line-height:1.5;">{t}</li>' for t in COMP_TERMS
+        )
+        redemption_terms = ""
+        terms_block = f"""<p style="margin:0 0 10px;color:#8A2A1B;font-size:11px;letter-spacing:2px;text-transform:uppercase;text-align:center;font-weight:bold;">Rajaonam 2026 — Entry Pass Terms &amp; Conditions</p>
+  <ol style="margin:0;padding-left:18px;">{entry_terms}</ol>"""
+    else:
+        entry_terms = "".join(
+            f'<li style="margin:0 0 5px;color:#5A4A38;font-size:11px;line-height:1.5;">{t}</li>' for t in ENTRY_TERMS
+        )
+        redemption_terms = "".join(
+            f'<li style="margin:0 0 5px;color:#5A4A38;font-size:11px;line-height:1.5;">{t}</li>' for t in REDEMPTION_TERMS
+        )
+        terms_block = f"""<p style="margin:0 0 10px;color:#8A2A1B;font-size:11px;letter-spacing:2px;text-transform:uppercase;text-align:center;font-weight:bold;">Rajaonam 2026 — Entry Ticket Terms &amp; Conditions</p>
+  <ol style="margin:0;padding-left:18px;">{entry_terms}</ol>
+  <p style="margin:14px 0 10px;color:#8A2A1B;font-size:11px;letter-spacing:2px;text-transform:uppercase;text-align:center;font-weight:bold;">Terms &amp; Conditions — Redemption of Ticket at Chungath Jewellery, M.G. Road, Ernakulam</p>
+  <ol style="margin:0;padding-left:18px;">{redemption_terms}</ol>"""
     return f"""<!DOCTYPE html><html><body style="margin:0;padding:0;background:#EFE3CB;font-family:Georgia,serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#EFE3CB;padding:36px 14px;"><tr><td align="center">
 <table width="580" cellpadding="0" cellspacing="0" style="background:#6B1A0F;border-radius:16px;padding:3px;">
@@ -632,10 +672,7 @@ def booking_email_html(doc, qr_url, ticket_url):
   </tr></table>
 </td></tr>
 <tr><td style="padding:18px 36px 26px;">
-  <p style="margin:0 0 10px;color:#8A2A1B;font-size:11px;letter-spacing:2px;text-transform:uppercase;text-align:center;font-weight:bold;">Rajaonam 2026 — Entry Ticket Terms &amp; Conditions</p>
-  <ol style="margin:0;padding-left:18px;">{entry_terms}</ol>
-  <p style="margin:14px 0 10px;color:#8A2A1B;font-size:11px;letter-spacing:2px;text-transform:uppercase;text-align:center;font-weight:bold;">Terms &amp; Conditions — Redemption of Ticket at Chungath Jewellery, M.G. Road, Ernakulam</p>
-  <ol style="margin:0;padding-left:18px;">{redemption_terms}</ol>
+  {terms_block}
 </td></tr>
 <!-- Footer -->
 <tr><td align="center" style="background:#6B1A0F;padding:18px 32px;">

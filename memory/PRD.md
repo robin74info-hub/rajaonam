@@ -358,6 +358,11 @@
 - testing_agent iteration_1.json: 11/11 backend tests passed (PDF structure, email content, admin visibility). Booking EO-GAASYU PRESERVED for user review
 - Also fixed per test review: WhatsApp caption now shows "VIP Ticket" for comp bookings (was "Complimentary (COMP)")
 
+## Prices Restored v56 (2026-08-11)
+- sea_price_adult back to 2999, veg_price_adult back to 2699 (kids 1399/1199). Verified by testing_agent iteration_2.json: /api/event correct, Razorpay order for 1 adult = ₹2,999, comp vs paid T&C suite 10/10 green
+- User: NO more test emails — email testing stopped
+- Dummy bookings EO-GAASYU + EO-MIACEJ (robin74info@gmail.com) remain in DB for user to delete via ONAM26
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

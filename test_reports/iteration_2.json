@@ -1,0 +1,27 @@
+{
+  "summary": "Backend re-verification for RAJAONAM 2026: COMP vs paid T&C suite passes 10/10, prices restored (sea adult 2999, veg adult 2699, kids 1399/1199), Razorpay order amount matches (299900 paise for 1 sea adult), and confirmed bookings EO-GAASYU / EO-MIACEJ are intact after clear-unbilled.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "pytest fixture", "issue": "Class-scoped fixtures defined as instance methods trigger PytestRemovedIn10Warning; refactor to @classmethod for future-proofing"},
+      {"endpoint": "FastAPI startup/shutdown", "issue": "Uses deprecated @app.on_event; should migrate to lifespan handlers"}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_comp_tc.py",
+    "/app/backend/tests/test_rajaonam_ticket.py"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is >1100 lines (1133) and mixes routes, email HTML, PDF generation, admin, payments — split into modules (routes/, services/email, services/pdf, services/payments).",
+    "Admin login route path is /api/auth/login (not /api/admin/login as implied by feature list) — worth aligning naming for clarity."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "N/A (skipped per request)"},
+  "test_credentials": "Admin: admin@rajaonam.com / RajaOnam@2026 (login endpoint is POST /api/auth/login)",
+  "seed_data_creation": "Created 1 pending booking EO-SRIC0C via /api/payments/order (1 sea adult, no referral, amount 299900 paise) and cleaned it up via POST /api/admin/bookings/clear-unbilled (deleted=2, included prior pending residues). No live charge occurred.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "COMP/paid T&C behavior locked by tests/test_comp_tc.py — run with `cd /app/backend && python3 -m pytest tests/test_comp_tc.py -v -o addopts=''`. Prices are currently: sea adult 2999, veg adult 2699, sea kid 1399, veg kid 1199. Confirmed bookings EO-GAASYU and EO-MIACEJ (COMP VIP Guest, robin74info@gmail.com) must remain untouched. Admin auth is /api/auth/login (not /api/admin/login)."
+}

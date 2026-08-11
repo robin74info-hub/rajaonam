@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="10" time="1.976" timestamp="2026-08-11T06:47:10.325563+00:00" hostname="agent-env-5378a345-d3b7-4fb8-948e-566277a4ae0a"><testcase classname="tests.test_comp_tc.TestCompEmailHTML" name="test_payment_mode_is_comp" time="0.487" /><testcase classname="tests.test_comp_tc.TestCompEmailHTML" name="test_entry_pass_terms_heading" time="0.000" /><testcase classname="tests.test_comp_tc.TestCompEmailHTML" name="test_comp_specific_line_one_time_entry" time="0.000" /><testcase classname="tests.test_comp_tc.TestCompEmailHTML" name="test_no_monetary_or_redemption_value" time="0.000" /><testcase classname="tests.test_comp_tc.TestCompEmailHTML" name="test_no_chungath_redemption_block" time="0.000" /><testcase classname="tests.test_comp_tc.TestCompPDF" name="test_page2_has_entry_pass_heading" time="0.304" /><testcase classname="tests.test_comp_tc.TestCompPDF" name="test_page2_has_no_redemption_50pct" time="0.003" /><testcase classname="tests.test_comp_tc.TestCompEmailImages" name="test_all_img_src_urls_return_png" time="0.001"><failure message="RuntimeError: Event loop is closed">self = &lt;test_comp_tc.TestCompEmailImages object at 0xfdf16a982a50&gt;
+
+    def test_all_img_src_urls_return_png(self):
+&gt;       h, _ = _render_email_html(COMP_REF)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_comp_tc.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_comp_tc.py:47: in _render_email_html
+    doc = asyncio.run(_load())
+          ^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/asyncio/runners.py:190: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/asyncio/base_events.py:654: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+tests/test_comp_tc.py:45: in _load
+    return await db.bookings.find_one({"reference": reference}, {"_id": 0})
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/motor/metaprogramming.py:74: in method
+    return framework.run_on_executor(
+/root/.venv/lib/python3.11/site-packages/motor/frameworks/asyncio/__init__.py:85: in run_on_executor
+    return loop.run_in_executor(_EXECUTOR, functools.partial(fn, *args, **kwargs))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/asyncio/base_events.py:817: in run_in_executor
+    self._check_closed()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;_UnixSelectorEventLoop running=False closed=True debug=False&gt;
+
+    def _check_closed(self):
+        if self._closed:
+&gt;           raise RuntimeError('Event loop is closed')
+E           RuntimeError: Event loop is closed
+
+/usr/local/lib/python3.11/asyncio/base_events.py:520: RuntimeError</failure></testcase><testcase classname="tests.test_comp_tc.TestPaidBookingTerms" name="test_paid_email_html_has_both_sections" time="0.465"><failure message="RuntimeError: Event loop is closed">self = &lt;test_comp_tc.TestPaidBookingTerms object at 0xfdf16a983390&gt;
+paid_booking = 'EO-UYR0KQ'
+
+    def test_paid_email_html_has_both_sections(self, paid_booking):
+        ref = paid_booking
+&gt;       h, doc = _render_email_html(ref)
+                 ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_comp_tc.py:174: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_comp_tc.py:47: in _render_email_html
+    doc = asyncio.run(_load())
+          ^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/asyncio/runners.py:190: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/asyncio/base_events.py:654: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+tests/test_comp_tc.py:45: in _load
+    return await db.bookings.find_one({"reference": reference}, {"_id": 0})
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/motor/metaprogramming.py:74: in method
+    return framework.run_on_executor(
+/root/.venv/lib/python3.11/site-packages/motor/frameworks/asyncio/__init__.py:85: in run_on_executor
+    return loop.run_in_executor(_EXECUTOR, functools.partial(fn, *args, **kwargs))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/asyncio/base_events.py:817: in run_in_executor
+    self._check_closed()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;_UnixSelectorEventLoop running=False closed=True debug=False&gt;
+
+    def _check_closed(self):
+        if self._closed:
+&gt;           raise RuntimeError('Event loop is closed')
+E           RuntimeError: Event loop is closed
+
+/usr/local/lib/python3.11/asyncio/base_events.py:520: RuntimeError</failure></testcase><testcase classname="tests.test_comp_tc.TestPaidBookingTerms" name="test_paid_pdf_page2_has_redemption" time="0.417" /></testsuite></testsuites>
