@@ -391,6 +391,10 @@
 - Large static Jingalala banner (w-64 sm:w-96) added centered right after the booking form
 - Verified via screenshots: visible on hero, gone after scroll, centered banner below form
 
+## Jingalala Marquee v63 (2026-08-11)
+- Hero fixed banner enlarged again (w-44 sm:w-64)
+- After-form banner changed from static centered image to a continuous scrolling marquee (3 repeated banners x2 halves, marquee-drift 24s) — verified moving via x-position delta
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

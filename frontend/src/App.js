@@ -48,7 +48,7 @@ function Home() {
         src="/assets/jingalala.webp"
         alt="Jingalala! Redeem 50% of your RajaOnam ticket value on Gold, Platinum & Silver Jewellery at Chungath Jewellery — valid till 30 Sept 2026"
         data-testid="jingalala-banner"
-        className={`fixed top-3 right-3 z-50 w-36 sm:w-52 drop-shadow-[0_10px_25px_rgba(107,26,15,0.4)] pointer-events-none select-none transition-opacity duration-500 ${bannerVisible ? "opacity-100" : "opacity-0"}`}
+        className={`fixed top-3 right-3 z-50 w-44 sm:w-64 drop-shadow-[0_10px_25px_rgba(107,26,15,0.4)] pointer-events-none select-none transition-opacity duration-500 ${bannerVisible ? "opacity-100" : "opacity-0"}`}
       />
       <Hero event={event} />
       <section id="booking-section" className="px-4 sm:px-12 xl:px-20 py-16 sm:py-24" data-testid="booking-section">
@@ -56,12 +56,21 @@ function Home() {
           <BookingPanel event={event} onBooked={fetchEvent} />
         </div>
       </section>
-      <div className="flex justify-center px-4 pb-4" data-testid="jingalala-static">
-        <img
-          src="/assets/jingalala.webp"
-          alt="Jingalala! Redeem 50% of your RajaOnam ticket value on Gold, Platinum & Silver Jewellery at Chungath Jewellery — valid till 30 Sept 2026"
-          className="w-64 sm:w-96 drop-shadow-[0_15px_35px_rgba(107,26,15,0.35)]"
-        />
+      <div className="overflow-hidden py-6 select-none" data-testid="jingalala-static">
+        <div className="animate-marquee flex w-max" style={{ animationDuration: "24s" }}>
+          {[0, 1].map((half) => (
+            <div key={half} className="flex shrink-0 items-center">
+              {[0, 1, 2].map((i) => (
+                <img
+                  key={`${half}-${i}`}
+                  src="/assets/jingalala.webp"
+                  alt="Jingalala! Redeem 50% of your RajaOnam ticket value at Chungath Jewellery — valid till 30 Sept 2026"
+                  className="w-56 sm:w-80 mx-8 drop-shadow-[0_15px_35px_rgba(107,26,15,0.35)]"
+                />
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
       <Marquee />
       <main className="px-6 sm:px-12 xl:px-20 py-16 sm:py-24 max-w-6xl mx-auto" data-testid="event-content">
