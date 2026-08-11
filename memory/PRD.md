@@ -395,6 +395,9 @@
 - Hero fixed banner enlarged again (w-44 sm:w-64)
 - After-form banner changed from static centered image to a continuous scrolling marquee (3 repeated banners x2 halves, marquee-drift 24s) — verified moving via x-position delta
 
+## Sponsor Report Shop Column v64 (2026-08-11)
+- Admin Sponsor Redemptions: Shop column now displays "Chungath Jewellery" (was sponsor email)
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

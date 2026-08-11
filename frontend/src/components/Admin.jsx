@@ -585,7 +585,7 @@ export default function Admin() {
                     <td className="px-3 py-2.5 text-ink">{r.item}</td>
                     <td className="px-3 py-2.5 text-right font-semibold text-ink">{r.qty}</td>
                     <td className="px-3 py-2.5 text-right text-leaf font-bold">{fmt(r.price)}</td>
-                    <td className="px-3 py-2.5 text-ash text-xs">{r.by}</td>
+                    <td className="px-3 py-2.5 text-ash text-xs">Chungath Jewellery</td>
                     <td className="px-3 py-2.5 text-ash text-xs whitespace-nowrap">{r.at ? new Date(r.at).toLocaleString("en-IN") : "—"}</td>
                   </tr>
                 ))}
