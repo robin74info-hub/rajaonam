@@ -344,6 +344,12 @@
 - server.py: ENTRY_TERMS (13) + REDEMPTION_TERMS (12) constants from user's docx; email shows centered Chungath logo above both T&C blocks (entry + Chungath 50% redemption terms); PDF gets a page 2 with centered logo + both numbered T&C lists
 - Applies to all booked customers (confirmation email + ticket PDF). Verified: PDF 2 pages, image embedded on p2, both term sets in text; email HTML contains logo + all terms
 
+## Corner Logos + Welcome Text v54 (2026-08-11)
+- Email + PDF now show RajaOnam+Chungath combined logo top-LEFT and Prime Time Events logo top-RIGHT (assets: rajaonam-chungath.png, primetime-logo.png in frontend/public/assets + backend/assets)
+- Removed the Chungath logo above T&C in both email and PDF
+- Added welcome block before ticket details: green "WELCOME TO RAJAONAM 2026" heading + the Onam welcome paragraph
+- Verified: PDF page1 has 3 images (2 logos + QR), welcome text present, T&C page has no logo; email HTML has both logos, welcome heading, no chungath-logo above T&C; asset URLs serve 200; test booking cleaned
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

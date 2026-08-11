@@ -440,12 +440,20 @@ def pdf_safe(s) -> str:
 def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
     pdf = FPDF()
     pdf.add_page()
+    assets_dir = os.path.join(os.path.dirname(__file__), "assets")
+    left_logo = os.path.join(assets_dir, "rajaonam-chungath.png")
+    right_logo = os.path.join(assets_dir, "primetime-logo.png")
+    if os.path.exists(left_logo):
+        pdf.image(left_logo, x=8, y=8, w=32)
+    if os.path.exists(right_logo):
+        pdf.image(right_logo, x=210 - 8 - 46, y=14, w=46)
+    pdf.set_y(44)
     pdf.set_font("helvetica", "B", 24)
     pdf.set_text_color(27, 88, 18)
-    pdf.cell(0, 12, "RajaOnam 2026", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 12, "RajaOnam 2026", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.set_font("helvetica", "", 10)
     pdf.set_text_color(122, 106, 88)
-    pdf.cell(0, 6, "Oru Kottara Sadhya  |  Bolgatty Palace & Island Resort, Kochi  |  26 August 2026  |  11:00 AM - 5:00 PM", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 6, "Oru Kottara Sadhya  |  Bolgatty Palace & Island Resort, Kochi  |  26 August 2026  |  11:00 AM - 5:00 PM", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(4)
     pdf.set_draw_color(201, 162, 39)
     pdf.set_line_width(0.8)
@@ -453,8 +461,15 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
     pdf.ln(8)
     pdf.set_font("helvetica", "B", 15)
     pdf.set_text_color(138, 42, 27)
-    pdf.cell(0, 9, f"BOOKING ID: {doc['reference']}", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(2)
+    pdf.cell(0, 9, f"BOOKING ID: {doc['reference']}", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.ln(3)
+    pdf.set_font("helvetica", "B", 11)
+    pdf.set_text_color(27, 88, 18)
+    pdf.cell(0, 6, "WELCOME TO RAJAONAM 2026", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.set_font("helvetica", "I", 8.5)
+    pdf.set_text_color(90, 74, 56)
+    pdf.multi_cell(0, 4.2, pdf_safe("Get ready to celebrate the spirit of Onam with a day filled with tradition, flavours, entertainment and togetherness. We're delighted to have you with us and look forward to making this celebration memorable. See you at RAJAONAM 2026!"), align="C")
+    pdf.ln(3)
     pdf.set_font("helvetica", "", 12)
     pdf.set_text_color(43, 33, 24)
     rows = [
@@ -485,14 +500,8 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
     pdf.set_font("helvetica", "I", 9)
     pdf.cell(0, 6, "Copyright 2026 RajaOnam - Powered by Berrysys Media Global LLC", new_x="LMARGIN", new_y="NEXT", align="C")
 
-    # Terms & Conditions page with Chungath Jewellery logo
+    # Terms & Conditions page
     pdf.add_page()
-    logo_path = os.path.join(os.path.dirname(__file__), "assets", "chungath-logo.png")
-    if os.path.exists(logo_path):
-        logo_w = 55
-        pdf.image(logo_path, x=(210 - logo_w) / 2, y=pdf.get_y(), w=logo_w)
-        pdf.set_y(pdf.get_y() + 24)
-    pdf.ln(2)
     pdf.set_font("helvetica", "B", 11)
     pdf.set_text_color(138, 42, 27)
     pdf.cell(0, 7, "RAJAONAM 2026 - ENTRY TICKET TERMS & CONDITIONS", new_x="LMARGIN", new_y="NEXT", align="C")
@@ -547,7 +556,8 @@ def booking_email_html(doc, qr_url, ticket_url):
         ]
     ])
     asset_base = qr_url.split("api/")[0]
-    chungath_url = f"{asset_base}assets/chungath-logo.png"
+    left_logo_url = f"{asset_base}assets/rajaonam-chungath.png"
+    right_logo_url = f"{asset_base}assets/primetime-logo.png"
     entry_terms = "".join(
         f'<li style="margin:0 0 5px;color:#5A4A38;font-size:11px;line-height:1.5;">{t}</li>' for t in ENTRY_TERMS
     )
@@ -560,10 +570,16 @@ def booking_email_html(doc, qr_url, ticket_url):
 <tr><td style="background:#FFFBF2;border-radius:13px;overflow:hidden;">
 <table width="100%" cellpadding="0" cellspacing="0">
 <!-- Royal header -->
-<tr><td align="center" style="background:#6B1A0F;padding:34px 32px 26px;">
-  <p style="margin:0;color:#E8B54A;font-size:13px;letter-spacing:6px;text-transform:uppercase;">&#10022; Prime Time Festivals Presents &#10022;</p>
-  <p style="margin:12px 0 0;color:#F5D47E;font-size:34px;letter-spacing:3px;font-weight:bold;">RAJAONAM 2026</p>
-  <p style="margin:8px 0 0;color:#FABD8F;font-size:12px;letter-spacing:3px;text-transform:uppercase;">A Royal Onam Celebration &middot; Bolgatty Palace, Kochi</p>
+<tr><td style="background:#6B1A0F;padding:22px 28px 26px;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr>
+    <td align="left" style="width:110px;"><img src="{left_logo_url}" width="100" alt="RajaOnam 2026" style="display:block;" /></td>
+    <td align="center">
+      <p style="margin:0;color:#E8B54A;font-size:12px;letter-spacing:5px;text-transform:uppercase;">&#10022; Prime Time Festivals Presents &#10022;</p>
+      <p style="margin:10px 0 0;color:#F5D47E;font-size:30px;letter-spacing:2px;font-weight:bold;">RAJAONAM 2026</p>
+      <p style="margin:8px 0 0;color:#FABD8F;font-size:11px;letter-spacing:3px;text-transform:uppercase;">A Royal Onam Celebration &middot; Bolgatty Palace, Kochi</p>
+    </td>
+    <td align="right" style="width:110px;"><img src="{right_logo_url}" width="105" alt="Prime Time Events" style="display:block;margin-left:auto;" /></td>
+  </tr></table>
   <table cellpadding="0" cellspacing="0" style="margin:18px auto 0;"><tr>
     <td style="width:70px;height:1px;background:#C9A227;"></td>
     <td style="color:#E8B54A;font-size:14px;padding:0 12px;">&#10022;</td>
@@ -574,7 +590,11 @@ def booking_email_html(doc, qr_url, ticket_url):
 <tr><td align="center" style="padding:34px 36px 8px;">
   <p style="margin:0;color:#8A2A1B;font-size:12px;letter-spacing:5px;text-transform:uppercase;">Royal Booking Confirmed</p>
   <p style="margin:14px 0 6px;color:#2B2118;font-size:27px;line-height:1.35;">Your RajaOnam Celebration<br/>is Confirmed, {doc['name'].split()[0]}!</p>
-  <p style="margin:0;color:#7A6A58;font-size:13px;font-style:italic;">Mahabali awaits you at the palace</p>
+</td></tr>
+<!-- Welcome -->
+<tr><td align="center" style="padding:14px 40px 6px;">
+  <p style="margin:0 0 8px;color:#1b5812;font-size:15px;letter-spacing:3px;font-weight:bold;">WELCOME TO RAJAONAM 2026</p>
+  <p style="margin:0;color:#5A4A38;font-size:13px;line-height:1.7;font-style:italic;">Get ready to celebrate the spirit of Onam with a day filled with tradition, flavours, entertainment and togetherness. We&rsquo;re delighted to have you with us and look forward to making this celebration memorable. See you at RAJAONAM 2026!</p>
 </td></tr>
 <!-- Details card -->
 <tr><td style="padding:22px 36px 0;">
@@ -610,9 +630,6 @@ def booking_email_html(doc, qr_url, ticket_url):
     <td style="color:#8A2A1B;font-size:12px;padding:0 10px;">&#10022;</td>
     <td style="width:50px;height:1px;background:#C9A227;"></td>
   </tr></table>
-</td></tr>
-<tr><td align="center" style="padding:16px 36px 0;">
-  <img src="{chungath_url}" width="170" alt="Chungath Jewellery, MG Road, Ernakulam" style="display:block;margin:0 auto;" />
 </td></tr>
 <tr><td style="padding:18px 36px 26px;">
   <p style="margin:0 0 10px;color:#8A2A1B;font-size:11px;letter-spacing:2px;text-transform:uppercase;text-align:center;font-weight:bold;">Rajaonam 2026 — Entry Ticket Terms &amp; Conditions</p>
