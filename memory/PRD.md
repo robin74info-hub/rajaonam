@@ -350,6 +350,9 @@
 - Added welcome block before ticket details: green "WELCOME TO RAJAONAM 2026" heading + the Onam welcome paragraph
 - Verified: PDF page1 has 3 images (2 logos + QR), welcome text present, T&C page has no logo; email HTML has both logos, welcome heading, no chungath-logo above T&C; asset URLs serve 200; test booking cleaned
 
+## TEMP: Adult Prices ₹1 (2026-08-11)
+- sea_price_adult 2999→1 AND veg_price_adult 2699→1 for user's dummy/live test bookings. REVERT both after testing (kids prices unchanged: 1399/1199)
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
