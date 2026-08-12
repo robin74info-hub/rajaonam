@@ -50,6 +50,7 @@ EVENT = {
     "contests": ["Malayali Manka", "Sreeman", "Kids Contest", "Best Couple"],
     "games": ["Uriyadi", "Vadamvali (Tug of War)", "Sack Race", "Bun Eating Competition", "Sundarikku Pottu Thodal", "Lemon & Spoon Race"],
     "boating_slots": ["11:00 AM – 11:45 AM", "12:00 PM – 12:45 PM", "1:00 PM – 1:45 PM", "2:00 PM – 2:45 PM", "3:00 PM – 3:45 PM", "4:00 PM – 4:45 PM"],
+    "boating_slot_capacity": 150,
     "sadhya_slots": ["11:30 AM – 12:30 PM", "12:30 PM – 1:30 PM", "1:30 PM – 2:30 PM", "2:30 PM – 3:30 PM"],
     "sadhya_slot_capacity": 250,
 }
@@ -155,16 +156,45 @@ def validate_booking(input: BookingCreate):
         raise HTTPException(status_code=400, detail="Invalid payment mode")
 
 
+def _slot_minutes(slot: str):
+    """'11:00 AM – 11:45 AM' -> (660, 705)"""
+    def parse(t):
+        t = t.strip()
+        hh, mm = t[:-2].strip().split(":")
+        h = int(hh) % 12
+        if t.strip().upper().endswith("PM"):
+            h += 12
+        return h * 60 + int(mm)
+    a, b = slot.split("–")
+    return parse(a), parse(b)
+
+
+def sadhya_boating_compatible(sadhya_slot: str, boating_slot: str, gap: int = 30) -> bool:
+    """Sadhya must not overlap boating and must keep a gap (default 30 min) before or after."""
+    s0, s1 = _slot_minutes(sadhya_slot)
+    b0, b1 = _slot_minutes(boating_slot)
+    return s1 <= b0 - gap or s0 >= b1 + gap
+
+
 async def assign_sadhya_slots(input: BookingCreate):
     """Auto-assign the earliest sadhya slot that fits the party.
     Slot capacity is COMBINED: Sea Food + Veg guests together, max 250 per slot.
-    Sea and Veg on the same booking always get the SAME slot."""
+    Sea and Veg on the same booking always get the SAME slot.
+    When boating is booked, the sadhya slot must not clash with the boating time (30-min gap)."""
     cap = EVENT["sadhya_slot_capacity"]
     sea_pax = input.adults + input.kids_5_12 + input.kids_below_5
     veg_pax = input.veg_adults + input.veg_kids_5_12 + input.veg_kids_below_5
     input.sea_slot = None
     input.veg_slot = None
     party = sea_pax + veg_pax
+
+    if input.boating and input.boating_slot:
+        boat_booked = 0
+        async for b in db.bookings.find({"status": "confirmed", "boating_slot": input.boating_slot}):
+            boat_booked += b.get("boating_persons", 0)
+        if boat_booked + input.boating_persons > EVENT["boating_slot_capacity"]:
+            raise HTTPException(status_code=400, detail=f"Boating slot {input.boating_slot} is full — please choose another boating time")
+
     if party == 0:
         return
     booked = {s: 0 for s in EVENT["sadhya_slots"]}
@@ -176,6 +206,8 @@ async def assign_sadhya_slots(input: BookingCreate):
                 + b.get("veg_adults", 0) + b.get("veg_kids_5_12", 0) + b.get("veg_kids_below_5", 0)
             )
     for slot in EVENT["sadhya_slots"]:
+        if input.boating and input.boating_slot and not sadhya_boating_compatible(slot, input.boating_slot):
+            continue
         if booked[slot] + party > cap:
             continue
         if sea_pax > 0:
@@ -183,7 +215,7 @@ async def assign_sadhya_slots(input: BookingCreate):
         if veg_pax > 0:
             input.veg_slot = slot
         return
-    raise HTTPException(status_code=400, detail="All Sadhya time slots are full for your group size — please reduce the number of guests or contact the organiser")
+    raise HTTPException(status_code=400, detail="No Sadhya time slot available that fits your group and boating time — please choose a different boating slot or contact the organiser")
 
 
 @api_router.get("/slots/availability")
@@ -191,12 +223,15 @@ async def slots_availability():
     cap = EVENT["sadhya_slot_capacity"]
     sea = {s: 0 for s in EVENT["sadhya_slots"]}
     veg = {s: 0 for s in EVENT["sadhya_slots"]}
+    boating = {s: 0 for s in EVENT["boating_slots"]}
     async for b in db.bookings.find({"status": {"$in": ["confirmed", "pending_payment"]}}):
         if b.get("sea_slot") in sea:
             sea[b["sea_slot"]] += b.get("adults", 0) + b.get("kids_5_12", 0) + b.get("kids_below_5", 0)
         if b.get("veg_slot") in veg:
             veg[b["veg_slot"]] += b.get("veg_adults", 0) + b.get("veg_kids_5_12", 0) + b.get("veg_kids_below_5", 0)
-    return {"capacity": cap, "sea": sea, "veg": veg}
+        if b.get("boating_slot") in boating and b.get("status") == "confirmed":
+            boating[b["boating_slot"]] += b.get("boating_persons", 0)
+    return {"capacity": cap, "sea": sea, "veg": veg, "boating": boating, "boating_capacity": EVENT["boating_slot_capacity"]}
 
 
 def booking_total(input: BookingCreate) -> int:

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { Minus, Plus, Flower2, Check, Loader2, RotateCcw, Sailboat, Trophy, Users, Fish, Salad, Gamepad2 } from "lucide-react";
@@ -108,6 +108,7 @@ export default function BookingPanel({ event, onBooked }) {
   const [boating, setBoating] = useState(null);
   const [boatSlot, setBoatSlot] = useState(null);
   const [boatPersons, setBoatPersons] = useState(1);
+  const [slotInfo, setSlotInfo] = useState(null);
   const [referCode, setReferCode] = useState("");
   const [referApplied, setReferApplied] = useState(false);
   const [referError, setReferError] = useState("");
@@ -126,6 +127,14 @@ export default function BookingPanel({ event, onBooked }) {
   const referralEligible = totalParticipants >= 10;
   const discount = referApplied && referralEligible ? Math.round(total * 0.05) : 0;
   const payableTotal = total - discount;
+  const boatLeft = (t) => (slotInfo?.boating_capacity ?? 150) - (slotInfo?.boating?.[t] ?? 0);
+
+  useEffect(() => {
+    const fetchSlots = () => axios.get(`${API}/slots/availability`).then((r) => setSlotInfo(r.data)).catch(() => {});
+    fetchSlots();
+    const t = setInterval(fetchSlots, 30000);
+    return () => clearInterval(t);
+  }, []);
 
   const toggle = (list, setList) => (item) =>
     setList(list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
@@ -429,21 +438,31 @@ export default function BookingPanel({ event, onBooked }) {
                 {boating && (
                   <div className="mt-4 space-y-4">
                     <div className="grid grid-cols-2 gap-2" role="radiogroup" data-testid="boating-slots">
-                      {(event?.boating_slots || []).map((t, i) => (
-                        <button
-                          key={t}
-                          type="button"
-                          role="radio"
-                          aria-selected={boatSlot === t}
-                          data-testid={`boating-slot-${i}`}
-                          onClick={() => { setBoatSlot(t); setErrors({ ...errors, boating: undefined }); }}
-                          className={`px-3 py-2.5 rounded-full border text-xs font-semibold transition-colors ${
-                            boatSlot === t ? "bg-leaf border-leaf text-cream" : "border-[#D8C7A5] text-ink hover:border-leaf bg-[#FFFBF2]/70"
-                          }`}
-                        >
-                          {t}
-                        </button>
-                      ))}
+                      {(event?.boating_slots || []).map((t, i) => {
+                        const left = boatLeft(t);
+                        const full = left < boatPersons;
+                        return (
+                          <button
+                            key={t}
+                            type="button"
+                            role="radio"
+                            aria-selected={boatSlot === t}
+                            disabled={full}
+                            data-testid={`boating-slot-${i}`}
+                            onClick={() => { setBoatSlot(t); setErrors({ ...errors, boating: undefined }); }}
+                            className={`px-3 py-2.5 rounded-full border text-xs font-semibold transition-colors ${
+                              full
+                                ? "border-[#E4D6BC] text-ash/50 bg-[#F1E3C6]/40 cursor-not-allowed line-through"
+                                : boatSlot === t ? "bg-leaf border-leaf text-cream" : "border-[#D8C7A5] text-ink hover:border-leaf bg-[#FFFBF2]/70"
+                            }`}
+                          >
+                            {t}
+                            <span className="block text-[9px] font-normal mt-0.5 opacity-80" style={{ textDecoration: "none" }}>
+                              {full ? (left <= 0 ? "Full" : `Only ${left} left`) : `${left} seats left`}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                     {errors.boating && <p className="text-xs text-maroon" data-testid="boating-error">{errors.boating}</p>}
                     <Stepper label="Number of persons" value={boatPersons} onChange={setBoatPersons} min={1} id="boating-persons" />

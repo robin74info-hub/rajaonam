@@ -418,6 +418,12 @@
 - Boating slots now six 45-min slots: 11:00–11:45 AM, 12:00–12:45 PM, 1:00–1:45 PM, 2:00–2:45 PM, 3:00–3:45 PM, 4:00–4:45 PM (EVENT config drives frontend form + admin slot report)
 - Verified by testing_agent iteration_5: 4/4 backend pytest + frontend UI checks (default 0, 6 new slots, required-fields popup at 0 adults, old slots rejected 400)
 
+## Boating Capacity + Clash Rule v70 (2026-08-12)
+- Each boating slot caps at 150 persons (EVENT["boating_slot_capacity"]); /api/slots/availability now returns boating counts + capacity; full slots show "Full" and are disabled in the frontend
+- Sadhya auto-assignment now keeps a 30-min gap from the booked boating slot (helpers _slot_minutes, sadhya_boating_compatible); no clash possible
+- Fixed corrupted duplicate seed/shutdown block at end of server.py found during this change
+- Verified by testing_agent iteration_6: 7/7 pytest + frontend Full/disabled rendering; DB cleaned to empty
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
