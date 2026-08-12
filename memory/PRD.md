@@ -430,6 +430,12 @@
 - Verified by testing_agent iteration_7 (7/7 new tests). Old suites reference deleted dummy booking EO-MIACEJ — data dependency only, not a code issue
 - NOT DONE: booking EO-FJB2BP boating change — that booking is on the PRODUCTION database, not accessible from preview. Needs an admin edit feature or production-side action
 
+## PDF Background Alignment Fix v72 (2026-08-12)
+- Background restored to FULL uncropped frame (768x1368), drawn aspect-preserved (fit by height, centered on cream page fill) — frame and top logos now perfectly aligned
+- Copyright/powered-by line moved to LAST page (bottom of T&C page); page 1 clean
+- COMP PDFs get the same 2-page background treatment (Entry Pass terms)
+- Verified by testing_agent iteration_8: 20/20 tests green (paid + comp), visual render confirms frame intact. DB clean.
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

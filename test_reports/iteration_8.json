@@ -1,0 +1,32 @@
+{
+  "summary": "Iteration 8 backend testing of PDF background alignment fix + copyright placement + COMP PDF background. Created /app/backend/tests/test_iteration8_pdf_alignment.py (13 tests) and ran alongside existing test_iteration7_pdf_layout.py (7 tests) — ALL 20 PASSED. Paid PDF: exactly 2 pages; page1 has 3 images (bg, jingalala, QR) with NO 'Copyright' text; page2 has 1 image (bg) + BOTH T&C sections (Entry Ticket + Chungath Redemption) + copyright line 'Copyright 2026 RajaOnam - Powered by Event Ticketing Solutions by Berrysys Media Global LLC'. COMP PDF (via /api/admin/manual-booking with PRIME26): 2 pages, page1 3 images, page2 1 image + ENTRY PASS TERMS + copyright on page2. No 'pay at venue' anywhere. Page 1 text starts with BOOKING ID (no standalone 'RajaOnam 2026' heading). Visual verification via pdftoppm r=50 confirms ornate frame borders are intact on BOTH pages (top corners, side vines, bottom lamps/palms all visible), content sits fully inside the frame — the earlier cropping issue is resolved. Aspect-preserved fit-by-height on cream background works correctly. Cleaned up bookings collection to empty (removed 3 leftover test bookings from prior sessions: EO-VDTH2P/EO-0Z1G69/EO-ZJAPQA — all clearly test data 'PDF Design', 'BG Align', 'Comp BG').",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration8_pdf_alignment.py",
+    "/app/backend/tests/test_iteration7_pdf_layout.py"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is now 1211 lines — consider splitting PDF generation (make_ticket_pdf ~115 lines) into a separate module (e.g., pdf_ticket.py) for maintainability.",
+    "Copyright string is duplicated at lines 594 and 617 — extract to a module-level constant to avoid drift.",
+    "draw_bg() image dimensions (768x1368) are hard-coded; if source asset is swapped this could distort. Consider reading actual image dims via PIL or storing dims as a constant with a comment."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration8_pdf_alignment.py (new)"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "N/A (skipped per request)"},
+  "test_credentials": "Admin: admin@rajaonam.com / RajaOnam@2026 ; billed delete passcode ONAM26 ; comp/manual-booking passcode PRIME26",
+  "seed_data_creation": "None — all tests self-cleanup; final bookings collection is EMPTY (0 docs).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "test_iteration8_pdf_alignment.py + test_iteration7_pdf_layout.py both pass and can be re-used as regression for PDF layout. As noted in the review request, test_comp_tc.py and test_ticket_download_fix.py depend on a deleted booking EO-MIACEJ — pre-existing data dependency, not a regression. Bookings collection is empty after this run.",
+  "rca of the issue": "N/A — bug fix verified. Prior misalignment was caused by center-cropping the ornate frame to A4 (210x297). Fix uses full 768x1368 image, fit by height at h=297 and centered horizontally on cream background (245,235,216), preserving aspect ratio so the entire ornate border is visible on both pages. Copyright moved from page1 to end of page2 for both paid and COMP variants. Confirmed via pypdf text extraction and pdftoppm visual rendering."
+}

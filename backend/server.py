@@ -506,10 +506,19 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
     assets_dir = os.path.join(os.path.dirname(__file__), "assets")
     bg = os.path.join(assets_dir, "pdf-bg.jpg")
     has_bg = os.path.exists(bg)
-    if has_bg:
-        pdf.image(bg, x=0, y=0, w=210, h=297)
 
-    pdf.set_y(92 if has_bg else 10)
+    def draw_bg():
+        """Full ornate frame, aspect preserved: cream page fill + image fit by height, centered."""
+        pdf.set_fill_color(245, 235, 216)
+        pdf.rect(0, 0, 210, 297, "F")
+        img_h = 297
+        img_w = img_h * 768 / 1368
+        pdf.image(bg, x=(210 - img_w) / 2, y=0, w=img_w, h=img_h)
+
+    if has_bg:
+        draw_bg()
+
+    pdf.set_y(96 if has_bg else 10)
     pdf.set_font("helvetica", "B", 16)
     pdf.set_text_color(138, 42, 27)
     pdf.cell(0, 9, f"BOOKING ID: {doc['reference']}", new_x="LMARGIN", new_y="NEXT", align="C")
@@ -517,10 +526,11 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
     pdf.set_font("helvetica", "B", 11)
     pdf.set_text_color(27, 88, 18)
     pdf.cell(0, 6, "WELCOME TO RAJAONAM 2026", new_x="LMARGIN", new_y="NEXT", align="C")
-    pdf.set_font("helvetica", "I", 8.5)
+    pdf.set_font("helvetica", "I", 8)
     pdf.set_text_color(90, 74, 56)
-    pdf.multi_cell(0, 4.2, pdf_safe("Get ready to celebrate the spirit of Onam with a day filled with tradition, flavours, entertainment and togetherness. We're delighted to have you with us and look forward to making this celebration memorable. See you at RAJAONAM 2026!"), align="C")
-    pdf.ln(4)
+    pdf.set_x(38)
+    pdf.multi_cell(134, 4, pdf_safe("Get ready to celebrate the spirit of Onam with a day filled with tradition, flavours, entertainment and togetherness. We're delighted to have you with us and look forward to making this celebration memorable. See you at RAJAONAM 2026!"), align="C")
+    pdf.ln(3)
 
     rows = [
         ("Name", doc["name"]),
@@ -541,19 +551,19 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
     jing = os.path.join(assets_dir, "jingalala-new.png")
     jing_bottom = details_top
     if os.path.exists(jing):
-        jw = 58
-        pdf.image(jing, x=210 - 12 - jw, y=details_top, w=jw)
+        jw = 44
+        pdf.image(jing, x=132, y=details_top, w=jw)
         jing_bottom = details_top + jw * 931 / 800
 
     for k, v in rows:
-        pdf.set_x(14)
-        pdf.set_font("helvetica", "B", 10.5)
+        pdf.set_x(34)
+        pdf.set_font("helvetica", "B", 9.5)
         pdf.set_text_color(107, 26, 15)
-        pdf.cell(42, 7.5, pdf_safe(k))
-        pdf.set_font("helvetica", "", 10.5)
+        pdf.cell(38, 7, pdf_safe(k))
+        pdf.set_font("helvetica", "", 9.5)
         pdf.set_text_color(43, 33, 24)
-        pdf.set_x(58)
-        pdf.multi_cell(76, 7.5, pdf_safe(v), new_x="LMARGIN", new_y="NEXT")
+        pdf.set_x(72)
+        pdf.multi_cell(56, 7, pdf_safe(v), new_x="LMARGIN", new_y="NEXT")
 
     pdf.set_y(max(pdf.get_y(), jing_bottom) + 5)
     pdf.image(io.BytesIO(qr_png), x=80, y=pdf.get_y(), w=50, h=50)
@@ -561,15 +571,12 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
     pdf.set_font("helvetica", "", 10)
     pdf.set_text_color(122, 106, 88)
     pdf.cell(0, 6, "Show this QR code or your Booking ID at the gate.", new_x="LMARGIN", new_y="NEXT", align="C")
-    pdf.ln(8)
-    pdf.set_font("helvetica", "I", 9)
-    pdf.cell(0, 6, "Copyright 2026 RajaOnam - Powered by Event Ticketing Solutions by Berrysys Media Global LLC", new_x="LMARGIN", new_y="NEXT", align="C")
 
     # Terms & Conditions page
     pdf.add_page()
     if has_bg:
-        pdf.image(bg, x=0, y=0, w=210, h=297)
-        pdf.set_y(80)
+        draw_bg()
+        pdf.set_y(84)
     pdf.set_auto_page_break(False)
     pdf.set_font("helvetica", "B", 11)
     pdf.set_text_color(138, 42, 27)
@@ -581,6 +588,10 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
         for i, term in enumerate(COMP_TERMS, 1):
             pdf.multi_cell(0, 4.2, pdf_safe(f"{i}. {term}"), new_x="LMARGIN", new_y="NEXT")
             pdf.ln(0.5)
+        pdf.ln(6)
+        pdf.set_font("helvetica", "I", 8.5)
+        pdf.set_text_color(122, 106, 88)
+        pdf.cell(0, 6, "Copyright 2026 RajaOnam - Powered by Event Ticketing Solutions by Berrysys Media Global LLC", new_x="LMARGIN", new_y="NEXT", align="C")
         return bytes(pdf.output())
     pdf.cell(0, 7, "RAJAONAM 2026 - ENTRY TICKET TERMS & CONDITIONS", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(2)
@@ -600,6 +611,10 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
     for i, term in enumerate(REDEMPTION_TERMS, 1):
         pdf.multi_cell(0, 4.2, pdf_safe(f"{i}. {term}"), new_x="LMARGIN", new_y="NEXT")
         pdf.ln(0.5)
+    pdf.ln(4)
+    pdf.set_font("helvetica", "I", 8.5)
+    pdf.set_text_color(122, 106, 88)
+    pdf.cell(0, 6, "Copyright 2026 RajaOnam - Powered by Event Ticketing Solutions by Berrysys Media Global LLC", new_x="LMARGIN", new_y="NEXT", align="C")
     return bytes(pdf.output())
 
 
