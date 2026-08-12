@@ -1,0 +1,47 @@
+{
+  "summary": "Iteration 7 verified new PDF layout: cream/gold bg on both pages, removed 'RajaOnam 2026' title before BOOKING ID, removed '(pay at venue)', jingalala banner rendered on page 1, and Admin dashboard PDF download button working. Created new backend test test_iteration7_pdf_layout.py (7/7 passing). Regression suite (test_comp_tc.py + test_ticket_download_fix.py) fails only due to hardcoded reference EO-MIACEJ (COMP) which does not exist in preview DB — this is test-data dependency, not a code regression.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "tests/test_comp_tc.py & tests/test_ticket_download_fix.py", "issue": "Hardcoded booking reference EO-MIACEJ (COMP) not present in preview DB — 2 assertion failures + 9 fixture errors. All are data-dependency, not layout regressions. When EO-MIACEJ exists, comp T&C page-2 layout still uses ENTRY PASS heading (unchanged in code)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verifications": {
+    "pdf_two_pages": true,
+    "page1_has_BOOKING_ID": true,
+    "page1_has_WELCOME_TO_RAJAONAM_2026": true,
+    "page1_no_pay_at_venue": true,
+    "page1_no_standalone_RajaOnam_title": true,
+    "page2_has_ENTRY_TICKET_TERMS_and_REDEMPTION_AT_CHUNGATH": true,
+    "page1_image_count": 3,
+    "page2_image_count": 1,
+    "admin_pdf_button_href_matches_/api/bookings/{ref}/ticket.pdf": true,
+    "admin_pdf_button_download_returns_application/pdf_200": true
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration7_pdf_layout.py"
+  ],
+  "action_items": [
+    "Optional: seed EO-MIACEJ COMP booking into preview DB (or refactor test_comp_tc.py / test_ticket_download_fix.py to create+cleanup their own COMP booking) so full regression suite is green in preview without production dependencies.",
+    "Optional: pre-existing booking EO-VDTH2P ('PDF Design') remains in DB — not created by this iteration; leaving intact but flagging (final state has 1 booking not 0)."
+  ],
+  "critical_code_review_comments": [
+    "make_ticket_pdf: page-2 auto_page_break disabled — for very long veg + comp docs there's no overflow guard, but current term lists fit comfortably; acceptable.",
+    "server.py is ~1200 lines — consider splitting PDF/email rendering into a module for maintainability."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration7_pdf_layout.py (new)"
+  ],
+  "success_rate": {"backend": "100% (7/7 iter7 tests) / regression suite N/A (data-dependent)", "frontend": "100% (admin PDF button)"},
+  "test_credentials": "admin@rajaonam.com / RajaOnam@2026 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Created and cleaned up 2 transient bookings (backend UPI test + UI test). No residual test data. Pre-existing EO-VDTH2P was not touched.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "iter7 test file already covers new PDF layout (bg on both pages, no 'RajaOnam 2026' title, no 'pay at venue', 3 images page1 / 1 image page2, both T&C sections on page 2). test_comp_tc.py + test_ticket_download_fix.py depend on EO-MIACEJ (COMP) which is a production-only reference — expect fixture errors in preview until seeded.",
+  "rca of the issue": "N/A — no functional bug found."
+}

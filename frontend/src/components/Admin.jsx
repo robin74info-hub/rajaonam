@@ -498,6 +498,14 @@ export default function Admin() {
                   <td className="px-4 py-3 text-right font-bold text-leaf whitespace-nowrap">{fmt(b.total)}</td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
                     <div className="inline-flex items-center gap-2">
+                      <a
+                        href={`${API}/bookings/${b.reference}/ticket.pdf`}
+                        data-testid={`pdf-${b.reference}`}
+                        title="Download ticket PDF"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#C9A227]/60 text-[#8A6A2A] text-[10px] font-bold tracking-wider uppercase hover:bg-[#C9A227] hover:text-white transition-colors"
+                      >
+                        <Download className="w-3 h-3" /> PDF
+                      </a>
                       <button
                         data-testid={`wa-${b.reference}`}
                         onClick={() => sendToWhatsApp(b)}

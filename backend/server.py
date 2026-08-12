@@ -504,37 +504,24 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
     pdf = FPDF()
     pdf.add_page()
     assets_dir = os.path.join(os.path.dirname(__file__), "assets")
-    left_logo = os.path.join(assets_dir, "rajaonam-chungath.png")
-    right_logo = os.path.join(assets_dir, "primetime-logo.png")
-    if os.path.exists(left_logo):
-        pdf.image(left_logo, x=8, y=8, w=32)
-    if os.path.exists(right_logo):
-        pdf.image(right_logo, x=210 - 8 - 46, y=14, w=46)
-    pdf.set_y(44)
-    pdf.set_font("helvetica", "B", 24)
-    pdf.set_text_color(27, 88, 18)
-    pdf.cell(0, 12, "RajaOnam 2026", new_x="LMARGIN", new_y="NEXT", align="C")
-    pdf.set_font("helvetica", "", 10)
-    pdf.set_text_color(122, 106, 88)
-    pdf.cell(0, 6, "Oru Kottara Sadhya  |  Bolgatty Palace & Island Resort, Kochi  |  26 August 2026  |  11:00 AM - 5:00 PM", new_x="LMARGIN", new_y="NEXT", align="C")
-    pdf.ln(4)
-    pdf.set_draw_color(201, 162, 39)
-    pdf.set_line_width(0.8)
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.ln(8)
-    pdf.set_font("helvetica", "B", 15)
+    bg = os.path.join(assets_dir, "pdf-bg.jpg")
+    has_bg = os.path.exists(bg)
+    if has_bg:
+        pdf.image(bg, x=0, y=0, w=210, h=297)
+
+    pdf.set_y(92 if has_bg else 10)
+    pdf.set_font("helvetica", "B", 16)
     pdf.set_text_color(138, 42, 27)
     pdf.cell(0, 9, f"BOOKING ID: {doc['reference']}", new_x="LMARGIN", new_y="NEXT", align="C")
-    pdf.ln(3)
+    pdf.ln(2)
     pdf.set_font("helvetica", "B", 11)
     pdf.set_text_color(27, 88, 18)
     pdf.cell(0, 6, "WELCOME TO RAJAONAM 2026", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.set_font("helvetica", "I", 8.5)
     pdf.set_text_color(90, 74, 56)
     pdf.multi_cell(0, 4.2, pdf_safe("Get ready to celebrate the spirit of Onam with a day filled with tradition, flavours, entertainment and togetherness. We're delighted to have you with us and look forward to making this celebration memorable. See you at RAJAONAM 2026!"), align="C")
-    pdf.ln(3)
-    pdf.set_font("helvetica", "", 12)
-    pdf.set_text_color(43, 33, 24)
+    pdf.ln(4)
+
     rows = [
         ("Name", doc["name"]),
         ("Phone", doc["phone"]),
@@ -546,14 +533,29 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
         ("Games", ", ".join(doc["games"]) or "-"),
         ("Boating", f"{doc['boating_slot']} ({doc['boating_persons']} persons)" if doc["boating"] else "-"),
         *([("Ticket Type", doc.get("ticket_type", "VIP Guest"))] if doc.get("payment_mode") == "COMP" else []),
-        ("Ticket", "VIP Ticket" if doc.get("payment_mode") == "COMP" else f"Rs. {doc['total']:,}  (pay at venue)"),
+        ("Ticket", "VIP Ticket" if doc.get("payment_mode") == "COMP" else f"Rs. {doc['total']:,}"),
     ]
+
+    details_top = pdf.get_y()
+    # Jingalala offer banner to the right of ticket information
+    jing = os.path.join(assets_dir, "jingalala-new.png")
+    jing_bottom = details_top
+    if os.path.exists(jing):
+        jw = 58
+        pdf.image(jing, x=210 - 12 - jw, y=details_top, w=jw)
+        jing_bottom = details_top + jw * 931 / 800
+
     for k, v in rows:
-        pdf.set_font("helvetica", "B", 11)
-        pdf.cell(50, 8, pdf_safe(k))
-        pdf.set_font("helvetica", "", 11)
-        pdf.multi_cell(0, 8, pdf_safe(v), new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(4)
+        pdf.set_x(14)
+        pdf.set_font("helvetica", "B", 10.5)
+        pdf.set_text_color(107, 26, 15)
+        pdf.cell(42, 7.5, pdf_safe(k))
+        pdf.set_font("helvetica", "", 10.5)
+        pdf.set_text_color(43, 33, 24)
+        pdf.set_x(58)
+        pdf.multi_cell(76, 7.5, pdf_safe(v), new_x="LMARGIN", new_y="NEXT")
+
+    pdf.set_y(max(pdf.get_y(), jing_bottom) + 5)
     pdf.image(io.BytesIO(qr_png), x=80, y=pdf.get_y(), w=50, h=50)
     pdf.set_y(pdf.get_y() + 54)
     pdf.set_font("helvetica", "", 10)
@@ -561,39 +563,43 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
     pdf.cell(0, 6, "Show this QR code or your Booking ID at the gate.", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(8)
     pdf.set_font("helvetica", "I", 9)
-    pdf.cell(0, 6, "Copyright 2026 RajaOnam - Powered by Berrysys Media Global LLC", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 6, "Copyright 2026 RajaOnam - Powered by Event Ticketing Solutions by Berrysys Media Global LLC", new_x="LMARGIN", new_y="NEXT", align="C")
 
     # Terms & Conditions page
     pdf.add_page()
+    if has_bg:
+        pdf.image(bg, x=0, y=0, w=210, h=297)
+        pdf.set_y(80)
+    pdf.set_auto_page_break(False)
     pdf.set_font("helvetica", "B", 11)
     pdf.set_text_color(138, 42, 27)
     if doc.get("payment_mode") == "COMP":
         pdf.cell(0, 7, "RAJAONAM 2026 - ENTRY PASS TERMS & CONDITIONS", new_x="LMARGIN", new_y="NEXT", align="C")
         pdf.ln(2)
-        pdf.set_font("helvetica", "", 8.5)
+        pdf.set_font("helvetica", "", 8.2)
         pdf.set_text_color(60, 50, 40)
         for i, term in enumerate(COMP_TERMS, 1):
-            pdf.multi_cell(0, 4.5, pdf_safe(f"{i}. {term}"), new_x="LMARGIN", new_y="NEXT")
-            pdf.ln(1)
+            pdf.multi_cell(0, 4.2, pdf_safe(f"{i}. {term}"), new_x="LMARGIN", new_y="NEXT")
+            pdf.ln(0.5)
         return bytes(pdf.output())
     pdf.cell(0, 7, "RAJAONAM 2026 - ENTRY TICKET TERMS & CONDITIONS", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(2)
-    pdf.set_font("helvetica", "", 8.5)
+    pdf.set_font("helvetica", "", 8.2)
     pdf.set_text_color(60, 50, 40)
     for i, term in enumerate(ENTRY_TERMS, 1):
-        pdf.multi_cell(0, 4.5, pdf_safe(f"{i}. {term}"), new_x="LMARGIN", new_y="NEXT")
-        pdf.ln(1)
-    pdf.ln(3)
+        pdf.multi_cell(0, 4.2, pdf_safe(f"{i}. {term}"), new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(0.5)
+    pdf.ln(2)
     pdf.set_font("helvetica", "B", 11)
     pdf.set_text_color(138, 42, 27)
     pdf.cell(0, 7, "TERMS & CONDITIONS - REDEMPTION OF TICKET AT CHUNGATH JEWELLERY,", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.cell(0, 7, "M.G. ROAD, ERNAKULAM", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(2)
-    pdf.set_font("helvetica", "", 8.5)
+    pdf.set_font("helvetica", "", 8.2)
     pdf.set_text_color(60, 50, 40)
     for i, term in enumerate(REDEMPTION_TERMS, 1):
-        pdf.multi_cell(0, 4.5, pdf_safe(f"{i}. {term}"), new_x="LMARGIN", new_y="NEXT")
-        pdf.ln(1)
+        pdf.multi_cell(0, 4.2, pdf_safe(f"{i}. {term}"), new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(0.5)
     return bytes(pdf.output())
 
 

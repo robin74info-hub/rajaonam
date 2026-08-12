@@ -424,6 +424,12 @@
 - Fixed corrupted duplicate seed/shutdown block at end of server.py found during this change
 - Verified by testing_agent iteration_6: 7/7 pytest + frontend Full/disabled rendering; DB cleaned to empty
 
+## PDF Background + Admin PDF Button v71 (2026-08-12)
+- PDF ticket: ornate cream/gold frame background (pdf-bg.jpg, A4-cropped) on both pages; "RajaOnam 2026" heading removed; "(pay at venue)" removed; Jingalala banner right of ticket info; T&C tightened to fit one page (8.2pt, 0.5 spacing, auto-break off)
+- Admin rows: gold PDF download button per booking (links to public /api/bookings/{ref}/ticket.pdf, attachment download)
+- Verified by testing_agent iteration_7 (7/7 new tests). Old suites reference deleted dummy booking EO-MIACEJ — data dependency only, not a code issue
+- NOT DONE: booking EO-FJB2BP boating change — that booking is on the PRODUCTION database, not accessible from preview. Needs an admin edit feature or production-side action
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
