@@ -448,6 +448,10 @@
 - Page 2 (T&C) now ends with "Contact Us For More Information +91 90485 99965 | 99938 | 99968" above the copyright line (both comp + paid)
 - Verified visually via pdftoppm renders of both pages; test data cleaned
 
+## Admin Slot Editor v76 (2026-08-12)
+- Admin rows now have an Edit button → inline row with Sadhya slot + Boating slot dropdowns (from /api/event) + dark passcode field + Save/Cancel. POST /api/admin/bookings/{ref}/slots requires ONAM26 passcode, validates slot values, applies same sadhya slot to sea+veg
+- Verified: wrong passcode 403, invalid slot 400, correct edit updates both sea/veg + boating, UI row renders with prefilled values; slot report reflects edits. This lets user fix EO-FJB2BP on production after redeploy.
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

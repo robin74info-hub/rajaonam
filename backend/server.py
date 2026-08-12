@@ -1037,6 +1037,38 @@ async def admin_slot_report(admin: str = Depends(get_current_admin)):
     return {"capacity": cap, "slots": slots, "boating": boating}
 
 
+class EditSlotsRequest(BaseModel):
+    passcode: Optional[str] = None
+    sadhya_slot: Optional[str] = None
+    boating_slot: Optional[str] = None
+
+
+@api_router.post("/admin/bookings/{reference}/slots")
+async def edit_booking_slots(reference: str, input: EditSlotsRequest, admin: str = Depends(get_current_admin)):
+    if (input.passcode or "").strip().upper() != os.environ.get("BILLED_DELETE_PASSCODE"):
+        raise HTTPException(status_code=403, detail="Enter the edit passcode to change time slots")
+    doc = await db.bookings.find_one({"reference": reference.upper()})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    update = {}
+    if input.sadhya_slot is not None:
+        if input.sadhya_slot not in EVENT["sadhya_slots"]:
+            raise HTTPException(status_code=400, detail="Invalid sadhya slot")
+        if doc.get("sea_slot"):
+            update["sea_slot"] = input.sadhya_slot
+        if doc.get("veg_slot"):
+            update["veg_slot"] = input.sadhya_slot
+    if input.boating_slot is not None:
+        if input.boating_slot and input.boating_slot not in EVENT["boating_slots"]:
+            raise HTTPException(status_code=400, detail="Invalid boating slot")
+        update["boating_slot"] = input.boating_slot or None
+    if not update:
+        raise HTTPException(status_code=400, detail="Nothing to update")
+    await db.bookings.update_one({"reference": doc["reference"]}, {"$set": update})
+    updated = await db.bookings.find_one({"reference": doc["reference"]}, {"_id": 0})
+    return {"ok": True, "reference": doc["reference"], "sea_slot": updated.get("sea_slot"), "veg_slot": updated.get("veg_slot"), "boating_slot": updated.get("boating_slot")}
+
+
 class DeleteBookingRequest(BaseModel):
     passcode: Optional[str] = None
 

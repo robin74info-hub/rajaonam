@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import axios from "axios";
-import { Flower2, Loader2, Download, LogOut, Users, IndianRupee, Sailboat, Fish, Salad, Trophy, Gamepad2, QrCode, UserCheck, MessageCircle, RefreshCw, Ticket, Trash2 } from "lucide-react";
+import { Flower2, Loader2, Download, LogOut, Users, IndianRupee, Sailboat, Fish, Salad, Trophy, Gamepad2, QrCode, UserCheck, MessageCircle, RefreshCw, Ticket, Trash2, Pencil } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -153,6 +153,29 @@ export default function Admin() {
   const [wa, setWa] = useState(null);
   const [slotReport, setSlotReport] = useState(null);
   const [redemptions, setRedemptions] = useState(null);
+  const [eventInfo, setEventInfo] = useState(null);
+  const [editingRef, setEditingRef] = useState(null);
+  const [editSlots, setEditSlots] = useState({ sadhya_slot: "", boating_slot: "", passcode: "" });
+  const [editBusy, setEditBusy] = useState(false);
+
+  const saveSlotEdit = async (ref) => {
+    if (!editSlots.passcode.trim()) return alert("Enter the edit passcode");
+    setEditBusy(true);
+    try {
+      await axios.post(
+        `${API}/admin/bookings/${ref}/slots`,
+        { passcode: editSlots.passcode, sadhya_slot: editSlots.sadhya_slot || null, boating_slot: editSlots.boating_slot },
+        { headers }
+      );
+      setEditingRef(null);
+      setEditSlots({ sadhya_slot: "", boating_slot: "", passcode: "" });
+      loadBookings();
+    } catch (err) {
+      alert(err.response?.data?.detail || "Update failed");
+    } finally {
+      setEditBusy(false);
+    }
+  };
   const [waQr, setWaQr] = useState(null);
   const [siteQr, setSiteQr] = useState(null);
 
@@ -172,6 +195,11 @@ export default function Admin() {
 
   const fetchRedemptions = () =>
     axios.get(`${API}/admin/sponsor-redemptions`, { headers }).then((r) => setRedemptions(r.data)).catch(() => setRedemptions(null));
+
+  useEffect(() => {
+    axios.get(`${API}/event`).then((r) => setEventInfo(r.data)).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!token) return;
@@ -464,7 +492,8 @@ export default function Admin() {
             </thead>
             <tbody>
               {(filtered || []).map((b) => (
-                <tr key={b.reference} className="border-t border-[#E4D6BC] hover:bg-[#F5EBD8]/50" data-testid={`booking-row-${b.reference}`}>
+                <Fragment key={b.reference}>
+                <tr className="border-t border-[#E4D6BC] hover:bg-[#F5EBD8]/50" data-testid={`booking-row-${b.reference}`}>
                   <td className="px-4 py-3 font-mono text-xs text-maroon whitespace-nowrap">{b.reference}</td>
                   <td className="px-4 py-3 font-semibold text-ink whitespace-nowrap">
                     {b.name}
@@ -515,6 +544,17 @@ export default function Admin() {
                         <MessageCircle className="w-3 h-3" /> WhatsApp
                       </button>
                       <button
+                        data-testid={`edit-${b.reference}`}
+                        onClick={() => {
+                          setEditingRef(editingRef === b.reference ? null : b.reference);
+                          setEditSlots({ sadhya_slot: b.sea_slot || b.veg_slot || "", boating_slot: b.boating_slot || "", passcode: "" });
+                        }}
+                        title="Edit time slots"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-leaf/50 text-leaf text-[10px] font-bold tracking-wider uppercase hover:bg-leaf hover:text-cream transition-colors"
+                      >
+                        <Pencil className="w-3 h-3" /> Edit
+                      </button>
+                      <button
                         data-testid={`delete-${b.reference}`}
                         onClick={() => (view === "unbilled" ? deleteUnbilled(b.reference) : view === "complimentary" ? deleteComp(b.reference) : deleteBilled(b.reference))}
                         disabled={deleting === b.reference}
@@ -525,6 +565,65 @@ export default function Admin() {
                     </div>
                   </td>
                 </tr>
+                {editingRef === b.reference && (
+                  <tr className="bg-[#FFFBF2]" data-testid={`edit-row-${b.reference}`}>
+                    <td colSpan="13" className="px-4 py-3">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-maroon">Edit Slots — {b.reference}</span>
+                        {(b.sea_slot || b.veg_slot) && (
+                          <label className="flex items-center gap-2 text-xs text-ash">
+                            Sadhya
+                            <select
+                              data-testid={`edit-sadhya-${b.reference}`}
+                              value={editSlots.sadhya_slot}
+                              onChange={(e) => setEditSlots({ ...editSlots, sadhya_slot: e.target.value })}
+                              className="bg-white border border-[#D8C7A5] rounded-full px-3 py-1.5 text-xs text-ink focus:outline-none focus:border-leaf"
+                            >
+                              {(eventInfo?.sadhya_slots || []).map((s) => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                          </label>
+                        )}
+                        {b.boating && (
+                          <label className="flex items-center gap-2 text-xs text-ash">
+                            Boating
+                            <select
+                              data-testid={`edit-boating-${b.reference}`}
+                              value={editSlots.boating_slot}
+                              onChange={(e) => setEditSlots({ ...editSlots, boating_slot: e.target.value })}
+                              className="bg-white border border-[#D8C7A5] rounded-full px-3 py-1.5 text-xs text-ink focus:outline-none focus:border-leaf"
+                            >
+                              {(eventInfo?.boating_slots || []).map((s) => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                          </label>
+                        )}
+                        <input
+                          data-testid={`edit-passcode-${b.reference}`}
+                          type="password"
+                          placeholder="Edit passcode"
+                          value={editSlots.passcode}
+                          onChange={(e) => setEditSlots({ ...editSlots, passcode: e.target.value })}
+                          className="bg-[#2B2118] border border-[#2B2118] rounded-full px-3 py-1.5 text-xs text-[#fabd8f] placeholder:text-[#fabd8f]/40 focus:outline-none focus:border-leaf"
+                        />
+                        <button
+                          data-testid={`edit-save-${b.reference}`}
+                          onClick={() => saveSlotEdit(b.reference)}
+                          disabled={editBusy}
+                          className="px-4 py-1.5 rounded-full bg-[#1b5812] text-[#fabd8f] text-[10px] font-bold tracking-wider uppercase hover:bg-[#12400c] transition-colors disabled:opacity-60 flex items-center gap-1.5"
+                        >
+                          {editBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : "Save"}
+                        </button>
+                        <button
+                          data-testid={`edit-cancel-${b.reference}`}
+                          onClick={() => setEditingRef(null)}
+                          className="text-[10px] tracking-wider uppercase text-ash hover:text-maroon font-bold"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+                </Fragment>
               ))}
               {bookings && filtered.length === 0 && (
                 <tr><td colSpan="13" className="px-4 py-10 text-center text-ash" data-testid="no-bookings">No bookings found</td></tr>
