@@ -49,7 +49,7 @@ EVENT = {
     "currency_symbol": "₹",
     "contests": ["Malayali Manka", "Sreeman", "Kids Contest", "Best Couple"],
     "games": ["Uriyadi", "Vadamvali (Tug of War)", "Sack Race", "Bun Eating Competition", "Sundarikku Pottu Thodal", "Lemon & Spoon Race"],
-    "boating_slots": ["12:00 PM – 1:00 PM", "2:30 PM – 3:30 PM", "3:30 PM – 4:30 PM", "4:30 PM – 5:30 PM"],
+    "boating_slots": ["11:00 AM – 11:45 AM", "12:00 PM – 12:45 PM", "1:00 PM – 1:45 PM", "2:00 PM – 2:45 PM", "3:00 PM – 3:45 PM", "4:00 PM – 4:45 PM"],
     "sadhya_slots": ["11:30 AM – 12:30 PM", "12:30 PM – 1:30 PM", "1:30 PM – 2:30 PM", "2:30 PM – 3:30 PM"],
     "sadhya_slot_capacity": 250,
 }

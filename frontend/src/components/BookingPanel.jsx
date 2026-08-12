@@ -95,7 +95,7 @@ const PillSelect = ({ options, selected, onToggle, id }) => (
 
 export default function BookingPanel({ event, onBooked }) {
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
-  const [adults, setAdults] = useState(2);
+  const [adults, setAdults] = useState(0);
   const [kids512, setKids512] = useState(0);
   const [kidsU5, setKidsU5] = useState(0);
   const [vegAdults, setVegAdults] = useState(0);
@@ -226,7 +226,7 @@ export default function BookingPanel({ event, onBooked }) {
     setBooking(null);
     setPhase("idle");
     setForm({ name: "", phone: "", email: "" });
-    setAdults(2);
+    setAdults(0);
     setKids512(0);
     setKidsU5(0);
     setVegAdults(0);

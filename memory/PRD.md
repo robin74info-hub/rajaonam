@@ -413,6 +413,11 @@
 ## Mobile Banner Removed v68 (2026-08-12)
 - Fixed corner Jingalala banner now completely hidden on mobile (hidden sm:block) — mobile shows no floating right-side image; desktop unchanged. After-form scrolling marquee remains on all views.
 
+## Adults Default 0 + New Boating Slots v69 (2026-08-12)
+- Booking form Sea Food Adults default now 0 (was 2); reset also 0
+- Boating slots now six 45-min slots: 11:00–11:45 AM, 12:00–12:45 PM, 1:00–1:45 PM, 2:00–2:45 PM, 3:00–3:45 PM, 4:00–4:45 PM (EVENT config drives frontend form + admin slot report)
+- Verified by testing_agent iteration_5: 4/4 backend pytest + frontend UI checks (default 0, 6 new slots, required-fields popup at 0 adults, old slots rejected 400)
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
