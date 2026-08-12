@@ -60,7 +60,7 @@ function Home() {
         src="/assets/jingalala-new.png"
         alt="Jingalala! There is GOLD in your RajaOnam Ticket — Redeem 50% at Chungath Jewellery, MG Road — valid till 30 Sept 2026"
         data-testid="jingalala-banner"
-        className={`fixed top-3 right-3 z-50 w-44 sm:w-64 drop-shadow-[0_10px_25px_rgba(107,26,15,0.4)] pointer-events-none select-none transition-opacity duration-500 ${bannerVisible ? "opacity-100" : "opacity-0"}`}
+        className={`hidden sm:block fixed top-3 right-3 z-50 w-44 sm:w-64 drop-shadow-[0_10px_25px_rgba(107,26,15,0.4)] pointer-events-none select-none transition-opacity duration-500 ${bannerVisible ? "opacity-100" : "opacity-0"}`}
       />
       <Hero event={event} />
       <section id="booking-section" className="px-4 sm:px-12 xl:px-20 py-16 sm:py-24" data-testid="booking-section">

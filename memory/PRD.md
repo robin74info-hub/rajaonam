@@ -410,6 +410,9 @@
 ## Mobile Banner Window v67 (2026-08-11)
 - Mobile fixed banner now visible ONLY in the gap between hero and booking form (shows after 55% viewport scroll, hides 230px before the form header) — verified opacity 0 → 1 → 0 across scroll positions
 
+## Mobile Banner Removed v68 (2026-08-12)
+- Fixed corner Jingalala banner now completely hidden on mobile (hidden sm:block) — mobile shows no floating right-side image; desktop unchanged. After-form scrolling marquee remains on all views.
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
