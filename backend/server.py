@@ -229,8 +229,11 @@ async def slots_availability():
             sea[b["sea_slot"]] += b.get("adults", 0) + b.get("kids_5_12", 0) + b.get("kids_below_5", 0)
         if b.get("veg_slot") in veg:
             veg[b["veg_slot"]] += b.get("veg_adults", 0) + b.get("veg_kids_5_12", 0) + b.get("veg_kids_below_5", 0)
-        if b.get("boating_slot") in boating and b.get("status") == "confirmed":
-            boating[b["boating_slot"]] += b.get("boating_persons", 0)
+        if b.get("boating_slot"):
+            # include legacy slot values too so old bookings stay visible in the report
+            boating.setdefault(b["boating_slot"], 0)
+            if b.get("status") == "confirmed":
+                boating[b["boating_slot"]] += b.get("boating_persons", 0)
     return {"capacity": cap, "sea": sea, "veg": veg, "boating": boating, "boating_capacity": EVENT["boating_slot_capacity"]}
 
 
@@ -468,7 +471,11 @@ def public_base(request: Request) -> str:
 
 
 def qr_payload(doc) -> str:
-    return f"RAJAONAM-2026|{doc['reference']}|{doc['name']}|{doc['total_participants']} guests"
+    guests = doc.get("total_participants") or (
+        doc.get("adults", 0) + doc.get("kids_5_12", 0) + doc.get("kids_below_5", 0)
+        + doc.get("veg_adults", 0) + doc.get("veg_kids_5_12", 0) + doc.get("veg_kids_below_5", 0)
+    )
+    return f"RAJAONAM-2026|{doc['reference']}|{doc['name']}|{guests} guests"
 
 
 def make_qr_png(data: str) -> bytes:
@@ -553,12 +560,12 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
         ("Name", doc["name"]),
         ("Phone", doc["phone"]),
         ("Email", doc["email"]),
-        ("Sea Food Sadhya", f"{doc['adults']} Adults, {doc['kids_5_12']} Kids (5-12), {doc['kids_below_5']} Below 5"),
-        ("Veg Onam Sadhya", f"{doc['veg_adults']} Adults, {doc['veg_kids_5_12']} Kids (5-12), {doc['veg_kids_below_5']} Below 5"),
+        ("Sea Food Sadhya", f"{doc.get('adults', 0)} Adults, {doc.get('kids_5_12', 0)} Kids (5-12), {doc.get('kids_below_5', 0)} Below 5"),
+        ("Veg Onam Sadhya", f"{doc.get('veg_adults', 0)} Adults, {doc.get('veg_kids_5_12', 0)} Kids (5-12), {doc.get('veg_kids_below_5', 0)} Below 5"),
         ("Sadhya Time Slot", doc.get("sea_slot") or doc.get("veg_slot") or "-"),
-        ("Contests", ", ".join(doc["contests"]) or "-"),
-        ("Games", ", ".join(doc["games"]) or "-"),
-        ("Boating", f"{doc['boating_slot']} ({doc['boating_persons']} persons)" if doc["boating"] else "-"),
+        ("Contests", ", ".join(doc.get("contests") or []) or "-"),
+        ("Games", ", ".join(doc.get("games") or []) or "-"),
+        ("Boating", f"{doc.get('boating_slot')} ({doc.get('boating_persons', 0)} persons)" if doc.get("boating") else "-"),
         *([("Ticket Type", doc.get("ticket_type", "VIP Guest"))] if doc.get("payment_mode") == "COMP" else []),
         ("Ticket", "VIP Ticket" if doc.get("payment_mode") == "COMP" else f"Rs. {doc['total']:,}"),
     ]
@@ -661,7 +668,12 @@ async def booking_ticket_pdf(reference: str):
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename=RajaOnam-Ticket-{reference}.pdf"},
+        headers={
+            "Content-Disposition": f"attachment; filename=RajaOnam-Ticket-{reference}.pdf",
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
     )
 
 
@@ -1032,7 +1044,8 @@ async def admin_slot_report(admin: str = Depends(get_current_admin)):
             slots[slot]["sea"] += sea
             slots[slot]["veg"] += veg
             slots[slot]["total"] += sea + veg
-        if b.get("boating_slot") in boating:
+        if b.get("boating_slot"):
+            boating.setdefault(b["boating_slot"], 0)
             boating[b["boating_slot"]] += b.get("boating_persons", 0)
     return {"capacity": cap, "slots": slots, "boating": boating}
 

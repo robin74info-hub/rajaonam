@@ -344,7 +344,7 @@ export default function BookingPanel({ event, onBooked }) {
                 />
                 <p className="text-[10px] tracking-[0.25em] uppercase text-ash">Show this QR at the gate</p>
                 <a
-                  href={`${API}/bookings/${booking.reference}/ticket.pdf`}
+                  href={`${API}/bookings/${booking.reference}/ticket.pdf?t=${Date.now()}`}
                   target="_blank"
                   rel="noreferrer"
                   data-testid="download-ticket-btn"

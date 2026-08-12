@@ -452,6 +452,14 @@
 - Admin rows now have an Edit button → inline row with Sadhya slot + Boating slot dropdowns (from /api/event) + dark passcode field + Save/Cancel. POST /api/admin/bookings/{ref}/slots requires ONAM26 passcode, validates slot values, applies same sadhya slot to sea+veg
 - Verified: wrong passcode 403, invalid slot 400, correct edit updates both sea/veg + boating, UI row renders with prefilled values; slot report reflects edits. This lets user fix EO-FJB2BP on production after redeploy.
 
+## Stale PDF Fix v77 (2026-08-12)
+- Bug: after admin edits sadhya/boating slots, the downloaded ticket PDF showed old times (browser cached the PDF URL)
+- Fix: ticket.pdf endpoint now sends Cache-Control: no-store/no-cache/must-revalidate + Pragma: no-cache + Expires: 0; PDF download links in Admin.jsx and BookingPanel.jsx get a ?t=<timestamp> cache-buster
+- Bonus fix: PDF generation crashed (500) for legacy bookings missing total_participants/contests/games/veg_* fields — qr_payload + ticket rows now use safe .get() fallbacks
+- Cleanup: dummy booking EO-LEGCY2 deleted from DB
+- Verified end-to-end via API: edited sadhya slot 11:30→2:30 PM and boating slot 2:00→4:00 PM on EO-LEGACY, freshly downloaded PDF contained the NEW slots and not the old ones; reverted cleanly. Admin dashboard PDF link confirmed carrying cache-buster.
+
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full

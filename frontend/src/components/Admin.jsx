@@ -158,15 +158,17 @@ export default function Admin() {
   const [editSlots, setEditSlots] = useState({ sadhya_slot: "", boating_slot: "", passcode: "" });
   const [editBusy, setEditBusy] = useState(false);
 
-  const saveSlotEdit = async (ref) => {
+  const saveSlotEdit = async (b) => {
     if (!editSlots.passcode.trim()) return alert("Enter the edit passcode");
+    const currentSadhya = b.sea_slot || b.veg_slot || "";
+    const currentBoating = b.boating_slot || "";
+    const payload = { passcode: editSlots.passcode };
+    if (editSlots.sadhya_slot && editSlots.sadhya_slot !== currentSadhya) payload.sadhya_slot = editSlots.sadhya_slot;
+    if (editSlots.boating_slot !== currentBoating) payload.boating_slot = editSlots.boating_slot;
+    if (!payload.sadhya_slot && payload.boating_slot === undefined) return alert("No changes to save");
     setEditBusy(true);
     try {
-      await axios.post(
-        `${API}/admin/bookings/${ref}/slots`,
-        { passcode: editSlots.passcode, sadhya_slot: editSlots.sadhya_slot || null, boating_slot: editSlots.boating_slot },
-        { headers }
-      );
+      await axios.post(`${API}/admin/bookings/${b.reference}/slots`, payload, { headers });
       setEditingRef(null);
       setEditSlots({ sadhya_slot: "", boating_slot: "", passcode: "" });
       loadBookings();
@@ -528,7 +530,7 @@ export default function Admin() {
                   <td className="px-4 py-3 text-right whitespace-nowrap">
                     <div className="inline-flex items-center gap-2">
                       <a
-                        href={`${API}/bookings/${b.reference}/ticket.pdf`}
+                        href={`${API}/bookings/${b.reference}/ticket.pdf?t=${Date.now()}`}
                         data-testid={`pdf-${b.reference}`}
                         title="Download ticket PDF"
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#C9A227]/60 text-[#8A6A2A] text-[10px] font-bold tracking-wider uppercase hover:bg-[#C9A227] hover:text-white transition-colors"
@@ -592,7 +594,10 @@ export default function Admin() {
                               onChange={(e) => setEditSlots({ ...editSlots, boating_slot: e.target.value })}
                               className="bg-white border border-[#D8C7A5] rounded-full px-3 py-1.5 text-xs text-ink focus:outline-none focus:border-leaf"
                             >
-                              {(eventInfo?.boating_slots || []).map((s) => <option key={s} value={s}>{s}</option>)}
+                              {(eventInfo?.boating_slots?.includes(editSlots.boating_slot) || !editSlots.boating_slot
+                                ? eventInfo?.boating_slots || []
+                                : [editSlots.boating_slot, ...(eventInfo?.boating_slots || [])]
+                              ).map((s) => <option key={s} value={s}>{s}</option>)}
                             </select>
                           </label>
                         )}
@@ -606,7 +611,7 @@ export default function Admin() {
                         />
                         <button
                           data-testid={`edit-save-${b.reference}`}
-                          onClick={() => saveSlotEdit(b.reference)}
+                          onClick={() => saveSlotEdit(b)}
                           disabled={editBusy}
                           className="px-4 py-1.5 rounded-full bg-[#1b5812] text-[#fabd8f] text-[10px] font-bold tracking-wider uppercase hover:bg-[#12400c] transition-colors disabled:opacity-60 flex items-center gap-1.5"
                         >
