@@ -515,6 +515,18 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
         img_w = img_h * 768 / 1368
         pdf.image(bg, x=(210 - img_w) / 2, y=0, w=img_w, h=img_h)
 
+    def draw_terms_bg():
+        """Second-page background without logos."""
+        terms_bg = os.path.join(assets_dir, "pdf-bg-terms.jpg")
+        if os.path.exists(terms_bg):
+            pdf.set_fill_color(245, 235, 216)
+            pdf.rect(0, 0, 210, 297, "F")
+            img_h = 297
+            img_w = img_h * 768 / 1368
+            pdf.image(terms_bg, x=(210 - img_w) / 2, y=0, w=img_w, h=img_h)
+        elif has_bg:
+            draw_bg()
+
     if has_bg:
         draw_bg()
 
@@ -575,8 +587,8 @@ def make_ticket_pdf(doc, qr_png: bytes) -> bytes:
     # Terms & Conditions page
     pdf.add_page()
     if has_bg:
-        draw_bg()
-        pdf.set_y(84)
+        draw_terms_bg()
+        pdf.set_y(26)
     pdf.set_auto_page_break(False)
     pdf.set_font("helvetica", "B", 11)
     pdf.set_text_color(138, 42, 27)

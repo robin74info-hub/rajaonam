@@ -436,6 +436,9 @@
 - COMP PDFs get the same 2-page background treatment (Entry Pass terms)
 - Verified by testing_agent iteration_8: 20/20 tests green (paid + comp), visual render confirms frame intact. DB clean.
 
+## T&C Page Background v73 (2026-08-12)
+- Second (T&C) PDF page now uses the new no-logo background (2page.jpg → backend/assets/pdf-bg-terms.jpg); content starts at y=26 since no logos; page 1 keeps the logo background; verified visually via pdftoppm render
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
