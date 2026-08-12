@@ -443,6 +443,11 @@
 - PDF page 2 T&C text now padded inside the frame (x=35, width=140) with font 7.2pt (headings 10) — no text touches the ornate borders; applies to paid and COMP variants
 - Verified by testing_agent iteration_9: 15/15 tests green incl. visual frame checks; DB clean
 
+## New Page-1 Background + Contact Info v75 (2026-08-12)
+- PDF page 1 background replaced with pdfpage1.jpg (frame + PTE logo top-right, Onam artwork bottom); standalone RajaOnam+Chungath logo (rajaonam-logo-big.png) drawn top-left at x=26,y=10,w=30 (same size as before); content starts y=46
+- Page 2 (T&C) now ends with "Contact Us For More Information +91 90485 99965 | 99938 | 99968" above the copyright line (both comp + paid)
+- Verified visually via pdftoppm renders of both pages; test data cleaned
+
 ## Backlog
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
