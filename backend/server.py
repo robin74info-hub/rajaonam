@@ -1003,18 +1003,27 @@ async def admin_sponsor_redemptions(admin: str = Depends(get_current_admin)):
     rows = []
     async for b in db.bookings.find({"redemptions": {"$exists": True, "$ne": []}}):
         for r in b.get("redemptions", []):
+            qty = r.get("qty", 0)
+            price = r.get("price", 0)
             rows.append({
                 "reference": b["reference"],
                 "name": b.get("name"),
                 "phone": b.get("phone"),
                 "item": r.get("label") or SPONSOR_ITEM_LABELS.get(r.get("item"), r.get("item")),
-                "qty": r.get("qty", 0),
-                "price": r.get("price", 0),
+                "qty": qty,
+                "price": price,
+                "ticket_value": qty * price,
+                "gift_value": (qty * price) / 2,
                 "at": r.get("at"),
                 "by": r.get("by"),
             })
     rows.sort(key=lambda r: r.get("at") or "", reverse=True)
-    return rows
+    totals = {
+        "qty": sum(r["qty"] for r in rows),
+        "ticket_value": sum(r["ticket_value"] for r in rows),
+        "gift_value": sum(r["gift_value"] for r in rows),
+    }
+    return {"rows": rows, "totals": totals}
 
 
 @api_router.get("/admin/whatsapp/status")

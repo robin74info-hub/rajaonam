@@ -6,6 +6,10 @@ import { Flower2, Loader2, Download, LogOut, Users, IndianRupee, Sailboat, Fish,
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const fmt = (n) => `₹${(n || 0).toLocaleString("en-IN")}`;
+const fmtHalf = (n) => {
+  const v = n || 0;
+  return `₹${v.toLocaleString("en-IN", { minimumFractionDigits: v % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 })}`;
+};
 
 export default function Admin() {
   const [token, setToken] = useState(() => localStorage.getItem("admin_token"));
@@ -674,8 +678,17 @@ export default function Admin() {
       </div>
 
       <div className="rounded-xl border border-[#D8C7A5] bg-[#F1E3C6]/80 p-5 mb-8" data-testid="sponsor-redemptions-card">
-        <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon mb-4">Sponsor Redemptions</p>
-        {redemptions && redemptions.length > 0 ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <p className="text-xs tracking-[0.25em] uppercase font-bold text-maroon">Sponsor Redemptions</p>
+          {redemptions?.totals && redemptions.rows?.length > 0 && (
+            <div className="flex flex-wrap gap-2 text-[11px]" data-testid="redemption-totals-chips">
+              <span className="px-2.5 py-1 rounded-full bg-ink/10 text-ink font-bold">Qty · {redemptions.totals.qty}</span>
+              <span className="px-2.5 py-1 rounded-full bg-leaf/15 text-leaf font-bold" data-testid="totals-ticket-value">Ticket Value · {fmt(redemptions.totals.ticket_value)}</span>
+              <span className="px-2.5 py-1 rounded-full bg-[#C9A227]/20 text-[#8A6A2A] font-bold" data-testid="totals-gift-value">Gift Value · {fmtHalf(redemptions.totals.gift_value)}</span>
+            </div>
+          )}
+        </div>
+        {redemptions?.rows && redemptions.rows.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -685,23 +698,37 @@ export default function Admin() {
                   <th className="px-3 py-2">Item</th>
                   <th className="px-3 py-2 text-right">Qty</th>
                   <th className="px-3 py-2 text-right">Price</th>
+                  <th className="px-3 py-2 text-right">Ticket Value</th>
+                  <th className="px-3 py-2 text-right">Gift Value</th>
                   <th className="px-3 py-2">Shop</th>
                   <th className="px-3 py-2">Redeemed At</th>
                 </tr>
               </thead>
               <tbody>
-                {redemptions.map((r, i) => (
+                {redemptions.rows.map((r, i) => (
                   <tr key={`${r.reference}-${i}`} className="border-b border-[#F1E3C6]" data-testid={`redemption-row-${r.reference}`}>
                     <td className="px-3 py-2.5 font-bold text-ink">{r.reference}</td>
                     <td className="px-3 py-2.5 text-ink">{r.name}<span className="block text-[11px] text-ash">{r.phone}</span></td>
                     <td className="px-3 py-2.5 text-ink">{r.item}</td>
                     <td className="px-3 py-2.5 text-right font-semibold text-ink">{r.qty}</td>
-                    <td className="px-3 py-2.5 text-right text-leaf font-bold">{fmt(r.price)}</td>
+                    <td className="px-3 py-2.5 text-right text-ink">{fmt(r.price)}</td>
+                    <td className="px-3 py-2.5 text-right text-leaf font-bold">{fmt(r.ticket_value)}</td>
+                    <td className="px-3 py-2.5 text-right font-bold text-[#8A6A2A]" data-testid={`row-gift-value-${i}`}>{fmtHalf(r.gift_value)}</td>
                     <td className="px-3 py-2.5 text-ash text-xs">Chungath Jewellery</td>
                     <td className="px-3 py-2.5 text-ash text-xs whitespace-nowrap">{r.at ? new Date(r.at).toLocaleString("en-IN") : "—"}</td>
                   </tr>
                 ))}
               </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-[#D8C7A5] bg-[#F1E3C6]/60" data-testid="redemption-totals-row">
+                  <td className="px-3 py-2.5 font-bold text-ink uppercase text-[10px] tracking-[0.15em]" colSpan={3}>Totals</td>
+                  <td className="px-3 py-2.5 text-right font-bold text-ink">{redemptions.totals?.qty ?? 0}</td>
+                  <td className="px-3 py-2.5"></td>
+                  <td className="px-3 py-2.5 text-right font-bold text-leaf">{fmt(redemptions.totals?.ticket_value)}</td>
+                  <td className="px-3 py-2.5 text-right font-bold text-[#8A6A2A]">{fmtHalf(redemptions.totals?.gift_value)}</td>
+                  <td className="px-3 py-2.5" colSpan={2}></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         ) : (

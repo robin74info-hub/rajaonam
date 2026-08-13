@@ -459,9 +459,16 @@
 - Cleanup: dummy booking EO-LEGCY2 deleted from DB
 - Verified end-to-end via API: edited sadhya slot 11:30→2:30 PM and boating slot 2:00→4:00 PM on EO-LEGACY, freshly downloaded PDF contained the NEW slots and not the old ones; reverted cleanly. Admin dashboard PDF link confirmed carrying cache-buster.
 
+## Gift Value In Report v78 (2026-08-13)
+- Admin Sponsor Redemptions report now shows per-row Ticket Value (qty × price) and Gift Value (50%) plus summary chips + totals footer row (Total Qty / Total Ticket Value / Total Gift Value) so operations can settle with Chungath Jewellery in one glance
+- Backend: GET /api/admin/sponsor-redemptions response shape changed from list → `{rows:[...], totals:{qty, ticket_value, gift_value}}`; each row includes `ticket_value` and `gift_value` (float, .50 preserved)
+- Frontend: Admin.jsx table adds "Ticket Value" + "Gift Value" columns, a `<tfoot>` totals row, and rounded chips above the table; new `fmtHalf` formatter shows ₹1,499.50 style with decimals only when needed
+- Verified via curl: seeded 1× Sea Food Adult (₹2,999) redemption → API returned `gift_value: 1499.5`, `totals.gift_value: 1499.5`; test seed cleaned up
 
 ## Backlog
+- P2: Slot Full Alerts — email when any sadhya slot crosses 200 guests (server.py)
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
 - P2: Currency/locale switcher
 - P2: Printable A4 marketing poster PDF with website QR + event details
+- Refactor: split server.py (~1,290 lines) into routes/models/services

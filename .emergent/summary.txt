@@ -1,0 +1,142 @@
+<analysis>**original_problem_statement**: Build a landing page for event organization (RAJAONAM 2026) for a festival booking with time slots for food, get customer details with name, phone, email, and number of people, price, and a payment button. The front page should show event details, and the left side should have booking options. 
+PRODUCT REQUIREMENTS: A fully functional React+FastAPI+MongoDB event booking platform for RAJAONAM 2026. Includes Razorpay, Resend (PDF tickets with T&C), Twilio (WhatsApp), Admin Dashboard, Sponsor redemption scanner (), Gate scanner (), automatic capacity management.
+
+**User's preferred language**: English (en). INSTRUCT next agent to respond in English only.
+
+**what currently exists?**: A fully functional React+FastAPI+MongoDB event booking platform for RAJAONAM 2026. It includes a styled landing page, dynamic Razorpay payment integration, automatic time slot capacity management, PDF ticket generation with T&C sent via Resend, Twilio WhatsApp notifications, a secure Admin Dashboard with slot editing and reporting, a Sponsor redemption scanner (), and a Gate scanner ().
+
+**Last working item**: 
+    - Last item agent was working: Fixing the bug where downloaded PDF tickets showed stale time slot data after an admin modified the slots, and removing a legacy test booking .
+    - Status: NONE (Completed and verified in this session)
+    - Agent Testing Done: Y
+    - Which testing method agent to use? NA (testing is already done)
+    - User Testing Done: N
+
+**All Pending/In progress Issue list**:
+  Issue 1: Production UPI Live Keys (P2)
+  
+  Issues Detail:
+  - Issue 1: 
+     - Attempted fixes: Diagnosed that user needs to set  and  in the Emergent Secrets tab for the production environment and redeploy. This is a user-action issue.
+     - Next debug checklist: Inform user if they bring it up again.
+     - Why fix this issue and what will be achieved with the fix?: Allows real UPI payments on the live domain.
+     - Status: BLOCKED (Awaiting User Action)
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? NA
+     - Blocked on other issue: None
+
+**In progress Task List**: 
+None.
+
+**Upcoming and Future Tasks**
+    Upcoming Tasks:
+    - (P1) Gift Value In Report: Show redeemed gift value totals in the Sponsor Redemptions admin report for easy settlement (, ).
+    - (P2) Slot Full Alerts: Get an email when any sadhya slot crosses 200 guests so catering can be planned early ().
+    
+    Future Tasks:
+    - Multi-date selection, QR ticket code, waitlist when slot full.
+    - Currency/locale switcher.
+    - Printable A4 marketing poster PDF with website QR + event details.
+
+**Completed work in this session**
+- Stale PDF after slot edit (Added  headers to backend and cache-buster query params  to frontend links) (, , ) (DONE)
+- Handled missing legacy DB fields (, ) gracefully during PDF generation () (DONE)
+- Database cleanup of leftover dummy booking  (DONE)
+
+**Earlier issues found/mentioned but not fixed**
+None.
+
+**Known issue recurrence from previous fork**
+  - Issue recurrence in previous fork: Loss of  icons during heavy  operations.
+  - Recurrence count: 2
+  - Status: RESOLVED (Monitor carefully when editing  or )
+
+**Code Architecture**
+/app
+├── backend
+│   ├── .env 
+│   ├── requirements.txt
+│   ├── tests/ (Pytest test suite)
+│   └── server.py (FastAPI app, Auth, DB models, QR/PDF generation using PyPDF2, API routes)
+├── frontend
+│   ├── .env
+│   ├── package.json
+│   ├── public
+│   │   └── index.html (Updated Favicon)
+│   └── src
+│       ├── App.js (Routes: /, /admin, /entry, /sponsors, /pay/:reference)
+│       ├── index.css
+│       └── components
+│           ├── Admin.jsx (Dashboard, Slot Editor, Redemptions, Export)
+│           ├── BookingPanel.jsx (Main booking form, Razorpay, Referral)
+│           ├── PayPage.jsx (Resume pending payments)
+│           ├── Sponsor.jsx (Sponsor redemption scanner)
+│           └── Scanner.jsx (Gate entry scanner)
+└── memory
+
+**Key Technical Concepts**
+Frontend: React, Tailwind CSS, Shadcn UI, html5-qrcode.
+Backend: FastAPI, PyJWT (Auth), Razorpay (Payments), Twilio SDK (WhatsApp), Resend (Emails), fpdf2 & PyPDF2 (PDF merging).
+Database: MongoDB (Motor/PyMongo).
+
+**key DB schema**
+  - bookings: { reference, name, phone, email, date, adults, kids_5_12, kids_below_5, sea_slot, veg_slot, boating_slot, total, payment_mode, payment_status, rzp_order_id, rzp_payment_id, check_in_status, is_complimentary, ticket_type }
+  - redemptions (array inside booking or logged): Used by sponsors to track which items were claimed.
+
+**changes in tech stack**
+  - Added PyPDF2 to merge static background PDFs with generated text for the tickets.
+
+**All files of reference** 
+1.  - Updated to include cache-control headers and handle missing legacy fields (, ).
+2.  - Updated to append  to PDF download links to bypass browser cache.
+3.  - Updated to append  to PDF download links.
+
+**Areas that need refactoring**: 
+ is nearly 1,280 lines long, containing DB models, auth, integrations, layout rendering (PDF/HTML), and API routes. A split of routes and models should be considered.
+
+**key api endpoints**
+-  - Fetches the ticket PDF (Now properly cache-controlled).
+-  - Edits the time slots.
+-  - Returns current capacities.
+
+**Critical Info for New Agent**
+- **Passcodes**: Manual Complimentary (), Delete Billed (), Admin Slot Editor (Check  or ).
+- **PDF Generation**: The PDF generator utilizes base A4 background templates ( or similar) generated in bash and overlays text using  and . When modifying the PDF, be careful with coordinates and page wrapping.
+- **Production vs Preview**: The user is actively pushing to a live production site (). Environment variables for production must be updated by the user in the Emergent Secrets tab. Do not overwrite  to attempt production fixes.
+
+**documents and test reports created in this job** 
+  - /app/test_reports/iteration_1.json through iteration_10.json
+  - /app/memory/PRD.md
+  - /app/memory/test_credentials.md
+
+**Last 10 User Messages and any pending HUMAN messages** 
+ 1. User: Remove right side scrolling image in mobile view. (Completed)
+ 2. User: Sea food adult count default 0 and update boating time list. (Completed)
+ 3. User: Boat capacity 150, clash prevention between sadhya and boating times. (Completed)
+ 4. User: PDF redesign - apply background, remove headings. Add Admin PDF download button. (Completed)
+ 5. User: PDF Background alignment and copyright moved to last page. Apply to comp PDF. (Completed)
+ 6. User: Apply separate background for PDF page 2. (Completed)
+ 7. User: PDF page 2 padding fix. (Completed)
+ 8. User: PDF page 1 background and logo update. (Completed)
+ 9. User: Admin needs edit button with passcode to change boat/sadhya times. (Completed)
+ 10. User: Confirm plan and approve fixes for PDF caching issue and deleting EO-LEGCY2. (Completed)
+
+**Project Health Check:**
+- All clear. Previous stale PDF cache bug is fixed and verified.
+
+**3rd Party Integrations**
+  - Razorpay (Payments) — requires User API Key
+  - Twilio (WhatsApp Messaging) — requires User API Key
+  - Resend (Emails) — uses Emergent Managed proxy
+
+**Testing status**
+  - Testing agent used after significant changes: NO (Main agent self-tested using extensive custom curl/python scripts and screenshot tool).
+  - Troubleshoot agent used after agent stuck in loop: NO
+  - Test files created: , etc.
+  - Known regressions: None.
+
+**Credentials to test flow:**
+Check 
+
+**What agent forgot to execute**
+Nothing. The agent correctly implemented both approved changes and resolved additional legacy schema crashes found during backend testing.</analysis>
