@@ -1,0 +1,33 @@
+{
+  "summary": "Backend-only retest of iteration-11 fixes (reconcile captured-only + amount guard + awaited sends returning delivery status, resend_log) plus regressions on /api/payments/verify and /api/admin/manual-booking. New pytest file with 13 tests: 13/13 passed. reconcile no-captured path returns ok:false, razorpay_payments:[], message 'No captured payment found on Razorpay for this order' (no 'authorized' wording) and leaves booking pending_payment. resend-ticket returns email_sent/email_error/whatsapp_sent/whatsapp_error (email_sent=true with delivered@resend.dev, whatsapp_sent=false with Twilio trial error string) and appends one {by,at,email_sent,whatsapp_sent} entry to booking.resend_log per call. manual-booking (PRIME26) still returns a confirmed COMP booking and the fire-and-forget asyncio.create_task sends still execute (backend log shows 'Confirmation email ... HTTP 200' and 'WhatsApp send failed' for the new reference) — tuple return did not break existing callers. /api/payments/verify with bad signature returns 400 'Payment verification failed' and does not confirm the booking. Amount-mismatch guard verified by static review (expected_amount / 'Amount mismatch' branch present, only 'captured' accepted). All test bookings deleted (DB back to 1 pre-existing booking).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/admin/bookings/{ref}/resend-ticket", "issue": "WhatsApp always fails: Twilio HTTP 400 'trial accounts have limited parameter access' (media_url/QR image not allowed on trial). Endpoint handles it correctly (whatsapp_sent:false + error), but no real WhatsApp ticket delivery is possible until the Twilio account is upgraded."},
+      {"endpoint": "/api/razorpay/webhook", "issue": "Still missing (known backlog item). Payment reconciliation continues to depend on manual admin action, so the original EO-2S4IQ7 class of bug can recur."}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_iteration12_reconcile_delivery_status.py",
+    "/app/test_reports/pytest/iteration12.xml"
+  ],
+  "action_items": [
+    "Implement the Razorpay webhook (payment.captured) so confirmation/ticket delivery no longer requires manual admin reconcile.",
+    "Upgrade/whitelist Twilio WhatsApp (or drop media_url on trial) — WhatsApp delivery currently fails 100% of the time.",
+    "Optional: run twilio_client.messages.create in a thread (asyncio.to_thread) — it is a blocking sync HTTP call inside async reconcile/resend handlers and now blocks the event loop since sends are awaited."
+  ],
+  "critical_code_review_comments": [
+    "/app/backend/server.py is 1405 lines — split into routers (payments, admin, tickets/pdf, notifications).",
+    "send_whatsapp_confirmation uses the blocking Twilio SDK inside an async handler; with the new awaited sends this stalls the event loop for the duration of two Twilio calls.",
+    "reconcile/resend duplicate the same 'await email + await whatsapp + build delivery-status dict' block — extract a helper to keep the two responses in sync."
+  ],
+  "updated_files": ["/app/backend/tests/test_iteration12_reconcile_delivery_status.py"],
+  "success_rate": {"backend": "100% (13/13)", "frontend": "not tested (backend-only request)"},
+  "seed_data_creation": "Created 1 pending_payment booking (real Razorpay order) and 2 COMP bookings with email delivered@resend.dev; all deleted in session teardown and verified removed from MongoDB.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "test_credentials": "admin@rajaonam.com / RajaOnam@2026, COMP passcode PRIME26",
+  "context_for_next_testing_agent": "Happy-path reconcile (ok:true) and the amount-mismatch branch still cannot be exercised end-to-end without a real captured Razorpay payment (LIVE keys, real money) — only static review was done. Reuse fixtures in /app/backend/tests/test_iteration12_reconcile_delivery_status.py. Use email delivered@resend.dev for guaranteed email success; WhatsApp will always report false on the trial Twilio account.",
+  "rca_of_the_issue": "Original bug (paid booking stuck unbilled, no ticket email) was caused by reliance on the browser calling /payments/verify with no webhook fallback. The admin reconcile/resend endpoints now provide a manual recovery path with visible per-channel delivery status; the root cause (no webhook) remains open."
+}

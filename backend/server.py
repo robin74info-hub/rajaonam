@@ -808,8 +808,12 @@ async def send_confirmation_email(doc, base_url):
                 json=payload,
             )
         logger.info(f"Confirmation email to {doc['email']} for {doc['reference']}: HTTP {resp.status_code}")
+        if 200 <= resp.status_code < 300:
+            return True, None
+        return False, f"Email provider HTTP {resp.status_code}: {resp.text[:200]}"
     except Exception as e:
         logger.error(f"Email send failed for {doc['reference']}: {e}")
+        return False, str(e)
 
 
 WHATSAPP_SERVICE_URL = os.environ.get("WHATSAPP_SERVICE_URL", "http://localhost:3001")
@@ -854,8 +858,10 @@ async def send_whatsapp_confirmation(doc, base_url):
         m1 = twilio_client.messages.create(from_=TWILIO_FROM, to=to, body=caption, media_url=[qr_url])
         m2 = twilio_client.messages.create(from_=TWILIO_FROM, to=to, body=f"📄 Download your ticket (PDF): {ticket_url}")
         logger.info(f"WhatsApp to {to} for {doc['reference']}: {m1.sid} / {m2.sid}")
+        return True, None
     except Exception as e:
         logger.error(f"WhatsApp send failed for {doc['reference']}: {e}")
+        return False, str(e)
 
 
 @api_router.get("/bookings/{reference}")
@@ -1117,6 +1123,106 @@ async def delete_booking(reference: str, input: DeleteBookingRequest, admin: str
 async def clear_unbilled(admin: str = Depends(get_current_admin)):
     res = await db.bookings.delete_many({"status": "pending_payment"})
     return {"deleted": res.deleted_count}
+
+
+@api_router.post("/admin/bookings/{reference}/reconcile")
+async def reconcile_booking(reference: str, request: Request, admin: str = Depends(get_current_admin)):
+    """
+    Query Razorpay for the booking's order and, if a payment is captured, mark the
+    booking confirmed and (re)send the ticket via email + WhatsApp. Handles the case
+    where the customer paid but their browser never called /payments/verify.
+    """
+    doc = await db.bookings.find_one({"reference": reference.upper()})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    order_id = doc.get("razorpay_order_id")
+    if not order_id:
+        raise HTTPException(status_code=400, detail="No Razorpay order attached to this booking (nothing to reconcile)")
+
+    try:
+        payments = rz_client.order.payments(order_id)
+    except Exception as e:
+        logger.error(f"Razorpay lookup failed for {reference}: {e}")
+        raise HTTPException(status_code=502, detail=f"Could not reach Razorpay: {e}")
+
+    items = payments.get("items", []) if isinstance(payments, dict) else []
+    captured = next((p for p in items if p.get("status") == "captured"), None)
+
+    if not captured:
+        return {
+            "ok": False,
+            "reference": doc["reference"],
+            "status": doc.get("status"),
+            "razorpay_payments": [{"id": p.get("id"), "status": p.get("status"), "amount": p.get("amount")} for p in items],
+            "message": "No captured payment found on Razorpay for this order",
+        }
+
+    expected_amount = int(doc.get("total", 0)) * 100
+    paid_amount = int(captured.get("amount") or 0)
+    if expected_amount and paid_amount != expected_amount:
+        return {
+            "ok": False,
+            "reference": doc["reference"],
+            "status": doc.get("status"),
+            "razorpay_payments": [{"id": captured.get("id"), "status": captured.get("status"), "amount": paid_amount}],
+            "message": f"Amount mismatch: Razorpay captured ₹{paid_amount/100:.2f} but booking total is ₹{expected_amount/100:.2f}",
+        }
+
+    already_confirmed = doc.get("status") == "confirmed"
+    if not already_confirmed:
+        await db.bookings.update_one(
+            {"reference": doc["reference"]},
+            {"$set": {
+                "status": "confirmed",
+                "razorpay_payment_id": captured.get("id"),
+                "paid_at": datetime.now(timezone.utc).isoformat(),
+                "reconciled_by": admin,
+                "reconciled_at": datetime.now(timezone.utc).isoformat(),
+            }},
+        )
+        doc = await db.bookings.find_one({"reference": doc["reference"]})
+
+    email_ok, email_err = await send_confirmation_email(doc, public_base(request))
+    wa_ok, wa_err = await send_whatsapp_confirmation(doc, public_base(request))
+
+    return {
+        "ok": True,
+        "reference": doc["reference"],
+        "status": doc["status"],
+        "was_already_confirmed": already_confirmed,
+        "razorpay_payment_id": captured.get("id"),
+        "razorpay_payment_status": captured.get("status"),
+        "amount": captured.get("amount"),
+        "email_sent": email_ok,
+        "email_error": email_err,
+        "whatsapp_sent": wa_ok,
+        "whatsapp_error": wa_err,
+        "message": ("Booking confirmed" if not already_confirmed else "Ticket resent"),
+    }
+
+
+@api_router.post("/admin/bookings/{reference}/resend-ticket")
+async def resend_ticket(reference: str, request: Request, admin: str = Depends(get_current_admin)):
+    doc = await db.bookings.find_one({"reference": reference.upper()})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    if doc.get("status") != "confirmed":
+        raise HTTPException(status_code=400, detail="Only confirmed bookings can have tickets resent — reconcile the payment first")
+    email_ok, email_err = await send_confirmation_email(doc, public_base(request))
+    wa_ok, wa_err = await send_whatsapp_confirmation(doc, public_base(request))
+    await db.bookings.update_one(
+        {"reference": doc["reference"]},
+        {"$push": {"resend_log": {"by": admin, "at": datetime.now(timezone.utc).isoformat(), "email_sent": email_ok, "whatsapp_sent": wa_ok}}},
+    )
+    return {
+        "ok": True,
+        "reference": doc["reference"],
+        "email_sent": email_ok,
+        "email_error": email_err,
+        "whatsapp_sent": wa_ok,
+        "whatsapp_error": wa_err,
+        "message": "Ticket resent",
+    }
 
 
 @api_router.post("/admin/manual-booking")

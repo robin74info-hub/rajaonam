@@ -465,10 +465,21 @@
 - Frontend: Admin.jsx table adds "Ticket Value" + "Gift Value" columns, a `<tfoot>` totals row, and rounded chips above the table; new `fmtHalf` formatter shows ₹1,499.50 style with decimals only when needed
 - Verified via curl: seeded 1× Sea Food Adult (₹2,999) redemption → API returned `gift_value: 1499.5`, `totals.gift_value: 1499.5`; test seed cleaned up
 
+## Payment Reconcile + Resend Ticket v79 (2026-08-13)
+- Bug: booking EO-2S4IQ7 (production) — customer paid via Razorpay but their browser never called /api/payments/verify, so the booking stayed status=pending_payment (shows as "Unbilled" in Admin) and no email/WhatsApp ticket was ever sent
+- Backend endpoints: POST /api/admin/bookings/{ref}/reconcile → calls rz_client.order.payments(order_id); if a "captured" payment is found AND its amount matches booking.total*100, the booking is confirmed (razorpay_payment_id, paid_at, reconciled_by, reconciled_at) and email + WhatsApp are sent SYNCHRONOUSLY so the admin alert shows real delivery status. Also POST /api/admin/bookings/{ref}/resend-ticket for confirmed bookings — awaits both sends and pushes to booking.resend_log.
+- Guards: only Razorpay status=="captured" is accepted (authorized/expired do not confirm), and amount mismatch returns ok:false with the discrepancy.
+- send_confirmation_email + send_whatsapp_confirmation now return (ok, error) tuple; endpoints return {email_sent, email_error, whatsapp_sent, whatsapp_error}. Existing fire-and-forget callers (verify_payment, manual-booking) still work because asyncio.create_task discards the return value.
+- Frontend Admin.jsx: new Reconcile button (data-testid=reconcile-{ref}) on unbilled rows that have a razorpay_order_id, and Resend button (data-testid=resend-{ref}) on confirmed rows; the alert now shows ✓/✗ per channel with error text.
+- Verified: iteration_11 (13/13) + iteration_12 (13/13) — 401/404/400 error paths, no-captured-payment path (booking stays pending), email_sent true on delivered@resend.dev, resend_log grows by one per resend, existing verify_payment + manual-booking regressions clean.
+- Known limitation: Razorpay webhook is still not implemented — reconcile is manual. Twilio is on a trial account so WhatsApp media (QR image) fails until account upgrade.
+
 ## Backlog
+- P0: Razorpay `payment.captured` webhook so paid bookings self-heal without any admin action (root-cause fix for EO-2S4IQ7 class of bugs)
+- P1: Upgrade Twilio account (trial blocks media_url and non-approved templates) so WhatsApp ticket + QR actually reach customers
 - P2: Slot Full Alerts — email when any sadhya slot crosses 200 guests (server.py)
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
 - P2: Currency/locale switcher
 - P2: Printable A4 marketing poster PDF with website QR + event details
-- Refactor: split server.py (~1,290 lines) into routes/models/services
+- Refactor: split server.py (~1,405 lines) into routes/models/services

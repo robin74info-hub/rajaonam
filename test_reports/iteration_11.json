@@ -1,0 +1,42 @@
+{
+  "summary": "Backend-only testing of the new v79 admin recovery endpoints (reconcile + resend-ticket) plus regressions. Wrote /app/backend/tests/test_iteration11_reconcile_resend.py (12 tests) and test_iteration11b_email_delivery.py (1 test). 13/13 passed. Verified: 401 without auth, 404 for unknown reference, 400 'No Razorpay order attached' for a COMP booking, 200 {ok:false, razorpay_payments:[], message:'No captured/authorized payment found...'} for a freshly created pending_payment order (real Razorpay order.payments() call succeeded and the booking correctly stayed pending_payment in DB), 400 'Only confirmed bookings can have tickets resent' for pending bookings, and 200 {ok:true,'Ticket resent via email and WhatsApp'} for a confirmed COMP booking. Also confirmed lowercase reference resolves (server upper-cases). Email/WhatsApp firing verified in backend logs: email provider returns HTTP 202 (accepted) for a deliverable address (delivered@resend.dev); Twilio WhatsApp fails with a trial-account restriction (env limitation, not a code bug). Regressions OK: GET /api/admin/sponsor-redemptions returns {rows, totals}, GET /api/admin/bookings returns list with status + razorpay_order_id and no _id, POST /api/payments/order creates a pending_payment booking with order_id/amount/key_id/reference. All test bookings deleted; DB back to 1 pre-existing booking (EO-LEGACY). Razorpay captured-payment happy path was NOT executable (needs a real UPI payment) as instructed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/admin/bookings/{ref}/reconcile & /resend-ticket", "issue": "Notifications are fire-and-forget via asyncio.create_task, so the API returns ok:true / 'Ticket sent' even when the email or WhatsApp send actually fails (observed: Twilio HTTP 400 trial-account error and email HTTP 422 'Undeliverable recipient' for example.com, while the endpoint still returned 200/ok:true). Admin gets false success feedback for the exact bug this feature is meant to fix. Suggest awaiting both sends (or gathering with a timeout) and returning {email_sent, whatsapp_sent, errors} so the Admin UI alert reflects reality."},
+      {"endpoint": "POST /api/admin/bookings/{ref}/reconcile", "issue": "An 'authorized' (not captured) Razorpay payment is treated as paid: booking is confirmed and a ticket is issued, but the money is never captured and the authorization can expire => free ticket. Either capture it (rz_client.payment(id).capture({'amount':...})) before confirming, or confirm only on status=='captured'."},
+      {"endpoint": "POST /api/admin/bookings/{ref}/reconcile", "issue": "No amount validation — the Razorpay payment amount is not compared against booking['total']*100, so a partially/under-paid or wrong-order payment would still confirm the booking."},
+      {"endpoint": "Razorpay integration (no webhook)", "issue": "There is no /api/payments/webhook endpoint (grep 'webhook' in server.py returns nothing). Manual admin reconcile is a workaround; the durable root-cause fix is a Razorpay payment.captured webhook that confirms the booking and sends the ticket server-side regardless of the customer's browser."}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_iteration11_reconcile_resend.py",
+    "/app/backend/tests/test_iteration11b_email_delivery.py",
+    "/app/test_reports/pytest/iteration11.xml"
+  ],
+  "action_items": [
+    "Return real delivery status from reconcile/resend-ticket instead of fire-and-forget ok:true (await sends, report email/whatsapp errors to the admin alert).",
+    "Capture (or reject) 'authorized'-only Razorpay payments in reconcile instead of confirming them as paid.",
+    "Validate Razorpay payment amount against booking total in reconcile.",
+    "Add a Razorpay payment.captured webhook so pending_payment bookings self-heal without admin action (root-cause fix for EO-2S4IQ7 class of bugs).",
+    "Twilio WhatsApp is on a trial account ('trial accounts have limited parameter access') — tickets will NOT reach customers on WhatsApp until the account is upgraded/template-approved."
+  ],
+  "critical_code_review_comments": [
+    "/app/backend/server.py is 1375 lines — split into routers (payments, admin, notifications, pdf) for maintainability.",
+    "reconcile_booking mutates the local `doc` for status/payment_id but the notification tasks receive a doc that may still carry stale fields (e.g. paid_at, total for a resumed order); re-fetch the persisted doc before sending the ticket.",
+    "Duplicated notification block (asyncio.create_task(send_confirmation_email) + send_whatsapp_confirmation) appears in verify_payment, manual-booking, reconcile and resend-ticket — extract a single send_ticket(doc, base) helper.",
+    "reconcile/resend do not log an audit trail entry for who resent a ticket (only reconciled_by/at on confirm path); resend-ticket writes nothing, so repeated resends are untraceable."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration11_reconcile_resend.py",
+    "/app/backend/tests/test_iteration11b_email_delivery.py"
+  ],
+  "success_rate": {"backend": "100% (13/13 tests)", "frontend": "not tested (backend-only request)"},
+  "seed_data_creation": "Created and deleted: 1 COMP booking (TEST_ Comp Recon), 1 pending_payment booking via /api/payments/order (TEST_ Pending Recon, real Razorpay order, no payment made), 1 COMP booking to delivered@resend.dev. All removed via DELETE /api/admin/bookings; DB verified clean (only EO-LEGACY remains).",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "test_credentials": "admin@rajaonam.com / RajaOnam@2026; COMP passcode PRIME26 (from /app/memory/test_credentials.md)",
+  "context_for_next_testing_agent": "Reconcile/resend endpoints are functionally correct on all error paths and the 'no captured payment' path. The captured-payment happy path is still unverified (needs a real Razorpay payment). Reusable tests live in /app/backend/tests/test_iteration11_reconcile_resend.py (session-scoped fixtures auto-clean created bookings). Email provider accepts only deliverable addresses — use delivered@resend.dev for email assertions; example.com returns 422 'undeliverable_recipient'. Twilio WhatsApp always fails in this env (trial account). Admin UI buttons (reconcile-{ref} / resend-{ref}) were not exercised in the browser.",
+  "rca_of_the_issue": "Original production bug: Razorpay captures the payment but the browser never calls /api/payments/verify, so the booking stays pending_payment and no ticket is sent. The new admin reconcile endpoint correctly queries rz_client.order.payments(order_id) and confirms/sends on a captured payment (verified up to the 'no payment found' branch, response shape and DB non-mutation). Residual risk: no webhook (still requires manual admin action), authorized-but-uncaptured payments are treated as paid, and the success response does not reflect actual email/WhatsApp delivery (WhatsApp currently fails on the Twilio trial account)."
+}

@@ -116,6 +116,43 @@ export default function Admin() {
     }
   };
 
+  const [reconciling, setReconciling] = useState("");
+  const reconcileBooking = async (ref) => {
+    if (!window.confirm(`Check Razorpay for payment on ${ref}?\nIf the customer paid, this will confirm the booking and resend the ticket by email and WhatsApp.`)) return;
+    setReconciling(ref);
+    try {
+      const { data } = await axios.post(`${API}/admin/bookings/${ref}/reconcile`, {}, { headers });
+      if (data.ok) {
+        const emailLine = data.email_sent ? "✓ Email sent" : `✗ Email failed: ${data.email_error || "unknown"}`;
+        const waLine = data.whatsapp_sent ? "✓ WhatsApp sent" : `✗ WhatsApp failed: ${data.whatsapp_error || "unknown"}`;
+        alert(`${ref}: ${data.message}\nRazorpay Payment ID: ${data.razorpay_payment_id}\n\n${emailLine}\n${waLine}`);
+        loadBookings();
+      } else {
+        const payments = (data.razorpay_payments || []).map((p) => `• ${p.id || "—"} · ${p.status} · ₹${((p.amount || 0) / 100).toFixed(2)}`).join("\n") || "No payment attempts recorded";
+        alert(`${ref}: ${data.message}\n\nRazorpay payments:\n${payments}`);
+      }
+    } catch (err) {
+      alert(err.response?.data?.detail || "Reconcile failed");
+    } finally {
+      setReconciling("");
+    }
+  };
+
+  const [resending, setResending] = useState("");
+  const resendTicket = async (ref) => {
+    setResending(ref);
+    try {
+      const { data } = await axios.post(`${API}/admin/bookings/${ref}/resend-ticket`, {}, { headers });
+      const emailLine = data.email_sent ? "✓ Email sent" : `✗ Email failed: ${data.email_error || "unknown"}`;
+      const waLine = data.whatsapp_sent ? "✓ WhatsApp sent" : `✗ WhatsApp failed: ${data.whatsapp_error || "unknown"}`;
+      alert(`${ref}: ${data.message}\n\n${emailLine}\n${waLine}`);
+    } catch (err) {
+      alert(err.response?.data?.detail || "Resend failed");
+    } finally {
+      setResending("");
+    }
+  };
+
   const sendToWhatsApp = (b) => {
     const digits = String(b.phone || "").replace(/\D/g, "");
     const phone = digits.length === 10 ? `91${digits}` : digits;
@@ -560,6 +597,28 @@ export default function Admin() {
                       >
                         <Pencil className="w-3 h-3" /> Edit
                       </button>
+                      {b.status === "pending_payment" && b.razorpay_order_id && (
+                        <button
+                          data-testid={`reconcile-${b.reference}`}
+                          onClick={() => reconcileBooking(b.reference)}
+                          disabled={reconciling === b.reference}
+                          title="Check Razorpay for payment and confirm + resend ticket"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#8A6A2A]/60 text-[#8A6A2A] text-[10px] font-bold tracking-wider uppercase hover:bg-[#C9A227] hover:text-white transition-colors disabled:opacity-60"
+                        >
+                          {reconciling === b.reference ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />} Reconcile
+                        </button>
+                      )}
+                      {b.status === "confirmed" && (
+                        <button
+                          data-testid={`resend-${b.reference}`}
+                          onClick={() => resendTicket(b.reference)}
+                          disabled={resending === b.reference}
+                          title="Resend ticket by email and WhatsApp"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-leaf/50 text-leaf text-[10px] font-bold tracking-wider uppercase hover:bg-leaf hover:text-cream transition-colors disabled:opacity-60"
+                        >
+                          {resending === b.reference ? <Loader2 className="w-3 h-3 animate-spin" /> : <Ticket className="w-3 h-3" />} Resend
+                        </button>
+                      )}
                       <button
                         data-testid={`delete-${b.reference}`}
                         onClick={() => (view === "unbilled" ? deleteUnbilled(b.reference) : view === "complimentary" ? deleteComp(b.reference) : deleteBilled(b.reference))}
