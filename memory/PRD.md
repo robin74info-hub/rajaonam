@@ -479,11 +479,19 @@
 - Verified: iteration_13 (13/14, one HIGH fixed) → iteration_14 (3/3) → total 16/17 with the HIGH now green. Regressions clean: /api/payments/verify bad sig 400, /api/admin/bookings + /reconcile unchanged.
 - Setup for user (Razorpay Dashboard): Settings → Webhooks → Add New Webhook. URL: https://<prod-domain>/api/payments/webhook (rajaonam.com/api/payments/webhook). Active events: payment.captured. Secret: rajaonam-2026-berrysys. Alert email: user's own. Save → send test event to confirm 200.
 
+## Multi-Code Referral v81 (2026-08-13)
+- Added support for multiple referral codes with per-code rules. Server-side authoritative source in /app/backend/server.py: `REFERRAL_CODES = {'RAJA05': {discount:0.05, min_participants:10}, 'PRIMETIME31': {discount:0.10, min_participants:0}}`. Helper `resolve_referral(code, count) -> (discount, code, error)`. `booking_total()` uses it; unknown/ineligible codes silently produce zero discount (no HTTP error).
+- Backend rounding switched from Python `round` (banker's) to `math.floor(x + 0.5)` (round-half-up) to match JS `Math.round`. Fixes ₹1 mismatch on half-rupee discounts.
+- Fixed CRITICAL bug: POST /api/bookings (offline payment path) previously duplicated the price formula inline and never applied referral discounts. Now it calls `booking_total(input)`.
+- Frontend BookingPanel.jsx: REFERRAL_CODES mirror; referral card always visible (was gated by `≥10 participants`); Apply button validates unknown-code + min-participants with tailored error text; Pay Online CTA now shows `payableTotal` (was `total`, a ₹600 gap on 2-adult PRIMETIME31); when guests reduce count below the code min the chip switches to maroon '<CODE> paused — not enough participants'; discount now computed as `total - Math.round(total*(1-pct))` so it never drifts from the backend total by ₹1.
+- Verified end-to-end by testing agent: iteration_15 (86% backend + 92% frontend, 3 defects) → iteration_16 (100% backend 18/18, 95% frontend with only ₹1 rounding parity outstanding) → main-agent self-test confirms rounding parity fixed. Regression on webhook + verify + reconcile all clean.
+
 ## Backlog
 - P1: Upgrade Twilio account (trial blocks media_url and non-approved templates) so WhatsApp ticket + QR actually reach customers
 - P2: Slot Full Alerts — email when any sadhya slot crosses 200 guests (server.py)
+- P2: Expose REFERRAL_CODES via GET /api/event so frontend never drifts from backend rules
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
 - P2: Currency/locale switcher
 - P2: Printable A4 marketing poster PDF with website QR + event details
-- Refactor: split server.py (~1,490 lines) into routes/models/services
+- Refactor: split server.py (~1,510 lines) into routes/models/services

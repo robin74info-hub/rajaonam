@@ -124,9 +124,15 @@ export default function BookingPanel({ event, onBooked }) {
   const vegK = event?.veg_price_kid ?? 1199;
   const totalParticipants = adults + kids512 + kidsU5 + vegAdults + vegKids512 + vegKidsU5;
   const total = adults * seaA + kids512 * seaK + vegAdults * vegA + vegKids512 * vegK;
-  const referralEligible = totalParticipants >= 10;
-  const discount = referApplied && referralEligible ? Math.round(total * 0.05) : 0;
-  const payableTotal = total - discount;
+  const REFERRAL_CODES = {
+    RAJA05: { discount: 0.05, min: 10 },
+    PRIMETIME31: { discount: 0.10, min: 0 },
+  };
+  const appliedRule = referApplied ? REFERRAL_CODES[referCode.trim().toUpperCase()] : null;
+  const referralValid = !!appliedRule && totalParticipants >= appliedRule.min;
+  const discountPct = referralValid ? appliedRule.discount : 0;
+  const payableTotal = referralValid ? Math.round(total * (1 - discountPct)) : total;
+  const discount = total - payableTotal;
   const boatLeft = (t) => (slotInfo?.boating_capacity ?? 150) - (slotInfo?.boating?.[t] ?? 0);
 
   useEffect(() => {
@@ -168,7 +174,7 @@ export default function BookingPanel({ event, onBooked }) {
     boating: boating === true,
     boating_slot: boating === true ? boatSlot : null,
     boating_persons: boating === true ? boatPersons : 0,
-    referral_code: referApplied && referralEligible ? referCode.trim().toUpperCase() : null,
+    referral_code: referralValid ? referCode.trim().toUpperCase() : null,
     payment_mode: paymentMode,
   });
 
@@ -485,55 +491,66 @@ export default function BookingPanel({ event, onBooked }) {
                       <p className="text-xs text-ash line-through" data-testid="total-original">{fmt(total, sym)}</p>
                     )}
                     <p className="font-display text-4xl text-leaf leading-none" data-testid="total-price">{fmt(payableTotal, sym)}</p>
-                    <p className="text-[9px] tracking-wider uppercase text-ash mt-1">{discount > 0 ? "5% referral discount applied" : "(package rates)"}</p>
+                    <p className="text-[9px] tracking-wider uppercase text-ash mt-1">{discount > 0 ? `${Math.round(discountPct * 100)}% referral discount applied` : "(package rates)"}</p>
                   </div>
                 </div>
               </section>
 
-              {referralEligible && (
-                <div className="border border-[#D8C7A5] rounded-xl p-4 bg-[#FFFBF2]/80" data-testid="referral-section">
-                  <p className="text-xs tracking-[0.2em] uppercase font-bold text-maroon mb-2.5">Have a Referral Code? <span className="text-ash font-normal normal-case tracking-normal">(optional — group of 10+)</span></p>
-                  {!referApplied ? (
-                    <div className="flex gap-2">
-                      <input
-                        data-testid="referral-input"
-                        value={referCode}
-                        onChange={(e) => { setReferCode(e.target.value.toUpperCase()); setReferError(""); }}
-                        placeholder="Enter referral code"
-                        className="flex-1 bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf uppercase tracking-widest"
-                      />
-                      <button
-                        type="button"
-                        data-testid="referral-apply-btn"
-                        onClick={() => {
-                          if (referCode.trim().toUpperCase() === "RAJA05") {
-                            setReferApplied(true);
-                            setReferError("");
-                          } else {
-                            setReferError("Invalid referral code");
-                          }
-                        }}
-                        className="px-5 py-2.5 rounded-full bg-leaf text-cream text-xs font-bold tracking-[0.15em] uppercase hover:bg-[#14523A] transition-colors"
-                      >
-                        Apply
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between bg-leaf/10 border border-leaf/40 rounded-full px-4 py-2.5" data-testid="referral-applied">
-                      <span className="text-xs font-bold text-leaf tracking-wider">RAJA05 applied — you save {fmt(discount, sym)}</span>
-                      <button
-                        type="button"
-                        data-testid="referral-remove-btn"
-                        onClick={() => { setReferApplied(false); setReferCode(""); }}
-                        className="text-[10px] tracking-wider uppercase text-maroon font-bold hover:underline"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  )}
-                  {referError && <p className="text-xs text-maroon mt-1.5" data-testid="referral-error">{referError}</p>}
-                </div>
-              )}
+              <div className="border border-[#D8C7A5] rounded-xl p-4 bg-[#FFFBF2]/80" data-testid="referral-section">
+                <p className="text-xs tracking-[0.2em] uppercase font-bold text-maroon mb-2.5">Have a Referral Code? <span className="text-ash font-normal normal-case tracking-normal">(optional)</span></p>
+                {!referApplied ? (
+                  <div className="flex gap-2">
+                    <input
+                      data-testid="referral-input"
+                      value={referCode}
+                      onChange={(e) => { setReferCode(e.target.value.toUpperCase()); setReferError(""); }}
+                      placeholder="Enter referral code"
+                      className="flex-1 bg-white border border-[#D8C7A5] rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ash/50 focus:outline-none focus:border-leaf uppercase tracking-widest"
+                    />
+                    <button
+                      type="button"
+                      data-testid="referral-apply-btn"
+                      onClick={() => {
+                        const key = referCode.trim().toUpperCase();
+                        const rule = REFERRAL_CODES[key];
+                        if (!rule) {
+                          setReferError("Invalid referral code");
+                          return;
+                        }
+                        if (totalParticipants < rule.min) {
+                          setReferError(`${key} needs at least ${rule.min} participants (you have ${totalParticipants})`);
+                          return;
+                        }
+                        setReferApplied(true);
+                        setReferError("");
+                      }}
+                      className="px-5 py-2.5 rounded-full bg-leaf text-cream text-xs font-bold tracking-[0.15em] uppercase hover:bg-[#14523A] transition-colors"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                ) : (
+                  <div className={`flex items-center justify-between border rounded-full px-4 py-2.5 ${referralValid ? "bg-leaf/10 border-leaf/40" : "bg-maroon/10 border-maroon/40"}`} data-testid="referral-applied">
+                    <span className={`text-xs font-bold tracking-wider ${referralValid ? "text-leaf" : "text-maroon"}`}>
+                      {referralValid
+                        ? `${referCode.trim().toUpperCase()} applied — you save ${fmt(discount, sym)}`
+                        : `${referCode.trim().toUpperCase()} paused — not enough participants`}
+                    </span>
+                    <button
+                      type="button"
+                      data-testid="referral-remove-btn"
+                      onClick={() => { setReferApplied(false); setReferCode(""); setReferError(""); }}
+                      className="text-[10px] tracking-wider uppercase text-maroon font-bold hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+                {referApplied && appliedRule && totalParticipants < appliedRule.min && (
+                  <p className="text-xs text-maroon mt-1.5" data-testid="referral-warning">{referCode.trim().toUpperCase()} requires at least {appliedRule.min} participants — discount removed until you add more guests</p>
+                )}
+                {referError && <p className="text-xs text-maroon mt-1.5" data-testid="referral-error">{referError}</p>}
+              </div>
 
               <button
                 data-testid="pay-online-btn"
@@ -546,7 +563,7 @@ export default function BookingPanel({ event, onBooked }) {
                     <Loader2 className="w-4 h-4 animate-spin" /> Processing…
                   </>
                 ) : (
-                  <>Pay Online {fmt(total, sym)}</>
+                  <>Pay Online {fmt(payableTotal, sym)}</>
                 )}
               </button>
               <p className="text-[10px] text-ash text-center tracking-wider">Secure online payment via Razorpay · UPI, cards, net banking & wallets</p>

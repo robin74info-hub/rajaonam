@@ -1,0 +1,39 @@
+{
+  "summary": "Retest of iteration_15 referral fixes. Backend: 18/18 pytest cases pass in /app/backend/tests/test_iteration15_referral.py (payments/order pricing for RAJA05 & PRIMETIME31, offline /api/bookings discounting + persistence, below-min no-discount, lowercase/bogus code handling, COMP manual booking, verify bad-signature 400, webhook bad-signature 400, webhook ignored-event {ok:true,ignored}, webhook payment.captured confirms discounted booking). Frontend: Playwright run of BookingPanel referral card — PRIMETIME31 + 2 adults CTA now correctly shows Rs 5,398; RAJA05 12->5 adults switches chip to maroon with 'RAJA05 paused — not enough participants' and CTA shows undiscounted Rs 14,995; invalid code error works; remove works. One residual defect: a Rs 1 rounding mismatch remains for 10 adults + RAJA05 (UI shows Rs 28,490, backend/Razorpay charges Rs 28,491) — the direction of the bug flipped after the backend round-half-up fix. All test bookings deleted (18 from this run + 16 stale ones left by iteration_15's broken teardown).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "DELETE /api/admin/bookings/{reference}", "issue": "Requires a JSON body (DeleteBookingRequest) — passing passcode as a query param returns 422. The handoff note claiming '?passcode=ONAM26 as QUERY parameter' is incorrect; body {\"passcode\": \"...\"} is required even for unbilled deletes."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "BookingPanel — discount rounding", "issue": "Rs 1 mismatch vs backend for half-rupee discounts. Frontend does discount = Math.round(total * pct); payableTotal = total - discount => 10 adults + RAJA05: Math.round(29990*0.05)=1500 -> Rs 28,490. Backend now does math.floor(base*(1-pct)+0.5) => 28491, and Razorpay is charged 2849100 paise. UI (total-price and pay-online-btn) promises Rs 28,490 but the customer pays Rs 28,491. Fix: payableTotal = Math.round(total * (1 - discountPct)); discount = total - payableTotal.", "selector": "[data-testid='pay-online-btn'], [data-testid='total-price']", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration15_referral.py",
+    "/app/backend/tests/cleanup_test_bookings.py",
+    "/app/test_reports/pytest/iteration16.xml"
+  ],
+  "action_items": [
+    "BookingPanel.jsx: change discount math to payableTotal = Math.round(total * (1 - discountPct)) and discount = total - payableTotal so the UI matches the backend's round-half-up total (10 adults + RAJA05 case)."
+  ],
+  "critical_code_review_comments": [
+    "REFERRAL_CODES + the discount formula are duplicated in server.py and BookingPanel.jsx — the residual Rs 1 bug is a direct consequence. Expose rules via GET /api/event and have the client derive the total from a single formula (or trust the server-computed amount) instead of re-implementing it.",
+    "server.py is >1500 lines; split payments/admin/tickets into separate routers."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration15_referral.py",
+    "/app/backend/tests/cleanup_test_bookings.py"
+  ],
+  "success_rate": {"backend": "100% (18/18)", "frontend": "95% (all 4 requested behaviours pass; Rs 1 rounding parity fails)"},
+  "seed_data_creation": "18 temporary bookings (name 'TEST_iter15 referral', email delivered@resend.dev) via /api/payments/order, /api/bookings, /api/admin/manual-booking — all deleted in session teardown. Also purged 16 stale TEST_ bookings from iteration_15 using /app/backend/tests/cleanup_test_bookings.py. Verified 0 TEST_ bookings remain.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "test_credentials": "admin@rajaonam.com / RajaOnam@2026; COMP passcode PRIME26; billed-delete passcode ONAM26",
+  "context_for_next_testing_agent": "Test-file expectations were updated for round-half-up (offline RAJA05 10 adults = 28491, mixed-participant case uses math.floor(base*0.95+0.5)) and the teardown was fixed to send the passcode in the DELETE JSON body (query param yields 422). Run: pytest /app/backend/tests/test_iteration15_referral.py -p no:randomly -v. /api/payments/order hits LIVE Razorpay, so always clean up; use tests/cleanup_test_bookings.py to purge leftovers. Preview ingress requires a non-empty User-Agent header.",
+  "rca_of_the_issue": "All four iteration_15 defects are fixed (booking_total() reuse on POST /api/bookings, math.floor(x+0.5) rounding, payableTotal on the CTA, maroon paused chip). The only remaining issue is that the frontend rounds the DISCOUNT (Math.round(1499.5)=1500) while the backend rounds the TOTAL (floor(28490.5+0.5)=28491); rounding the same quantity on both sides removes the Rs 1 divergence."
+}

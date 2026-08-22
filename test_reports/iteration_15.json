@@ -1,0 +1,43 @@
+{
+  "summary": "Tested multi-code referral support (RAJA05 5%/min-10, PRIMETIME31 10%/min-0) end-to-end. Backend: 14 pytest cases against /api/payments/order, /api/bookings, /api/admin/manual-booking + regressions on /api/payments/verify and /api/payments/webhook (13 passed pre-fix run, 2 real defects found). Frontend: full Playwright run of the referral card in BookingPanel (always-visible card, min-participant error, unknown-code error, apply/remove, 5% vs 10% dynamic label, downgrade warning). All requested frontend behaviours work, but the Pay Online button shows the UNDISCOUNTED amount. All 14 test bookings created were deleted via /api/admin/bookings/{ref} (verified 200/deleted).",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "POST /api/bookings", "issue": "Offline/manual payment path ignores referral_code entirely — it computes `total` inline instead of calling booking_total(). RAJA05 + 10 adults returned total=29990 (expected 28490/28491). referral_code IS stored on the doc, so an offline booking records the code but charges full price.", "priority": "HIGH"}
+    ],
+    "minor": [
+      {"endpoint": "POST /api/payments/order", "issue": "Half-paise rounding mismatch with the client: RAJA05 + 10 adults => base 29990, 5% off = 28490.5. Python round() (banker's rounding) returns 28490 while the frontend Math.round shows 28491. Razorpay order amount = 2849000 paise but the UI promised ₹28,491 (₹1 discrepancy). Same class of issue for any base ending in a .5 half-rupee. Suggest math.floor/Decimal-consistent rounding on both sides."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "BookingPanel — Pay Online button", "issue": "Button label uses `total` instead of `payableTotal` (line ~562). With PRIMETIME31 + 2 adults the summary shows ₹5,398 but the CTA reads 'PAY ONLINE ₹5,998'. Misleading price on the primary CTA (backend correctly charges the discounted amount).", "selector": "[data-testid='pay-online-btn']", "priority": "HIGH"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "BookingPanel referral card (post-downgrade state)", "issues": ["When the participant count drops below the code minimum, the applied chip still reads 'RAJA05 applied — you save ₹0' alongside the red warning. Contradictory messaging; chip should switch to a neutral/invalid style or auto-collapse to the input."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration15_referral.py",
+    "/app/test_reports/pytest/iteration15.xml"
+  ],
+  "action_items": [
+    "POST /api/bookings must use booking_total(input) (or resolve_referral) so offline bookings honour referral discounts.",
+    "Fix Pay Online button label to use payableTotal instead of total in BookingPanel.jsx.",
+    "Align rounding between backend (Python round) and frontend (Math.round) for half-rupee discounts, e.g. 10 adults + RAJA05.",
+    "Optional: clarify the applied-chip copy when the code becomes ineligible after guest-count reduction."
+  ],
+  "critical_code_review_comments": [
+    "/api/bookings duplicates the price + doc-building logic that already exists in booking_total()/build_booking_doc() — DRY violation and the direct cause of the missing offline discount.",
+    "REFERRAL_CODES is duplicated in server.py and BookingPanel.jsx with no shared source; expose it via GET /api/event so the client can never drift from the backend rules.",
+    "server.py is 1511 lines — consider splitting routers (payments, admin, tickets) into modules."
+  ],
+  "updated_files": ["/app/backend/tests/test_iteration15_referral.py"],
+  "success_rate": {"backend": "86% (12/14 assertions passing; 2 genuine defects)", "frontend": "92% (all referral card behaviours correct; CTA amount wrong)"},
+  "seed_data_creation": "14 temporary bookings (name 'TEST_iter15 referral', email delivered@resend.dev) created via /api/payments/order, /api/bookings and /api/admin/manual-booking — ALL deleted in the pytest session teardown (no pending_payment leftovers).",
+  "should_call_test_agent_after_fix": true,
+  "should_main_agent_self_test": false,
+  "test_credentials": "admin@rajaonam.com / RajaOnam@2026; COMP passcode PRIME26; billed-delete passcode ONAM26",
+  "context_for_next_testing_agent": "Re-run `pytest /app/backend/tests/test_iteration15_referral.py -p no:randomly -v` after fixes. Two tests are expected to fail until fixed: TestOfflineBooking::test_bookings_raja05_10_adults (offline path ignores discount) and TestOrderPricing::test_raja05_10_adults_half_paise_rounding (28490 vs 28491). Note /api/payments/order hits LIVE Razorpay to create orders — always clean up created references. Preview ingress needs a non-empty User-Agent header (UA dict in the test file).",
+  "rca_of_the_issue": "booking_total() was updated to call resolve_referral(), and POST /api/payments/order + /api/admin/manual-booking use it. POST /api/bookings (offline path, server.py:524-529) has its own inline price computation that was never migrated to booking_total(), so referral codes are stored but never discounted. Separately, Python's round() uses banker's rounding while JS Math.round rounds .5 up, so any discounted total ending in .5 (e.g. 10 adults × 2999 × 0.95) differs by ₹1 between UI and the Razorpay order. The Pay Online CTA bug is a simple missed variable swap (total vs payableTotal) in BookingPanel.jsx."
+}

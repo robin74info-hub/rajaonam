@@ -12,6 +12,7 @@ import csv
 import io
 import json
 import jwt
+import math
 import bcrypt
 import asyncio
 import base64
@@ -238,6 +239,25 @@ async def slots_availability():
     return {"capacity": cap, "sea": sea, "veg": veg, "boating": boating, "boating_capacity": EVENT["boating_slot_capacity"]}
 
 
+REFERRAL_CODES = {
+    "RAJA05": {"discount": 0.05, "min_participants": 10},
+    "PRIMETIME31": {"discount": 0.10, "min_participants": 0},
+}
+
+
+def resolve_referral(code: Optional[str], total_participants: int):
+    """Return (discount_fraction, normalized_code, error) for a code + count."""
+    if not code:
+        return 0.0, None, None
+    key = code.strip().upper()
+    rule = REFERRAL_CODES.get(key)
+    if not rule:
+        return 0.0, key, "Invalid referral code"
+    if total_participants < rule["min_participants"]:
+        return 0.0, key, f"Requires at least {rule['min_participants']} participants"
+    return rule["discount"], key, None
+
+
 def booking_total(input: BookingCreate) -> int:
     base = (
         input.adults * EVENT["sea_price_adult"]
@@ -249,8 +269,9 @@ def booking_total(input: BookingCreate) -> int:
         input.adults + input.kids_5_12 + input.kids_below_5
         + input.veg_adults + input.veg_kids_5_12 + input.veg_kids_below_5
     )
-    if input.referral_code and input.referral_code.strip().upper() == os.environ.get("REFERRAL_CODE") and total_participants >= 10:
-        return round(base * 0.95)
+    discount, _, _ = resolve_referral(input.referral_code, total_participants)
+    if discount:
+        return math.floor(base * (1 - discount) + 0.5)
     return base
 
 
@@ -501,12 +522,7 @@ async def create_booking(input: BookingCreate, request: Request):
         input.adults + input.kids_5_12 + input.kids_below_5
         + input.veg_adults + input.veg_kids_5_12 + input.veg_kids_below_5
     )
-    total = (
-        input.adults * EVENT["sea_price_adult"]
-        + input.kids_5_12 * EVENT["sea_price_kid"]
-        + input.veg_adults * EVENT["veg_price_adult"]
-        + input.veg_kids_5_12 * EVENT["veg_price_kid"]
-    )
+    total = booking_total(input)
     reference = "EO-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
     doc = {
         "id": str(uuid.uuid4()),
