@@ -10,6 +10,7 @@ import random
 import string
 import csv
 import io
+import json
 import jwt
 import bcrypt
 import asyncio
@@ -395,6 +396,91 @@ async def verify_payment(input: PaymentVerify, request: Request):
         asyncio.create_task(send_confirmation_email(doc, public_base(request)))
         asyncio.create_task(send_whatsapp_confirmation(doc, public_base(request)))
     return doc
+
+
+@api_router.post("/payments/webhook")
+async def razorpay_webhook(request: Request):
+    """
+    Razorpay server-to-server webhook. Configured event: payment.captured.
+    Verifies X-Razorpay-Signature against raw body using RAZORPAY_WEBHOOK_SECRET.
+    Confirms the matching booking and sends email + WhatsApp. Idempotent — a
+    second delivery for the same payment_id is a no-op.
+    """
+    secret = os.environ.get("RAZORPAY_WEBHOOK_SECRET")
+    if not secret:
+        logger.error("Razorpay webhook received but RAZORPAY_WEBHOOK_SECRET is not set")
+        raise HTTPException(status_code=500, detail="Webhook secret not configured")
+
+    raw_body = await request.body()
+    signature = request.headers.get("X-Razorpay-Signature", "")
+
+    try:
+        rz_client.utility.verify_webhook_signature(raw_body.decode("utf-8"), signature, secret)
+    except razorpay.errors.SignatureVerificationError:
+        logger.warning("Razorpay webhook signature verification failed")
+        raise HTTPException(status_code=400, detail="Invalid webhook signature")
+
+    try:
+        payload = json.loads(raw_body.decode("utf-8"))
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    event = payload.get("event")
+    logger.info(f"Razorpay webhook event: {event}")
+
+    if event != "payment.captured":
+        return {"ok": True, "ignored": event}
+
+    payment = payload.get("payload", {}).get("payment", {}).get("entity", {}) or {}
+    payment_id = payment.get("id")
+    order_id = payment.get("order_id")
+    amount = int(payment.get("amount") or 0)
+    reference = (payment.get("notes") or {}).get("reference")
+
+    query = {"razorpay_order_id": order_id} if order_id else {"reference": (reference or "").upper()}
+    doc = await db.bookings.find_one(query)
+    matched_by_order = bool(doc and order_id)
+    if not doc and order_id and reference:
+        doc = await db.bookings.find_one({"reference": reference.upper()})
+    if not doc:
+        logger.error(f"Webhook: booking not found for order_id={order_id} reference={reference}")
+        return {"ok": False, "reason": "booking_not_found", "order_id": order_id, "reference": reference}
+
+    if doc.get("status") == "confirmed" and doc.get("razorpay_payment_id") == payment_id:
+        logger.info(f"Webhook: booking {doc['reference']} already confirmed with same payment_id — idempotent no-op")
+        return {"ok": True, "idempotent": True, "reference": doc["reference"]}
+
+    expected = int(doc.get("total", 0)) * 100
+    if expected and amount != expected:
+        logger.error(f"Webhook amount mismatch for {doc['reference']}: paid={amount} expected={expected}")
+        await db.bookings.update_one(
+            {"reference": doc["reference"]},
+            {"$push": {"webhook_log": {"at": datetime.now(timezone.utc).isoformat(), "event": event, "payment_id": payment_id, "amount": amount, "error": "amount_mismatch", "expected": expected}}},
+        )
+        return {"ok": False, "reason": "amount_mismatch", "paid": amount, "expected": expected}
+
+    was_already_confirmed = doc.get("status") == "confirmed"
+    now_iso = datetime.now(timezone.utc).isoformat()
+    update = {
+        "status": "confirmed",
+        "razorpay_payment_id": payment_id,
+        "paid_at": doc.get("paid_at") or now_iso,
+        "confirmed_via": "webhook",
+        "webhook_confirmed_at": now_iso,
+    }
+    if matched_by_order or not doc.get("razorpay_order_id"):
+        update["razorpay_order_id"] = order_id
+    await db.bookings.update_one(
+        {"reference": doc["reference"]},
+        {"$set": update, "$push": {"webhook_log": {"at": now_iso, "event": event, "payment_id": payment_id, "amount": amount}}},
+    )
+    doc = await db.bookings.find_one({"reference": doc["reference"]})
+
+    if not was_already_confirmed:
+        asyncio.create_task(send_confirmation_email(doc, public_base(request)))
+        asyncio.create_task(send_whatsapp_confirmation(doc, public_base(request)))
+
+    return {"ok": True, "reference": doc["reference"], "payment_id": payment_id, "was_already_confirmed": was_already_confirmed}
 
 
 @api_router.post("/bookings")

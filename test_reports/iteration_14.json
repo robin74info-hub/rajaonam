@@ -1,0 +1,25 @@
+{
+  "summary": "Iteration 14 — targeted retest of the notes.reference fallback fix in POST /api/payments/webhook. New file /app/backend/tests/test_iteration14_webhook_fallback.py (3 tests), 3/3 PASSED. (1) Bogus order_id 'order_BOGUS_xyz' + correct notes.reference of a freshly created pending_payment booking -> 200 {ok:true, reference:<REF>, payment_id:'pay_TEST_fallback', was_already_confirmed:false}; booking moved to status=confirmed, confirmed_via='webhook', razorpay_payment_id='pay_TEST_fallback', webhook_confirmed_at set, exactly one webhook_log entry. The HIGH bug from iteration_13 is FIXED (two-step lookup at server.py:440-446 confirmed in code). (2) Exact replay of the same signed body -> 200 {ok:true, idempotent:true}, no second webhook_log entry, webhook_confirmed_at unchanged. (3) order_id path with NO notes.reference on a second pending booking -> confirmed via order_id. (4) Extra guard: both order_id and reference unknown still returns 200 {ok:false, reason:'booking_not_found'}. Cleanup verified: both TEST_iter14 bookings deleted (confirmed/billed needed ONAM26 passcode); GET /api/admin/bookings now returns only the 1 pre-existing EO-LEGACY booking.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/payments/webhook", "issue": "When the booking is matched via the notes.reference fallback, razorpay_order_id is still overwritten with the payload's (possibly stale/bogus) order_id — e.g. the test booking ended with razorpay_order_id='order_BOGUS_xyz'. Harmless for confirmation but makes later /reconcile calls query a non-existent Razorpay order. Consider only updating razorpay_order_id when the order_id lookup matched."},
+      {"endpoint": "POST /api/payments/webhook", "issue": "Carried over from iteration_13: amount guard skipped when booking.total == 0; already-confirmed booking with a different payment_id gets its razorpay_payment_id overwritten."}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/test_iteration14_webhook_fallback.py", "/app/test_reports/pytest/iteration14_webhook.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py razorpay_webhook: two-step lookup is correct; consider gating the razorpay_order_id write on which lookup matched.",
+    "server.py remains >1300 lines — split payments/webhook/admin routers."
+  ],
+  "updated_files": ["/app/backend/tests/test_iteration14_webhook_fallback.py"],
+  "success_rate": {"backend": "100% (3/3)", "frontend": "not tested (backend-only request)"},
+  "seed_data_creation": "2 bookings via POST /api/payments/order named 'TEST_iter14 *' (real Razorpay orders, no charge); both deleted in session teardown — DB back to 1 pre-existing booking.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": false,
+  "test_credentials": "admin@rajaonam.com / RajaOnam@2026",
+  "context_for_next_testing_agent": "Webhook suite is green. Reusable helpers in /app/backend/tests/test_iteration13_webhook.py and test_iteration14_webhook_fallback.py. Remember: payment_mode must be 'Online (Razorpay)', every request needs a non-empty User-Agent, signature = hmac.sha256(RAZORPAY_WEBHOOK_SECRET, raw_body).hexdigest(). Deleting a webhook-confirmed booking requires the ONAM26 (billed) passcode.",
+  "rca_of_the_issue": "Previous defect (single-shot Mongo filter short-circuiting the reference branch) resolved by the two-step lookup: order_id find_one first, then find_one({'reference': reference.upper()}) when order_id is present but unmatched. Verified end-to-end against the preview URL."
+}

@@ -1,0 +1,30 @@
+{
+  "summary": "Iteration 13 backend-only testing of the new Razorpay payment.captured webhook (POST /api/payments/webhook) plus regressions. Wrote /app/backend/tests/test_iteration13_webhook.py (14 tests, pytest). 13/14 passed. Verified: invalid signature -> 400 'Invalid webhook signature'; missing X-Razorpay-Signature -> 400; non-payment.captured events (payment.authorized, order.paid, payment.failed) -> 200 {ok:true, ignored:<event>}; valid signature + non-JSON body -> 400; unknown order_id + unknown notes.reference -> 200 {ok:false, reason:'booking_not_found'}; amount mismatch -> 200 {ok:false, reason:'amount_mismatch', paid, expected}, booking stays pending_payment with exactly one webhook_log entry carrying error:'amount_mismatch'; happy path confirms booking (status=confirmed, razorpay_payment_id, paid_at, confirmed_via='webhook', webhook_confirmed_at, one webhook_log entry) and fires email+WhatsApp exactly once (verified in backend logs); exact replay returns {ok:true, idempotent:true} with no second webhook_log entry, no timestamp change and no second email/WhatsApp. Regressions pass: /api/payments/verify bad signature -> 400, /api/admin/bookings returns list with status/razorpay_order_id and no _id leak (new confirmed_via/webhook_confirmed_at serialize fine), /api/admin/bookings/{ref}/reconcile still returns ok:false + razorpay_payments + message for an unpaid order, and 404 for unknown ref. All 4 seed bookings deleted; DB back to 1 pre-existing booking.",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "POST /api/payments/webhook", "issue": "notes.reference fallback does NOT work. server.py builds the lookup as `query = {\"razorpay_order_id\": order_id} if order_id else {\"reference\": ...}` — the reference fallback is only used when order_id is ABSENT, not when the order_id lookup returns no booking. Test with a bogus order_id + correct notes.reference returned {ok:false, reason:'booking_not_found'} while a matching pending_payment booking existed. This defeats the stated self-heal requirement (e.g. order recreated via /payments/resume, or order_id drift). Fix: after the order_id find_one misses, retry with {\"reference\": (reference or '').upper()}.", "priority": "HIGH"}
+    ],
+    "minor": [
+      {"endpoint": "POST /api/payments/webhook", "issue": "Webhook unconditionally sets razorpay_order_id from the webhook payload. When a booking is matched by notes.reference (after the fix above), this would overwrite the stored order_id with the payload's order_id — acceptable, but be deliberate about it."},
+      {"endpoint": "POST /api/payments/webhook", "issue": "Amount guard is skipped when booking.total == 0 (`if expected and ...`). Fine for COMP/zero-total bookings but means a 0-total booking can be confirmed by any captured amount."},
+      {"endpoint": "POST /api/payments/webhook", "issue": "If the booking is already confirmed with a DIFFERENT payment_id, the handler overwrites razorpay_payment_id/confirmed_via='webhook' and pushes a log entry (returns was_already_confirmed:true, no email). Not a defect for the tested flow, but a duplicate-payment scenario silently rewrites the original payment id."}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/test_iteration13_webhook.py", "/app/test_reports/pytest/iteration13_webhook.xml"],
+  "action_items": [
+    "Fix the notes.reference fallback in razorpay_webhook: if find_one({'razorpay_order_id': order_id}) returns None and a notes.reference is present, retry find_one({'reference': reference.upper()}) before returning booking_not_found."
+  ],
+  "critical_code_review_comments": [
+    "server.py line ~440: single-shot query construction prevents the documented order_id -> notes.reference fallback; needs a two-step lookup.",
+    "server.py is very large (>1300 lines) — consider splitting payments/webhook/admin routers into modules."
+  ],
+  "updated_files": ["/app/backend/tests/test_iteration13_webhook.py"],
+  "success_rate": {"backend": "93% (13/14)", "frontend": "not tested (backend-only request)"},
+  "seed_data_creation": "4 bookings created via POST /api/payments/order (real Razorpay orders, no charge) named 'TEST_iter13 *'; all deleted in session teardown. Verified via GET /api/admin/bookings: only 1 pre-existing booking remains, no pending_payment leftovers.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "test_credentials": "admin@rajaonam.com / RajaOnam@2026 (from /app/memory/test_credentials.md)",
+  "context_for_next_testing_agent": "Reusable test file: /app/backend/tests/test_iteration13_webhook.py. Notes: payment_mode must be 'Online (Razorpay)' (not 'ONLINE'); every request to the preview ingress needs a non-empty User-Agent; webhook signature = hmac.sha256(secret, raw_body).hexdigest(); RAZORPAY_WEBHOOK_SECRET read from /app/backend/.env. Only the notes.reference fallback test (TestReferenceFallback) fails — re-run it after the main agent's fix. Email sends to *@example.com return HTTP 422 from the email integration and Twilio WhatsApp returns 400 (trial account) — environmental, use delivered@resend.dev if delivery must succeed.",
+  "rca_of_the_issue": "In razorpay_webhook the Mongo filter is chosen with a conditional expression evaluated on the presence of order_id only. Because a truthy order_id short-circuits the reference branch, a webhook whose order_id is unknown to the DB never attempts the notes.reference lookup and returns booking_not_found even though the booking exists. Reproduce: POST /api/payments/order to create a pending booking, then POST a validly signed payment.captured event with order_id='order_BOGUS' and notes.reference=<that reference> -> {ok:false, reason:'booking_not_found'}. Mitigation: two-step lookup (order_id first, then reference)."
+}

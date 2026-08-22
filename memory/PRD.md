@@ -472,14 +472,18 @@
 - send_confirmation_email + send_whatsapp_confirmation now return (ok, error) tuple; endpoints return {email_sent, email_error, whatsapp_sent, whatsapp_error}. Existing fire-and-forget callers (verify_payment, manual-booking) still work because asyncio.create_task discards the return value.
 - Frontend Admin.jsx: new Reconcile button (data-testid=reconcile-{ref}) on unbilled rows that have a razorpay_order_id, and Resend button (data-testid=resend-{ref}) on confirmed rows; the alert now shows ✓/✗ per channel with error text.
 - Verified: iteration_11 (13/13) + iteration_12 (13/13) — 401/404/400 error paths, no-captured-payment path (booking stays pending), email_sent true on delivered@resend.dev, resend_log grows by one per resend, existing verify_payment + manual-booking regressions clean.
-- Known limitation: Razorpay webhook is still not implemented — reconcile is manual. Twilio is on a trial account so WhatsApp media (QR image) fails until account upgrade.
+
+## Razorpay Webhook v80 (2026-08-13)
+- Root-cause fix for EO-2S4IQ7 bug class: added POST /api/payments/webhook. Razorpay Dashboard is expected to send `payment.captured` events to this URL with header X-Razorpay-Signature (HMAC-SHA256 of raw body using RAZORPAY_WEBHOOK_SECRET). Secret stored in backend/.env as RAZORPAY_WEBHOOK_SECRET=rajaonam-2026-berrysys.
+- Behaviour: verifies signature via rz_client.utility.verify_webhook_signature (400 on failure). For event=='payment.captured': looks up booking by razorpay_order_id, falls back to notes.reference if the order_id lookup misses (fix from iteration_13). Amount mismatch → 200 {ok:false, reason:'amount_mismatch'}, logs to booking.webhook_log. Happy path sets status=confirmed, razorpay_payment_id, paid_at, confirmed_via='webhook', webhook_confirmed_at, fires email+WhatsApp exactly once. Exact replay → 200 {ok:true, idempotent:true}, no duplicate side effects. razorpay_order_id is only overwritten when the order_id lookup matched (preserves the real order id when matched via reference fallback).
+- Verified: iteration_13 (13/14, one HIGH fixed) → iteration_14 (3/3) → total 16/17 with the HIGH now green. Regressions clean: /api/payments/verify bad sig 400, /api/admin/bookings + /reconcile unchanged.
+- Setup for user (Razorpay Dashboard): Settings → Webhooks → Add New Webhook. URL: https://<prod-domain>/api/payments/webhook (rajaonam.com/api/payments/webhook). Active events: payment.captured. Secret: rajaonam-2026-berrysys. Alert email: user's own. Save → send test event to confirm 200.
 
 ## Backlog
-- P0: Razorpay `payment.captured` webhook so paid bookings self-heal without any admin action (root-cause fix for EO-2S4IQ7 class of bugs)
 - P1: Upgrade Twilio account (trial blocks media_url and non-approved templates) so WhatsApp ticket + QR actually reach customers
 - P2: Slot Full Alerts — email when any sadhya slot crosses 200 guests (server.py)
 - P1: Confirm Twilio WhatsApp Sandbox activation with user (join code texted from their phone) and run live WhatsApp ticket test
 - P2: Multi-date selection, QR ticket code, waitlist when slot full
 - P2: Currency/locale switcher
 - P2: Printable A4 marketing poster PDF with website QR + event details
-- Refactor: split server.py (~1,405 lines) into routes/models/services
+- Refactor: split server.py (~1,490 lines) into routes/models/services
