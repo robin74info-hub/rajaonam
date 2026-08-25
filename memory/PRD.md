@@ -486,6 +486,10 @@
 - Frontend BookingPanel.jsx: REFERRAL_CODES mirror; referral card always visible (was gated by `≥10 participants`); Apply button validates unknown-code + min-participants with tailored error text; Pay Online CTA now shows `payableTotal` (was `total`, a ₹600 gap on 2-adult PRIMETIME31); when guests reduce count below the code min the chip switches to maroon '<CODE> paused — not enough participants'; discount now computed as `total - Math.round(total*(1-pct))` so it never drifts from the backend total by ₹1.
 - Verified end-to-end by testing agent: iteration_15 (86% backend + 92% frontend, 3 defects) → iteration_16 (100% backend 18/18, 95% frontend with only ₹1 rounding parity outstanding) → main-agent self-test confirms rounding parity fixed. Regression on webhook + verify + reconcile all clean.
 
+## Total Confirmed Guests Card v82 (2026-08-25)
+- New Admin Dashboard summary card "Total Confirmed Guests" = Billed guests + Complimentary guests (testid: stat-confirmed-guests).
+- Guest counts now fall back to adults+kids fields when `total_participants` missing (fixes legacy bookings showing 0 in Total Guests too).
+
 ## Backlog
 - P1: Upgrade Twilio account (trial blocks media_url and non-approved templates) so WhatsApp ticket + QR actually reach customers
 - P2: Slot Full Alerts — email when any sadhya slot crosses 200 guests (server.py)

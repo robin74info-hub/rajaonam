@@ -402,7 +402,10 @@ export default function Admin() {
   const unbilled = (bookings || []).filter((b) => b.status === "pending_payment");
   const compList = (bookings || []).filter((b) => b.payment_mode === "COMP");
   const totalRevenue = billed.reduce((s, b) => s + (b.total || 0), 0);
-  const totalGuests = billed.reduce((s, b) => s + (b.total_participants || 0), 0);
+  const guestCount = (b) => b.total_participants || ((b.adults || 0) + (b.kids_5_12 || 0) + (b.kids_below_5 || 0) + (b.veg_adults || 0) + (b.veg_kids_5_12 || 0) + (b.veg_kids_below_5 || 0));
+  const totalGuests = billed.reduce((s, b) => s + guestCount(b), 0);
+  const compGuests = compList.reduce((s, b) => s + guestCount(b), 0);
+  const totalConfirmedGuests = totalGuests + compGuests;
   const totalBoating = billed.filter((b) => b.boating).length;
   const seaAdults = billed.reduce((s, b) => s + (b.adults || 0), 0);
   const seaKids = billed.reduce((s, b) => s + (b.kids_5_12 || 0) + (b.kids_below_5 || 0), 0);
@@ -468,6 +471,7 @@ export default function Admin() {
         <Stat icon={Users} label="Unbilled" value={bookings ? unbilled.length : "…"} onClick={() => setView("unbilled")} active={view === "unbilled"} testid="stat-unbilled" />
         <Stat icon={Ticket} label="Complimentary" value={bookings ? compList.length : "…"} onClick={() => setView("complimentary")} active={view === "complimentary"} testid="stat-comp" />
         <Stat icon={Users} label="Total Guests" value={bookings ? totalGuests : "…"} testid="stat-guests" />
+        <Stat icon={UserCheck} label="Total Confirmed Guests" value={bookings ? totalConfirmedGuests : "…"} testid="stat-confirmed-guests" />
         <Stat icon={Fish} label="Sea Food Adults" value={bookings ? seaAdults : "…"} onClick={() => toggleFilter("sea-adults")} active={filter === "sea-adults"} testid="stat-sea-adults" />
         <Stat icon={Fish} label="Sea Food Kids" value={bookings ? seaKids : "…"} onClick={() => toggleFilter("sea-kids")} active={filter === "sea-kids"} testid="stat-sea-kids" />
         <Stat icon={Salad} label="Veg Adults" value={bookings ? vegAdults : "…"} onClick={() => toggleFilter("veg-adults")} active={filter === "veg-adults"} testid="stat-veg-adults" />
