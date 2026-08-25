@@ -490,6 +490,10 @@
 - New Admin Dashboard summary card "Total Confirmed Guests" = Billed guests + Complimentary guests (testid: stat-confirmed-guests).
 - Guest counts now fall back to adults+kids fields when `total_participants` missing (fixes legacy bookings showing 0 in Total Guests too).
 
+## Sea/Veg Totals + Confirmed Breakdown v83 (2026-08-25)
+- "Total Confirmed Guests" card now shows sub-line "Billed X · Comp Y".
+- New cards: "Sea Food Total" and "Veg Sadhya Total" — confirmed pax (billed + complimentary) per menu.
+
 ## Backlog
 - P1: Upgrade Twilio account (trial blocks media_url and non-approved templates) so WhatsApp ticket + QR actually reach customers
 - P2: Slot Full Alerts — email when any sadhya slot crosses 200 guests (server.py)
