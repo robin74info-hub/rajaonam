@@ -116,6 +116,7 @@ export default function BookingPanel({ event, onBooked }) {
   const [missingFields, setMissingFields] = useState(null);
   const [phase, setPhase] = useState("idle");
   const [booking, setBooking] = useState(null);
+  const [showClosed, setShowClosed] = useState(false);
 
   const sym = event?.currency_symbol || "₹";
   const seaA = event?.sea_price_adult ?? 2999;
@@ -197,6 +198,9 @@ export default function BookingPanel({ event, onBooked }) {
   };
 
   const payOnline = async () => {
+    setShowClosed(true);
+    return;
+    // eslint-disable-next-line no-unreachable
     if (!validate() || phase !== "idle") return;
     setPhase("processing");
     try {
@@ -267,6 +271,29 @@ export default function BookingPanel({ event, onBooked }) {
 
   return (
     <>
+    {showClosed && (
+      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-ink/50 backdrop-blur-sm px-4" data-testid="booking-closed-popup" onClick={() => setShowClosed(false)}>
+        <div className="w-full max-w-sm rounded-2xl border border-[#D8C7A5] bg-[#F1E3C6] p-6 text-center shadow-[0_25px_60px_rgba(43,33,24,0.4)]" onClick={(e) => e.stopPropagation()}>
+          <Flower2 className="w-8 h-8 text-maroon mx-auto mb-3" />
+          <p className="font-serif text-2xl text-maroon font-bold mb-1" data-testid="closed-title">ONLINE BOOKING CLOSED</p>
+          <p className="text-sm text-ink mb-4">Thanks for the overwhelming Support</p>
+          <p className="text-xs tracking-[0.25em] uppercase font-bold text-leaf mb-1">Spot Registration Available</p>
+          <p className="text-sm text-ink font-bold mb-4">26th August 2026, Bolgatty Palace, Kochi</p>
+          <p className="text-xs text-ash mb-1">For enquiries &amp; spot registration :</p>
+          <p className="text-base text-ink font-bold mb-4" data-testid="closed-phones">
+            <a href="tel:+919048599965" className="hover:text-maroon">90485 99965</a> / <a href="tel:+919048599938" className="hover:text-maroon">90485 99938</a>
+          </p>
+          <p className="font-serif text-lg text-leaf mb-5">See you at RAJAONAM !</p>
+          <button
+            data-testid="booking-closed-close"
+            onClick={() => setShowClosed(false)}
+            className="w-full py-3 rounded-full bg-[#1b5812] text-[#fabd8f] text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#12400c] transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
     {missingFields && (
       <div className="fixed inset-0 z-[70] flex items-center justify-center bg-ink/50 backdrop-blur-sm px-4" data-testid="missing-fields-popup" onClick={() => setMissingFields(null)}>
         <div className="w-full max-w-sm rounded-2xl border border-[#D8C7A5] bg-[#F1E3C6] p-6 shadow-[0_25px_60px_rgba(43,33,24,0.4)]" onClick={(e) => e.stopPropagation()}>

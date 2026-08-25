@@ -494,6 +494,10 @@
 - "Total Confirmed Guests" card now shows sub-line "Billed X · Comp Y".
 - New cards: "Sea Food Total" and "Veg Sadhya Total" — confirmed pax (billed + complimentary) per menu.
 
+## Online Booking Closed Popup v84 (2026-08-25)
+- Clicking "Pay Online" now shows a "ONLINE BOOKING CLOSED" popup (spot registration info, phone numbers 90485 99965 / 90485 99938) instead of starting payment (`BookingPanel.jsx`).
+- Original payOnline flow preserved (early return) — remove the `setShowClosed(true); return;` lines to re-enable online payments.
+
 ## Backlog
 - P1: Upgrade Twilio account (trial blocks media_url and non-approved templates) so WhatsApp ticket + QR actually reach customers
 - P2: Slot Full Alerts — email when any sadhya slot crosses 200 guests (server.py)
