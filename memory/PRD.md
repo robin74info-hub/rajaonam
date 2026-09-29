@@ -498,6 +498,11 @@
 - Clicking "Pay Online" now shows a "ONLINE BOOKING CLOSED" popup (spot registration info, phone numbers 90485 99965 / 90485 99938) instead of starting payment (`BookingPanel.jsx`).
 - Original payOnline flow preserved (early return) — remove the `setShowClosed(true); return;` lines to re-enable online payments.
 
+## Docker Local Setup v85 (2026-08-25)
+- Added `docker-compose.yml` (mongodb + backend + frontend), `backend/Dockerfile` (python:3.11-slim, uvicorn :8001), `frontend/Dockerfile` (node:20 build → nginx :3000 with /api proxy to backend), `frontend/nginx.conf`, `.dockerignore` files, `backend/.env.docker.example` (secrets template), and `DOCKER.md` (run instructions).
+- Frontend build uses REACT_APP_BACKEND_URL=http://localhost:3000 so API calls go through the nginx /api proxy, mirroring production ingress.
+- NOT runtime-tested (no Docker daemon in preview environment) — YAML validated only.
+
 ## Backlog
 - P1: Upgrade Twilio account (trial blocks media_url and non-approved templates) so WhatsApp ticket + QR actually reach customers
 - P2: Slot Full Alerts — email when any sadhya slot crosses 200 guests (server.py)
